@@ -1,0 +1,10 @@
+*.pyc
+*.nbi
+*.nbc
+__pycache__
+.DS_Store
+build
+dist
+*.egg-info
+env
+*_build
