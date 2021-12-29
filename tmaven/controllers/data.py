@@ -61,7 +61,7 @@ class controller_data(object):
 			post_list = np.zeros(self.nmol,dtype='int') + self.ntime
 			flag_ons = np.ones(self.nmol,dtype='bool')
 
-			corrected[:nmol0] = self.corrected.copy()
+			corrected[:nmol0,:self.corrected.shape[1]] = self.corrected.copy()
 			classes[:nmol0] = self.classes.copy()
 			data_index[:nmol0] = self.data_index.copy()
 			pre_list[:nmol0] = self.pre_list.copy()
