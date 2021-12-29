@@ -8,3 +8,4 @@ from .scripts import controller_scripts
 from .modeler.modeler import controller_modeler
 from .trace_filter.trace_filter import controller_trace_filter
 from .photobleaching.photobleaching_controller import controller_photobleaching
+from .analysis_plots import controller_analysisplots

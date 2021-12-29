@@ -34,6 +34,9 @@ class maven_class(object):
 		self.trace_filter = controller_trace_filter(self)
 		self.photobleaching = controller_photobleaching(self)
 
+		from .controllers import controller_analysisplots
+		self.plots = controller_analysisplots(self)
+
 	def calc_fret(self,index=None):
 		if not index is None:
 			return self.data.corrected[index]/(self.data.corrected[index].sum(-1) + 1e-300)[:,None]
