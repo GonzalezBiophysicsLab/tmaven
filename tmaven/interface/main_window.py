@@ -144,7 +144,7 @@ class main_window(QMainWindow):
 
 		self.menu_file.addMenu(self.menu_load)
 		self.menu_file.addMenu(self.menu_save)
-		self.menu_file.addAction('Clear Data',self.maven.io.clear_data)
+		self.menu_file.addAction('Clear Data',self.clear_data)
 		self.menu_file.addMenu(self.menu_prefs)
 		self.menu_prefs.addAction('Load Preferences',self.preferences_viewer.load)
 		self.menu_prefs.addAction('Save Preferences',self.preferences_viewer.save)
@@ -177,6 +177,11 @@ class main_window(QMainWindow):
 		self.menubar.addMenu(self.menu_other)
 
 
+	def clear_data(self):
+		from PyQt5.QtWidgets import QMessageBox
+		reply = QMessageBox.question(self,"Clear Data?","Are you sure you want to remove all the current data?",QMessageBox.Yes | QMessageBox.No)
+		if reply == QMessageBox.Yes:
+			self.maven.io.clear_data()
 
 	def keyPressEvent(self,event):
 		kk = event.key()
