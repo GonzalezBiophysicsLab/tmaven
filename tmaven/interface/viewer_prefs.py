@@ -8,19 +8,10 @@ class preferences_viewer(QObject):
 	def __init__(self,gui):
 		super().__init__()
 		self.gui = gui
-		self.dock = None
-
-	def toggle(self):
-		if self.dock:
-			self.remove()
-		else:
-			self.new()
-
-	def new(self):
 		self.viewer = prefs_widget()
 		self.prefs_model = pref_model(self.gui.maven)
-		self.viewer.set_model(self.prefs_model) ## try to avoid this as much as possible.
-		## connect anything important here
+		self.viewer.set_model(self.prefs_model)
+
 		self.dock = QDockWidget("Preferences")
 		from .stylesheet import ss_qdockwidget,ss_qtableview
 		self.dock.setStyleSheet(ss_qdockwidget)
@@ -28,23 +19,20 @@ class preferences_viewer(QObject):
 		self.dock.setWidget(self.viewer)
 		self.dock.setFeatures(QDockWidget.AllDockWidgetFeatures)
 		self.dock.setAllowedAreas(Qt.TopDockWidgetArea | Qt.BottomDockWidgetArea | Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
-		if not self.gui.molecules_viewer.dock is None:
-			self.gui.tabifyDockWidget(self.gui.molecules_viewer.dock,self.dock)
-		else:
-			self.gui.addDockWidget(Qt.LeftDockWidgetArea, self.dock)
+		self.gui.addDockWidget(Qt.LeftDockWidgetArea, self.dock)
+		self.toggle()
 		self.dock.closeEvent = lambda e: self.toggle()
 
-	def remove(self):
-		"""
-		Removes the plotter pane from the application.
-		"""
-		if self.dock:
-			# try: self.gui.new_selection_last.disconnect(self.plotter_callback)
-			# except: pass
-			self.viewer = None
-			self.dock.setParent(None)
-			self.dock.deleteLater()
-			self.dock = None
+	def toggle(self):
+		if self.dock.isHidden():
+			self.dock.show()
+			try:
+				if not self.gui.molecules_viewer.isHidden():
+					self.gui.tabifyDockWidget(self.gui.molecules_viewer.dock,self.dock)
+			except:
+				pass
+		else:
+			self.dock.hide()
 
 	def save(self,event=None):
 		fname,_ = QFileDialog.getSaveFileName(None,'Save preferences text file','./prefs.txt','.txt')

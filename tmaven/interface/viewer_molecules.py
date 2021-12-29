@@ -228,60 +228,30 @@ class molecules_viewer(QObject):
 	def __init__(self,gui):
 		super().__init__()
 		self.gui = gui
-		self.viewer = None
-		self.dock = None
-
-	def toggle(self):
-		if self.dock:
-			self.remove()
-		else:
-			self.new()
-
-	def update(self):
-		if not self.viewer is None:
-			self.viewer.model.dataChanged.emit(QModelIndex(),QModelIndex())
-
-			# self.viewer.blockSignals(True)
-			# ind = self.viewer.model.index(self.gui.index, 0)
-			# self.viewer.scrollTo(ind, QAbstractItemView.PositionAtTop)
-			# self.viewer.selectRow(ind.row())
-			# # mode = QItemSelectionModel.Select | QItemSelectionModel.Rows
-			# # # self.viewer.clearSelection()
-			# #
-			# # selectionmodel = self.viewer.selectionModel()
-			# # selectionmodel.select(ind,mode)
-			# # self.viewer.blockSignals(False)
-			# self.viewer.model.layoutChanged.emit()
-
-	def new(self):
 		self.viewer = molecules_widget(self.gui)
-
-		## connect anything important here
 		self.dock = QDockWidget("Molecule Table")
+
 		from .stylesheet import ss_qdockwidget
 		self.dock.setStyleSheet(ss_qdockwidget)
 		self.dock.setWidget(self.viewer)
 		self.dock.setFeatures(QDockWidget.AllDockWidgetFeatures)
 		self.dock.setAllowedAreas(Qt.TopDockWidgetArea | Qt.BottomDockWidgetArea | Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
-		if not self.gui.preferences_viewer.dock is None:
-			self.gui.tabifyDockWidget(self.gui.preferences_viewer.dock,self.dock)
-		else:
-			self.gui.addDockWidget(Qt.LeftDockWidgetArea, self.dock)
+		self.gui.addDockWidget(Qt.LeftDockWidgetArea, self.dock)
+		self.toggle()
 		self.dock.closeEvent = lambda e: self.toggle()
 		self.gui.data_update.connect(self.viewer.model.layoutChanged.emit)
 
-	def remove(self):
-		"""
-		Removes the plotter pane from the application.
-		"""
-		try:
-			self.gui.data_update.disconnect(self.viewer.model.layoutChanged.emit)
-		except:
-			pass
-		if self.dock:
-			# try: self.gui.new_selection_last.disconnect(self.plotter_callback)
-			# except: pass
-			self.viewer = None
-			self.dock.setParent(None)
-			self.dock.deleteLater()
-			self.dock = None
+	def toggle(self):
+		if self.dock.isHidden():
+			self.dock.show()
+			try:
+				if not self.gui.preferences_viewer.isHidden():
+					self.gui.tabifyDockWidget(self.gui.preferences_viewer.dock,self.dock)
+			except:
+				pass
+		else:
+			self.dock.hide()
+
+	def update(self):
+		if not self.viewer is None:
+			self.viewer.model.dataChanged.emit(QModelIndex(),QModelIndex())
