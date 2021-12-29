@@ -113,6 +113,7 @@ class fret_canvas(FigureCanvas):
 		self.ax = self.ax.reshape((2,2))
 
 		self.toolbar = NavigationToolbar(self,None)
+		self.toolbar.setIconSize(QSize(24,24))
 		self.toolbar.setSizePolicy(QSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Fixed))
 		# self.draw()
 		self.flag_drawing = False
