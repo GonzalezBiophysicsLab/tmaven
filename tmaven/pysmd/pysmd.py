@@ -256,3 +256,16 @@ def find_smds_in_hdf5(file_name):
 	except:
 		pass
 	return out
+
+def find_datasets_in_hdf5(file_name):
+	''' Search a (possibly) HDF5 file for all smd format entries '''
+	out = []
+	def visit_func(name, node) :
+		if isinstance(node, h5py.Dataset) :
+			out.append([node.name,node.shape])
+	try:
+		with h5py.File(file_name,'r') as f:
+			f.visititems(visit_func)
+	except:
+		pass
+	return out

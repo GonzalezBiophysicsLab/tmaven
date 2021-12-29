@@ -13,6 +13,7 @@ default_prefs = {
 	'io.missing_axis':2,
 	'io.decollate':1,
 	'io.decollate_axis':1,
+	'io.force_double':True,
 }
 
 from ..pysmd import smd_container, concatenate_smds, save_smd_in_hdf5, load_smd_in_hdf5, find_smds_in_hdf5
@@ -42,13 +43,14 @@ class controller_io(object):
 	def __init__(self,maven):
 		self.maven = maven
 		self.maven.prefs.add_dictionary(default_prefs)
+		self.find_smds_in_hdf5 = find_smds_in_hdf5
 
 	def add_data(self,new_smd,new_tmaven=None):
 		if self.maven.smd.raw.shape == (0,0,0):
 			self.maven.smd = new_smd
 			self.maven.data.initialize_tmaven_params()
 		else:
-			self.maven.smd = concatenate_smd(self.maven.smd,new_smd[0])
+			self.maven.smd = concatenate_smds(self.maven.smd,new_smd)
 			self.maven.data.update_tmaven_params()
 		if not new_tmaven is None:
 			classes, pre_list, post_list = new_tmaven
@@ -67,6 +69,14 @@ class controller_io(object):
 
 	def blank_smd(self):
 		return smd_container()
+
+	def load_smdtmaven_hdf5(self,fname,gname):
+		smd = self.load_smd_hdf5(fname,gname)
+		if self.maven.prefs['io.force_double']:
+			smd.raw = smd.raw.astype('double')
+		tmaven = self.load_tmaven_hdf5(fname,gname)
+		self.add_data(smd,tmaven)
+		self.maven.emit_data_update()
 
 	def load_smd_hdf5(self,fname,gname):
 		try:
@@ -207,6 +217,29 @@ class controller_io(object):
 			success = True
 		return d,success
 
+	def convert_numpy_smd(self,d):
+		order = self.maven.prefs['io.axis_order']
+		missing = self.maven.prefs['io.missing_axis']
+		decollate = self.maven.prefs['io.decollate']
+		decollate_axis = self.maven.prefs['io.decollate_axis']
+
+		d,success = self.fix_decollate(d,decollate,decollate_axis)
+		if not success:
+			logger.error('group hdf5 load failed {} {}/{} because of bad decollating'.format(fname,group,dataset))
+			return None
+		d,success = self.fix_missing_dimensions(d,missing)
+		if not success:
+			logger.error('group hdf5 load failed {} {}/{} because of bad missing dimension'.format(fname,group,dataset))
+			return None
+		d,success = self.fix_axis_order(d,order)
+		if not success:
+			logger.error('group hdf5 load failed {} {}/{} because of bad ordering'.format(fname,group,dataset))
+			return None
+
+		smd = self.blank_smd()
+		smd.initialize_data(d)
+		return smd
+
 	def fix_axis_order(self,d,order):
 		if order == [0,1,2]:
 			logger.info('axis already ordered properly')
@@ -235,7 +268,7 @@ class controller_io(object):
 			return
 		if oname == "" or gname == "":
 			return
-		mask = self.maven.data.get_toggled_mask()
+		mask = self.maven.selection.get_toggled_mask()
 		try:
 			with h5py.File(oname,'a') as f:
 				g = f[gname]
@@ -245,9 +278,9 @@ class controller_io(object):
 				gd = g.create_group('tMAVEN')
 				gd.attrs['format'] = 'tMAVEN'
 				gd.attrs['date_modified'] = time.ctime()
-				gd.create_dataset('classes',data=self.classes[mask].astype('int64'),dtype='int64',compression='gzip')
-				gd.create_dataset('pre_list',data=self.pre_list[mask].astype('int64'),dtype='int64',compression='gzip')
-				gd.create_dataset('post_list',data=self.post_list[mask].astype('int64'),dtype='int64',compression='gzip')
+				gd.create_dataset('classes',data=self.maven.data.classes[mask].astype('int64'),dtype='int64',compression='gzip')
+				gd.create_dataset('pre_list',data=self.maven.data.pre_list[mask].astype('int64'),dtype='int64',compression='gzip')
+				gd.create_dataset('post_list',data=self.maven.data.post_list[mask].astype('int64'),dtype='int64',compression='gzip')
 				f.flush()
 				f.close()
 				logger.info("Export tMAVEN to HDF5 file: %s in group: %s"%(oname,gname))
@@ -271,7 +304,7 @@ class controller_io(object):
 		'''
 		if not self.maven.smd.nmol == 0:
 			if not oname == "" and not gname == "":
-				mask = self.maven.data.get_toggled_mask()
+				mask = self.maven.selection.get_toggled_mask()
 				try:
 					success = save_smd_in_hdf5(self.maven.smd,oname,gname,overwrite=True,mask=mask)
 					if success:
@@ -286,7 +319,7 @@ class controller_io(object):
 	def export_raw_numpy(self,oname):
 		if not self.maven.smd.nmol == 0:
 			if not oname == "":
-				mask = self.maven.data.get_toggled_mask()
+				mask = self.maven.selection.get_toggled_mask()
 				success = np.save(oname,self.maven.smd.raw[mask])
 				logger.info("Exported data %s"%(oname))
 				return
@@ -295,7 +328,7 @@ class controller_io(object):
 	def export_class_numpy(self,oname):
 		if not self.maven.smd.nmol == 0:
 			if not oname == "":
-				mask = self.maven.data.get_toggled_mask()
+				mask = self.maven.selection.get_toggled_mask()
 				success = np.save(oname,self.maven.data.classes[mask])
 				logger.info("Exported data %s"%(oname))
 				return
@@ -304,7 +337,7 @@ class controller_io(object):
 	def export_class_txt(self,oname):
 		if not self.maven.smd.nmol == 0:
 			if not oname == "":
-				mask = self.maven.data.get_toggled_mask()
+				mask = self.maven.selection.get_toggled_mask()
 				success = np.savetxt(oname,self.maven.data.classes[mask],delimiter=self.maven.prefs['io.delimiter'])
 				logger.info("Exported data %s"%(oname))
 				return
