@@ -20,19 +20,15 @@ class preferences_viewer(QObject):
 		self.dock.setFeatures(QDockWidget.AllDockWidgetFeatures)
 		self.dock.setAllowedAreas(Qt.TopDockWidgetArea | Qt.BottomDockWidgetArea | Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
 		self.gui.addDockWidget(Qt.LeftDockWidgetArea, self.dock)
-		self.toggle()
-		self.dock.closeEvent = lambda e: self.toggle()
+		self.dock.hide()
+		# self.dock.closeEvent = lambda e: self.toggle()
 
 	def toggle(self):
 		if self.dock.isHidden():
 			self.dock.show()
-			try:
-				if not self.gui.molecules_viewer.isHidden():
-					self.gui.tabifyDockWidget(self.gui.molecules_viewer.dock,self.dock)
-			except:
-				pass
-		else:
-			self.dock.hide()
+			if not self.gui.molecules_viewer.dock.isHidden():
+				self.gui.tabifyDockWidget(self.gui.molecules_viewer.dock,self.dock)
+		self.dock.raise_()
 
 	def save(self,event=None):
 		fname,_ = QFileDialog.getSaveFileName(None,'Save preferences text file','./prefs.txt','.txt')
