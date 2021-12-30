@@ -65,9 +65,6 @@ class main_window(QMainWindow):
 		from ..trace_plot.plot_container import plot_container
 		self.plot_container = plot_container(self)
 
-		from ..analysis_plots.ui_plots import analysisplots_container
-		self.analysis_plots = analysisplots_container(self)
-
 		from .viewer_molecules import molecules_viewer
 		self.molecules_viewer = molecules_viewer(self)
 
@@ -131,6 +128,7 @@ class main_window(QMainWindow):
 		self.menu_other = QMenu('Other',self)
 		self.menu_view = QMenu('View',self)
 		self.menu_prefs = QMenu('Preferences',self)
+		self.menu_plots = QMenu('Plots',self)
 
 		self.menu_load,self.menu_save = ui_io.build_menu(self)
 		self.menu_scripts = self.menu_other.addMenu('Script Runner')
@@ -140,7 +138,7 @@ class main_window(QMainWindow):
 		self.menu_selection,self.menu_on,self.menu_off = ui_selection.build_menu(self)
 		self.menu_photobleaching = ui_photobleaching.build_menu(self)
 		self.menu_modeler = ui_modeler.build_menu(self)
-		self.menu_plots = self.analysis_plots.init_menu_plots()
+
 
 		self.menu_file.addMenu(self.menu_load)
 		self.menu_file.addMenu(self.menu_save)
@@ -166,7 +164,13 @@ class main_window(QMainWindow):
 		self.menu_tools.addMenu(self.menu_photobleaching)
 		self.menu_tools.addAction('Filter Traces',self.trace_filter.launch,shortcut='Ctrl+F')
 
-		for menu in [self.menu_file,self.menu_tools,self.menu_other,self.menu_view,self.menu_prefs,self.menu_scripts]:
+		from .ui_analysisplots import popplot_container
+		self.menu_plots.addAction('FRET Hist 1D',lambda : popplot_container(self,self.maven.plots.fret_hist1d))
+		self.menu_plots.addAction('FRET Hist 2D',lambda : popplot_container(self,self.maven.plots.fret_hist2d))
+		self.menu_plots.addAction('FRET TDP',lambda : popplot_container(self,self.maven.plots.fret_tdp))
+		self.menu_plots.addAction('vb Model States',lambda : popplot_container(self,self.maven.plots.model_vbstates))
+
+		for menu in [self.menu_file,self.menu_tools,self.menu_other,self.menu_view,self.menu_prefs,self.menu_scripts,self.menu_plots]:
 			menu.setStyleSheet(stylesheet.ss_qmenu)
 
 		self.menubar.addMenu(self.menu_file)

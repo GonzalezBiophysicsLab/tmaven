@@ -1,7 +1,9 @@
 # To Do
-- Selection only works if molecules table is opened.... and when it closes it disappears
 - popplots are very messed up... needs a rewrite. also prefs don't load.
 	- maybe plots just work on .mu, .var etc...?
 - pickle export of models fails
 - add log widget
-- prompt on clear traces
+- add ND plot mode
+	- incude presets
+	- include check on different colors and/or ratios
+- probably smd should have an 'original order' index ... basically untouched, except when ordered... just to keep track...
