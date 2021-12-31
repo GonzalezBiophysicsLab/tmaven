@@ -1,12 +1,12 @@
 from tmaven import run_app
-# run_app(['--safe_mode','--log_stdout','--startup=test_script.py'])
+# run_app(['--safe_mode','--log_stdout','--startup=notes/test_script.py'])
 # run_app(['--startup=test_script.py','--log_stdout'])
 run_app(['--log_stdout'])
 
 
 # from tmaven.app import setup_maven
 # maven  = setup_maven(['--log_stdout'])
-# maven.io.load_smdtmaven_hdf5('./example_smd.hdf5','L1-tRNA')
+# maven.io.load_smdtmaven_hdf5('./notes/example_smd.hdf5','L1-tRNA')
 # # maven.data.flag_ons*=False
 # # maven.data.flag_ons[:10]+=True
 # # maven.modeler.run_fret_vbhmm_modelselection(1,6)
