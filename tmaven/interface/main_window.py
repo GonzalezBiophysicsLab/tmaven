@@ -116,6 +116,7 @@ class main_window(QMainWindow):
 		self.maven.emit_data_update()
 
 		self.show()
+		self.plot_container.plot.redrawplot()
 
 	def reset_menus(self):
 		from . import ui_io, ui_scripts, ui_cull, ui_corrections, ui_selection, ui_photobleaching, ui_trace_filter

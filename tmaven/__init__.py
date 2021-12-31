@@ -14,7 +14,12 @@ __author__ = ""
 __email__ = ""
 
 
-from .app import run_app, setup_maven
-if __name__ == '__main__':
+
+from .app import run_app
+def __main__():
 	import sys
+
 	run_app(sys.argv)
+
+if __name__ == '__main__':
+	__main__()

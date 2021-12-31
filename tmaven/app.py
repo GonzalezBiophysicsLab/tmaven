@@ -8,6 +8,8 @@ def setup_logging(stdout=False):
 	log.setLevel(logging.DEBUG)
 	logging.getLogger("matplotlib").setLevel(logging.WARNING)
 	logging.getLogger("numba").setLevel(logging.WARNING)
+	logging.getLogger("h5py").setLevel(logging.WARNING)
+	logging.getLogger("tmaven.controllers.prefs").setLevel(logging.WARNING)
 
 	log_fmt = ("%(asctime)s: %(name)s.%(funcName)s(%(lineno)d): %(message)s")
 	formatter = logging.Formatter(log_fmt)
@@ -37,7 +39,7 @@ def setup_maven(args=[]):
 
 	from .maven import maven_class
 	maven = maven_class()
-
+	logging.getLogger("tmaven.controllers.prefs").setLevel(logging.INFO)
 	return maven
 
 def setup_gui(maven,args=[]):
@@ -70,7 +72,9 @@ def setup_gui(maven,args=[]):
 	app.setApplicationVersion(__version__)
 	app.setAttribute(Qt.AA_DontShowIconsInMenus)
 
+	logging.getLogger("tmaven.controllers.prefs").setLevel(logging.WARNING)
 	gui = main_window(maven,app)
+	logging.getLogger("tmaven.controllers.prefs").setLevel(logging.INFO)
 	app.setWindowIcon(load_icon('logo.png'))
 
 	for a in args:

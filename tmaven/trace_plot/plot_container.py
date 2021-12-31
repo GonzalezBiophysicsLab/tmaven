@@ -24,17 +24,20 @@ class plot_container(QWidget):
 		from .fret_plot import fret_canvas,default_prefs
 		self.gui.maven.prefs.add_dictionary(default_prefs)
 		self.change_plotter(fret_canvas)
+		self.plot.initialize_plots()
 
 	def change_plotter(self,canvas):
 		logger.info('New plot container')
 
 		#### Unhook plotter
 		try: self.gui.pref_edited.disconnect(self.plot.redrawplot)
-		except Exception as e: logger.error(e)
+		except: pass
+		# except Exception as e: logger.error(e)
 		# try:self.gui.new_selection_last.disconnect(self.catch_selection_change)
 		# except Exception as e: logger.error(e)
 		try: self.gui.data_update.disconnect(self.plot.initialize_plots)
-		except Exception as e: logger.error(e)
+		# except Exception as e: logger.error(e)
+		except: pass
 		self.timer = None
 
 		from ..interface.stylesheet import ui_stylesheet
