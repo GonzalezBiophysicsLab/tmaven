@@ -37,11 +37,11 @@ class plot_container(QWidget):
 		#### Unhook plotter
 		try: self.gui.pref_edited.disconnect(self.plot.redrawplot)
 		except: pass
-		# except Exception as e: logger.error(e)
+		# except Exception as e: logging.error(e)
 		# try:self.gui.new_selection_last.disconnect(self.catch_selection_change)
-		# except Exception as e: logger.error(e)
+		# except Exception as e: logging.error(e)
 		try: self.gui.data_update.disconnect(self.plot.initialize_plots)
-		# except Exception as e: logger.error(e)
+		# except Exception as e: logging.error(e)
 		except: pass
 		self.gui.timer = None
 

@@ -1,11 +1,11 @@
 ### borrows heavily from Mu-editor. Credit to them
 import logging
 logging.getLogger("matplotlib").setLevel(logging.WARNING)
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("tmaven")
 
-from PyQt5.QtWidgets import QApplication,QMainWindow,QDesktopWidget,QLabel,QMessageBox,QShortcut,QPushButton,QMenu,QAction,QStyleFactory,QSlider, QSizePolicy, QTreeWidget, QTreeWidgetItem, QDockWidget, QLabel, QHBoxLayout
+from PyQt5.QtWidgets import QApplication,QMainWindow,QDesktopWidget,QLabel,QMessageBox,QShortcut,QPushButton,QMenu,QAction,QStyleFactory,QSlider, QSizePolicy, QTreeWidget, QTreeWidgetItem, QDockWidget, QLabel, QHBoxLayout, QPlainTextEdit
 from PyQt5.QtGui import QIcon, QKeySequence, QPalette, QColor
-from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtCore import Qt, pyqtSignal, QTimer
 import matplotlib
 matplotlib.use('Qt5Agg') ## forces Qt5 early on...
 
@@ -145,6 +145,7 @@ class main_window(QMainWindow):
 		self.menu_file.addAction('Exit',self.quit,'Ctrl+Q')
 
 		self.menu_view.addAction('Reset GUI',self.default_session)
+
 		self.menu_traj = self.menu_view.addMenu('Plot Type')
 		self.menu_traj.addAction('ND',lambda : self.plot_container.change_mode('ND'))
 		self.menu_traj.addAction('smFRET',lambda : self.plot_container.change_mode('smFRET'))
@@ -154,6 +155,7 @@ class main_window(QMainWindow):
 		# self.menu_view.addAction('SMD Info',self.smd_info_viewer.toggle)
 		self.menu_view.addAction('Molecule Table',self.molecules_viewer.toggle,'Ctrl+T')
 		self.menu_view.addAction('Preferences',self.preferences_viewer.toggle,'Ctrl+P')
+		self.menu_view.addAction('Show Log',self.show_log)
 		self.menu_other.addAction(self.hdf5_viewer.action)
 
 		self.menu_scripts.addAction('Run Script',lambda:ui_scripts.run(self),'Ctrl+R')
@@ -440,6 +442,33 @@ class main_window(QMainWindow):
 		app.processEvents()
 		self.show()
 		self.plot_container.plot.redrawplot() ## it is necessary to draw/resize after showing the interface, otherwise the DPI is messed up
+
+	def show_log(self,event=None):
+		w = QMainWindow(parent=self)
+		w.setWindowTitle('Log')
+		w.resize(1000,200)
+		w.closeEvent = lambda e: w.deleteLater()
+
+		te = QPlainTextEdit(parent=w)
+		te.setPlainText(self.maven.get_log())
+		te.verticalScrollBar().setValue(te.verticalScrollBar().maximum())
+		te.setReadOnly(True)
+		from PyQt5.Qt import QFont,QFontDatabase
+		monospace = QFont(QFontDatabase.systemFont(QFontDatabase.FixedFont))
+		te.setFont(monospace)
+
+		def _updatelog():
+			lt = self.maven.get_log()
+			if te.toPlainText() != lt:
+				te.setPlainText(lt)
+				te.verticalScrollBar().setValue(te.verticalScrollBar().maximum())
+		timer = QTimer(parent=w)
+		timer.setInterval(1000) ## 25 FPS = 40 msec
+		timer.timeout.connect(_updatelog)
+		timer.start()
+		w.setCentralWidget(te)
+		te.show()
+		w.show()
 
 
 	def quit(self, event=None):

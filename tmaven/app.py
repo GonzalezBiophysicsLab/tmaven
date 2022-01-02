@@ -1,49 +1,15 @@
 import os
 import sys
 import logging
-import platform
-
-def setup_logging(stdout=False):
-	log = logging.getLogger()
-	log.setLevel(logging.DEBUG)
-	logging.getLogger("matplotlib").setLevel(logging.WARNING)
-	logging.getLogger("numba").setLevel(logging.WARNING)
-	logging.getLogger("h5py").setLevel(logging.WARNING)
-	logging.getLogger("tmaven.controllers.prefs").setLevel(logging.WARNING)
-
-	log_fmt = ("%(asctime)s: %(name)s.%(funcName)s(%(lineno)d): %(message)s")
-	formatter = logging.Formatter(log_fmt)
-
-	stdout_handler = logging.StreamHandler()
-	stdout_handler.setFormatter(formatter)
-	stdout_handler.setLevel(logging.DEBUG)
-
-	if stdout:
-		log.addHandler(stdout_handler)
+logger = logging.getLogger('tmaven')
 
 def setup_maven(args=[]):
-	for a in args:
-		if a.startswith('--log_stdout'):
-			setup_logging(stdout=True)
-
-	from . import __version__
-	logging.info("Starting tmaven {}".format(__version__))
-	logging.info(platform.uname())
-	logging.info("Platform: {}".format(platform.platform()))
-	logging.info("Python path: \n   {}".format('\n   '.join(sys.path)))
-
-	import pkg_resources
-	these_pkgs = ['matplotlib','scipy','numpy','h5py','numba','PyQt5']
-	packages = '\n   '.join(['{} {}'.format(d.project_name, d.version) for d in pkg_resources.working_set if d.project_name in these_pkgs])
-	logging.info('packages:\n   '+packages)
-
 	from .maven import maven_class
-	maven = maven_class()
-	logging.getLogger("tmaven.controllers.prefs").setLevel(logging.INFO)
+	maven = maven_class(log_stdout='--log_stdout' in args)
 	return maven
 
 def setup_gui(maven,args=[]):
-	logging.info("Launching GUI")
+	logger.info("Launching GUI")
 	from PyQt5.QtCore import Qt
 	from PyQt5.QtWidgets import QApplication
 
@@ -72,9 +38,9 @@ def setup_gui(maven,args=[]):
 	app.setApplicationVersion(__version__)
 	app.setAttribute(Qt.AA_DontShowIconsInMenus)
 
-	logging.getLogger("tmaven.controllers.prefs").setLevel(logging.WARNING)
+	# logging.getLogger("tmaven").setLevel(logging.WARNING)
 	gui = main_window(maven,app)
-	logging.getLogger("tmaven.controllers.prefs").setLevel(logging.INFO)
+	# logging.getLogger("tmaven").setLevel(logging.INFO)
 	app.setWindowIcon(load_icon('logo.png'))
 
 	for a in args:

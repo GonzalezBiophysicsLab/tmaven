@@ -34,7 +34,7 @@ class controller_scripts(object):
 		try:
 			plugin = open(fname,'r').read()
 		except Exception as e:
-			logger.error('Script: could not open script file %s\n%s'%(fname,str(e)))
+			logging.error('Script: could not open script file %s\n%s'%(fname,str(e)))
 			return False
 
 		try:
@@ -43,6 +43,6 @@ class controller_scripts(object):
 			context = {'maven':self.maven} ## this will hold all of the elements in the plugin file... eg functions, global variables.
 			exec(code,context)
 		except Exception as e:
-			logger.error(str(e))
+			logging.error(str(e))
 			return False
 		return True

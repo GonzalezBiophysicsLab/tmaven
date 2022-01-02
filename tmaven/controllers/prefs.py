@@ -57,7 +57,7 @@ class prefs_object(dict):
 			pi = pref_item(key,val,type(val))
 			dict.__setitem__(self,key,pi)
 			if not quiet: self.emit_changed()
-			logger.info('preference new %s:%s:%s'%(key,pi.dtype,pi.val))
+			# logger.info('preference new %s:%s:%s'%(key,pi.dtype,pi.val))
 
 	def __getitem__(self, key):
 		''' return the value, not a preference_item '''
@@ -140,7 +140,7 @@ class prefs_object(dict):
 				return
 		except:
 			pass
-		logger.error('Failed to load preferences from %s'%(fname))
+		logging.error('Failed to load preferences from %s'%(fname))
 
 	def save(self,fname=None):
 		'''Save the current preferences into a text file
@@ -163,7 +163,7 @@ class prefs_object(dict):
 				f.write(ps[1:-1])
 			logger.info('Saved preferences to %s'%(fname))
 		except:
-			logger.error('Failed to save preferences to %s'%(fname))
+			logging.error('Failed to save preferences to %s'%(fname))
 
 
 

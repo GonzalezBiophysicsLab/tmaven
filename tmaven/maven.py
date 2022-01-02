@@ -1,15 +1,57 @@
-### borrows heavily from Mu-editor. Lots of credit to them
+import logging
+logger = logging.getLogger('tmaven')
+logger.setLevel(logging.DEBUG)
+# log_fmt = ("%(name)s.%(funcName)s(%(lineno)d): %(message)s")
+log_fmt = ("[(%(lineno)4s:%(filename)s %(funcName)s)  %(message)s]")
+formatter = logging.Formatter(log_fmt)
+logging.getLogger("matplotlib").setLevel(logging.WARNING)
+logging.getLogger("numba").setLevel(logging.WARNING)
+logging.getLogger("h5py").setLevel(logging.WARNING)
 
 import os
 import sys
-import functools
 import numpy as np
-import logging
-logger = logging.getLogger(__name__)
 
 class maven_class(object):
-	def __init__(self):
+	def __init__(self,log_stdout=False):
 		super().__init__()
+		self.setup_logging(log_stdout)
+		self.initialize_objects()
+
+	def setup_logging(self,log_stdout):
+		from io import StringIO
+
+		self.log_stream = StringIO()
+		str_handler = logging.StreamHandler(self.log_stream)
+		str_handler.setFormatter(formatter)
+		str_handler.setLevel(logging.DEBUG)
+		logger.addHandler(str_handler)
+
+		if log_stdout:
+			stdout_handler = logging.StreamHandler()
+			stdout_handler.setFormatter(formatter)
+			stdout_handler.setLevel(logging.DEBUG)
+			logger.addHandler(stdout_handler)
+
+		# logging.getLogger("tmaven.controllers.prefs").setLevel(logging.WARNING)
+
+		from . import __version__
+		logger.info("Starting tmaven {}".format(__version__))
+
+		import platform
+		logger.info(platform.uname())
+		logger.info("Platform: {}".format(platform.platform()))
+		logger.info("\nPython path: \n   {}".format('\n   '.join(sys.path)))
+
+		import pkg_resources
+		these_pkgs = ['matplotlib','scipy','numpy','h5py','numba','PyQt5']
+		packages = '\n   '.join(['{} {}'.format(d.project_name, d.version) for d in pkg_resources.working_set if d.project_name in these_pkgs])
+		logger.info('\nLibrary Versions:\n   '+packages)
+
+	def get_log(self):
+		return self.log_stream.getvalue()
+
+	def initialize_objects(self):
 		logger.info("Setting up maven")
 
 		from .controllers import prefs_object, default_prefs

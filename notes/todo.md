@@ -5,4 +5,3 @@
 - translate autocorrelation plot into new format
 - translate source splot into new format? bleh
 - add menubar to popplot where you can autoload prefs, reset to default, refresh etc....
-- clear data should also clear the trace plot
