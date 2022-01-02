@@ -1,13 +1,13 @@
 from PyQt5.QtWidgets import QInputDialog, QMenu, QAction
 
 def build_menu(gui):
-	menu = QMenu('Cull')
+	menu = QMenu('Cull',gui)
 	menu.addAction('Cull class', lambda: cull_class(gui))
 	menu.addAction('Cull minimums', lambda: cull_min(gui))
 	menu.addAction('Cull maximums', lambda: cull_max(gui))
 	menu.addAction('Cull short', lambda: cull_short(gui))
-	from ..interface.stylesheet import ss_qmenu
-	menu.setStyleSheet(ss_qmenu)
+	# from ..interface.stylesheet import ss_qmenu
+	# menu.setStyleSheet(ss_qmenu)
 	return menu
 
 def cull_min(gui):

@@ -20,8 +20,8 @@ def reset(gui):
 def build_menu(gui):
 	## Qt
 	from PyQt5.QtWidgets import QMenu
-	menu = QMenu('Corrections')
-	menu_filter = QMenu('Filter')
+	menu = QMenu('Corrections',gui)
+	menu_filter = QMenu('Filter',gui)
 
 	### Corrections
 	menu.addMenu(menu_filter)
@@ -38,6 +38,6 @@ def build_menu(gui):
 	menu.addAction('Gamma',gui.maven.corrections.gamma)
 
 
-	from .stylesheet import ss_qmenu
-	[m.setStyleSheet(ss_qmenu) for m in [menu,menu_filter]]
+	# from .stylesheet import ss_qmenu
+	# [m.setStyleSheet(ss_qmenu) for m in [menu,menu_filter]]
 	return menu,menu_filter

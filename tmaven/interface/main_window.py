@@ -3,22 +3,18 @@ import logging
 logging.getLogger("matplotlib").setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 
-from PyQt5.QtWidgets import QMainWindow,QDesktopWidget,QLabel,QMessageBox,QShortcut,QPushButton,QMenu,QAction,QStyleFactory,QSlider, QSizePolicy, QTreeWidget, QTreeWidgetItem, QDockWidget, QLabel, QHBoxLayout
-from PyQt5.QtGui import QIcon, QKeySequence
+from PyQt5.QtWidgets import QApplication,QMainWindow,QDesktopWidget,QLabel,QMessageBox,QShortcut,QPushButton,QMenu,QAction,QStyleFactory,QSlider, QSizePolicy, QTreeWidget, QTreeWidgetItem, QDockWidget, QLabel, QHBoxLayout
+from PyQt5.QtGui import QIcon, QKeySequence, QPalette, QColor
 from PyQt5.QtCore import Qt, pyqtSignal
 import matplotlib
 matplotlib.use('Qt5Agg') ## forces Qt5 early on...
 
 import numpy as np
-from . import stylesheet
 from .resources import load_pixmap, load_icon
 
 class_keys = {Qt.Key_1:1,Qt.Key_2:2,Qt.Key_3:3,Qt.Key_4:4,Qt.Key_5:5,Qt.Key_6:6,Qt.Key_7:7,Qt.Key_8:8,Qt.Key_9:9,Qt.Key_0:0}
 
 class main_window(QMainWindow):
-	new_selection_all = pyqtSignal(np.ndarray)
-	new_selection_last = pyqtSignal(np.ndarray)
-	# update_slider_signal = pyqtSignal(int)
 	data_update = pyqtSignal()
 	pref_edited = pyqtSignal()
 
@@ -30,12 +26,14 @@ class main_window(QMainWindow):
 		self.desired_index = 0
 		self.timer = None
 		self.initialize_widgets()
+		self.show()
 
 	def initialize_widgets(self):
 		## window style
 		self.setWindowTitle('tMAVEN')
-		self.setStyle(QStyleFactory.create('Fusion')) ## WOW THIS THROWS RANDOM SEGFAULTS WHEN QUITTING
-		self.setStyleSheet(stylesheet.ui_stylesheet)
+		from .stylesheet import ui_stylesheet
+		self.setStyleSheet(ui_stylesheet)
+		self.setStyle(QStyleFactory.create('Fusion')) ## WOW THIS THROWS RANDOM SEGFAULTS WHEN QUITTING?
 		self.setWindowIcon(load_icon('logo.png'))
 		self.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding)
 		self.closeEvent = self.quit
@@ -72,10 +70,10 @@ class main_window(QMainWindow):
 		from .viewer_prefs import preferences_viewer
 		self.preferences_viewer = preferences_viewer(self)
 
-		#### smd info
-		from .viewer_smd_info import smd_info_viewer
-		self.smd_info_viewer = smd_info_viewer(self)
-		# self.smd_info_viewer.toggle()
+		# #### smd info
+		# from .viewer_smd_info import smd_info_viewer
+		# self.smd_info_viewer = smd_info_viewer(self)
+		# # self.smd_info_viewer.toggle()
 
 		## hdf5 explorer
 		from .hdf5_view.hdf5_view import hdf5_view_container
@@ -85,7 +83,7 @@ class main_window(QMainWindow):
 		## menu
 		self.menubar = self.menuBar()
 		self.menubar.setNativeMenuBar(False)
-		self.menubar.setStyleSheet(stylesheet.ss_qmenubar)
+		# self.menubar.setStyleSheet(stylesheet.ss_qmenubar)
 		self.reset_menus()
 
 		#### total layout
@@ -93,14 +91,14 @@ class main_window(QMainWindow):
 		self._qw = QWidget()
 		self.vbox = QVBoxLayout()
 		# self.vbox.addWidget(self.molecule_group_viewer)
-		qw = QWidget()
+		self.qw = QWidget()
 		hbox = QHBoxLayout()
 		hbox.addWidget(self.slider_select)
 		hbox.addWidget(self.label_molnum)
-		qw.setLayout(hbox)
-		self.vbox.addStretch(1)
+		self.qw.setLayout(hbox)
+		# self.vbox.addStretch(1)
 		self.vbox.addWidget(self.plot_container)
-		self.vbox.addWidget(qw)
+		self.vbox.addWidget(self.qw)
 		self._qw.setSizePolicy(QSizePolicy.MinimumExpanding,QSizePolicy.MinimumExpanding)
 		self._qw.setLayout(self.vbox)
 		self.setCentralWidget(self._qw)
@@ -114,9 +112,6 @@ class main_window(QMainWindow):
 		self.maven.prefs.emit_changed = lambda : self.pref_edited.emit()
 		self.data_update.connect(self.proc_data_update)
 		self.maven.emit_data_update()
-
-		self.show()
-		self.plot_container.plot.redrawplot()
 
 	def reset_menus(self):
 		from . import ui_io, ui_scripts, ui_cull, ui_corrections, ui_selection, ui_photobleaching, ui_trace_filter
@@ -149,8 +144,14 @@ class main_window(QMainWindow):
 		self.menu_prefs.addAction('Save Preferences',self.preferences_viewer.save)
 		self.menu_file.addAction('Exit',self.quit,'Ctrl+Q')
 
-		self.menu_view.addAction('Reset GUI Size',self.size_window)
-		self.menu_view.addAction('SMD Info',self.smd_info_viewer.toggle)
+		self.menu_view.addAction('Reset GUI',self.default_session)
+		self.menu_traj = self.menu_view.addMenu('Plot Type')
+		self.menu_traj.addAction('ND',lambda : self.plot_container.change_mode('ND'))
+		self.menu_traj.addAction('smFRET',lambda : self.plot_container.change_mode('smFRET'))
+		self.menu_theme = self.menu_view.addMenu('Theme')
+		self.menu_theme.addAction('Light',self.change_theme_light)
+		self.menu_theme.addAction('Dark',self.change_theme_dark)
+		# self.menu_view.addAction('SMD Info',self.smd_info_viewer.toggle)
 		self.menu_view.addAction('Molecule Table',self.molecules_viewer.toggle,'Ctrl+T')
 		self.menu_view.addAction('Preferences',self.preferences_viewer.toggle,'Ctrl+P')
 		self.menu_other.addAction(self.hdf5_viewer.action)
@@ -171,8 +172,8 @@ class main_window(QMainWindow):
 		self.menu_plots.addAction('FRET TDP',lambda : popplot_container(self,self.maven.plots.fret_tdp))
 		self.menu_plots.addAction('vb Model States',lambda : popplot_container(self,self.maven.plots.model_vbstates))
 
-		for menu in [self.menu_file,self.menu_tools,self.menu_other,self.menu_view,self.menu_prefs,self.menu_scripts,self.menu_plots]:
-			menu.setStyleSheet(stylesheet.ss_qmenu)
+		# for menu in [self.menu_file,self.menu_tools,self.menu_other,self.menu_view,self.menu_prefs,self.menu_scripts,self.menu_plots]:
+			# menu.setStyleSheet(stylesheet.ss_qmenu)
 
 		self.menubar.addMenu(self.menu_file)
 		self.menubar.addMenu(self.menu_view)
@@ -180,7 +181,6 @@ class main_window(QMainWindow):
 		self.menubar.addMenu(self.menu_modeler)
 		self.menubar.addMenu(self.menu_plots)
 		self.menubar.addMenu(self.menu_other)
-
 
 	def clear_data(self):
 		from PyQt5.QtWidgets import QMessageBox
@@ -233,6 +233,7 @@ class main_window(QMainWindow):
 		elif event.key() in class_keys:
 			new_class_ind = class_keys[kk]
 			self.maven.data.classes[self.index] = new_class_ind
+			self.update_mol_label()
 		else:
 			super().keyPressEvent(event)
 			return
@@ -246,12 +247,19 @@ class main_window(QMainWindow):
 		self.slider_select.blockSignals(False)
 
 	def proc_data_update(self):
-		self.plot_container.plot.update_data(self.index)
-		self.label_molnum.setText('{}/{}'.format(self.index,self.maven.data.nmol-1))
+		if not self.plot_mode is None:
+			self.plot_container.plot.update_data(self.index)
+		self.update_mol_label()
 		self.slider_select.blockSignals(True)
 		self.slider_select.setValue(self.index)
 		self.slider_select.setRange(0,self.maven.data.nmol-1)
 		self.slider_select.blockSignals(False)
+
+	def update_mol_label(self):
+		msg = '{}/{}'.format(self.index, self.maven.data.nmol-1)
+		if self.maven.data.nmol > 0:
+			msg += ' {}'.format(self.maven.data.classes[self.index])
+		self.label_molnum.setText(msg)
 
 	def change_index(self,new_index):
 		if self.maven.data.nmol == 0:
@@ -295,6 +303,70 @@ class main_window(QMainWindow):
 		screen = QDesktopWidget().screenGeometry()
 		return screen.width(), screen.height()
 
+	def default_session(self):
+		self.plot_container.change_mode('smFRET')
+		self.size_window()
+		self.show()
+		# self.plot_container.plot.redrawplot() ## it is necessary to draw/resize after showing the interface, otherwise the DPI is messed up
+		self.change_theme_light() ## redrawplot called in this fxn too
+
+	def dark_theme(self):
+		dark_palette = QPalette()
+		dark_palette.setColor(QPalette.Window, QColor(53, 53, 53))
+		dark_palette.setColor(QPalette.WindowText, Qt.white)
+		dark_palette.setColor(QPalette.Base, QColor(25, 25, 25))
+		dark_palette.setColor(QPalette.AlternateBase, QColor(53, 53, 53))
+		dark_palette.setColor(QPalette.ToolTipBase, Qt.white)
+		dark_palette.setColor(QPalette.ToolTipText, Qt.white)
+		dark_palette.setColor(QPalette.Text, Qt.white)
+		dark_palette.setColor(QPalette.Button, QColor(53, 53, 53))
+		dark_palette.setColor(QPalette.ButtonText, Qt.white)
+		dark_palette.setColor(QPalette.BrightText, Qt.red)
+		dark_palette.setColor(QPalette.Link, QColor(42, 130, 218))
+		dark_palette.setColor(QPalette.Highlight, QColor(42, 130, 218))
+		dark_palette.setColor(QPalette.HighlightedText, Qt.black)
+		return dark_palette
+
+	def light_theme(self):
+
+		# app.setStyle("Fusion")
+		light_palette = QPalette()
+		light_palette.setColor(QPalette.Window, QColor(255,255,255))
+		light_palette.setColor(QPalette.WindowText, Qt.black)
+		light_palette.setColor(QPalette.Base, QColor(230, 230, 230))
+		# light_palette.setColor(QPalette.AlternateBase, QColor(53, 53, 53))
+		# light_palette.setColor(QPalette.ToolTipBase, Qt.white)
+		# light_palette.setColor(QPalette.ToolTipText, Qt.white)
+		# light_palette.setColor(QPalette.Text, Qt.white)
+		# light_palette.setColor(QPalette.Button, QColor(53, 53, 53))
+		# light_palette.setColor(QPalette.ButtonText, Qt.white)
+		# light_palette.setColor(QPalette.BrightText, Qt.red)
+		# light_palette.setColor(QPalette.Link, QColor(42, 130, 218))
+		# light_palette.setColor(QPalette.Highlight, QColor(42, 130, 218))
+		# light_palette.setColor(QPalette.HighlightedText, Qt.black)
+		return light_palette
+
+	def _change_theme(self,palette):
+		app = QApplication.instance()
+		app.setPalette(palette)
+		self.menubar.setPalette(palette)
+		self.preferences_viewer.update_theme(palette)
+		self.molecules_viewer.update_theme(palette)
+		self.plot_container.update_toolbar_theme()
+		self.label_molnum.setPalette(palette)
+
+	def change_theme_dark(self):
+		palette = self.dark_theme()
+		self.lightdark_mode = 'dark'
+		self.maven.prefs['plot.bg_color'] = '#353535'
+		self._change_theme(palette)
+
+	def change_theme_light(self):
+		palette = self.light_theme()
+		self.lightdark_mode = 'light'
+		self.maven.prefs['plot.bg_color'] = '#FFFFFF'
+		self._change_theme(palette)
+
 	def size_window(self, x=None, y=None, w=None, h=None):
 		"""
 		Makes the editor 80% of the width*height of the screen and centres it
@@ -334,6 +406,7 @@ class main_window(QMainWindow):
 
 		if not os.path.isfile(config_file):
 			logger.info('Cannot find a previous session to load')
+			self.default_session()
 			return
 
 		with open(config_file,'r') as f:
@@ -344,7 +417,27 @@ class main_window(QMainWindow):
 		y = session['window']['y'] if 'y' in session['window'] else None
 		w = session['window']['w'] if 'w' in session['window'] else None
 		h = session['window']['h'] if 'h' in session['window'] else None
+
+		lightdark_mode = session['lightdark_mode'] if 'lightdark_mode' in session else 'light'
+		if lightdark_mode == 'light':
+			palette = self.light_theme()
+			self.maven.prefs['plot.bg_color'] = '#FFFFFF'
+			self.lightdark_mode = 'light'
+		elif lightdark_mode == 'dark':
+			palette = self.dark_theme()
+			self.maven.prefs['plot.bg_color'] = '#353535'
+			self.lightdark_mode = 'dark'
+
+		plot_mode = session['plot_mode'] if 'plot_mode' in session else 'smFRET'
+		self.plot_container.change_mode(plot_mode)
 		self.size_window(x,y,w,h)
+		app = QApplication.instance()
+		app.setPalette(palette)
+		# app.setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }")
+		app.processEvents()
+		self.show()
+		self.plot_container.plot.redrawplot() ## it is necessary to draw/resize after showing the interface, otherwise the DPI is messed up
+
 
 	def quit(self, event=None):
 		"""
@@ -356,7 +449,7 @@ class main_window(QMainWindow):
 		message_box.setWindowTitle("tMAVEN")
 		message_box.setStandardButtons(message_box.Cancel | message_box.Ok)
 		message_box.setDefaultButton(message_box.Cancel)
-		message_box.setStyleSheet('''background-color:white;font-size: 12px;''')
+		# message_box.setStyleSheet('''background-color:white;font-size: 12px;''')
 
 		result = message_box.exec()
 
@@ -371,7 +464,9 @@ class main_window(QMainWindow):
 				"y": self.y(),
 				"w": self.width(),
 				"h": self.height(),
-			}#,
+			},
+			"plot_mode": self.plot_mode,
+			"lightdark_mode" : self.lightdark_mode,
 			# "window.group": {
 			# 	"on": self.gui.molecule_group_viewer.menu_tabs.actions()[0].isChecked(),
 			# 	"id": self.gui.molecule_group_viewer.menu_tabs.actions()[2].isChecked(),

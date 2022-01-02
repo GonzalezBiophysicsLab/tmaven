@@ -150,8 +150,8 @@ def build_menu(gui):
 	menu_selection.addMenu(menu_on)
 	menu_selection.addMenu(menu_off)
 
-	from .stylesheet import ss_qmenu
-	for m in [menu_selection,menu_on,menu_off]:
-		m.setStyleSheet(ss_qmenu)
+	# from .stylesheet import ss_qmenu
+	# for m in [menu_selection,menu_on,menu_off]:
+		# m.setStyleSheet(ss_qmenu)
 
 	return menu_selection,menu_on,menu_off

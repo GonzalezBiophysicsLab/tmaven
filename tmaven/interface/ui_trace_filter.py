@@ -23,15 +23,15 @@ class container_trace_filter(QObject):
 			del self._window
 		except:
 			pass
-		self._window = gui_trace_filter(self.gui.maven)
+		self._window = gui_trace_filter(self.gui.maven,self.gui)
 		self._window.setWindowTitle('Selection Classifier')
 		self._window.show()
 
 
 class gui_trace_filter(QMainWindow):
 	'''QMainWindow to popout the UI'''
-	def __init__(self,maven):
-		super(QMainWindow,self).__init__()
+	def __init__(self,maven,parent):
+		super(QMainWindow,self).__init__(parent=parent)
 		self.maven = maven
 
 		cqw = QWidget()

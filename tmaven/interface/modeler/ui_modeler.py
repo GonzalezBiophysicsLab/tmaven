@@ -9,8 +9,8 @@ def build_menu(gui):
 	logger.info('Adding menu modeler')
 
 	menu_modeler = QMenu('Modeling',gui)
-	from ..stylesheet import ss_qmenu
-	menu_modeler.setStyleSheet(ss_qmenu)
+	# from ..stylesheet import ss_qmenu
+	# menu_modeler.setStyleSheet(ss_qmenu)
 
 	gui.clear_model = lambda : clear_model(gui)
 	gui.change_model = lambda : change_model(gui)

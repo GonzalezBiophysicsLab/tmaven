@@ -1,6 +1,4 @@
-from PyQt5.QtWidgets import QWidget,QSizePolicy,QVBoxLayout,QWidget, QMenu, QAction,QApplication
-from PyQt5.QtCore import pyqtSignal,QSize,Qt
-from PyQt5.QtGui import QScreen
+from PyQt5.QtWidgets import QWidget,QVBoxLayout
 import numpy as np
 import logging
 logger = logging.getLogger(__name__)
@@ -9,6 +7,7 @@ class plot_container(QWidget):
 	def __init__(self,gui):
 		super().__init__()
 		self.gui = gui
+		self.gui.plot_mode = None
 
 		self.vbox = QVBoxLayout()
 		self.plot = QWidget()
@@ -18,13 +17,19 @@ class plot_container(QWidget):
 		self.vbox.addWidget(self.toolbar)
 		self.setLayout(self.vbox)
 
-		self.setup_fret()
+	def change_mode(self,mode):
+		if mode == 'smFRET':
+			from .fret_plot import fret_canvas
+			self.change_plotter(fret_canvas)
+			self.gui.plot_mode = 'smFRET'
 
-	def setup_fret(self):
-		from .fret_plot import fret_canvas,default_prefs
-		self.gui.maven.prefs.add_dictionary(default_prefs)
-		self.change_plotter(fret_canvas)
-		self.plot.initialize_plots()
+		elif mode == 'ND':
+			from .nd_plot import nd_canvas
+			self.change_plotter(nd_canvas)
+			self.gui.plot_mode = 'ND'
+
+	def default_prefs(self):
+		return {}
 
 	def change_plotter(self,canvas):
 		logger.info('New plot container')
@@ -38,31 +43,47 @@ class plot_container(QWidget):
 		try: self.gui.data_update.disconnect(self.plot.initialize_plots)
 		# except Exception as e: logger.error(e)
 		except: pass
-		self.timer = None
+		self.gui.timer = None
 
 		from ..interface.stylesheet import ui_stylesheet
 		temp_plot = canvas(self.gui)
-		temp_plot.setStyleSheet(ui_stylesheet)
-		temp_plot.toolbar.setStyleSheet('''
-			QToolBar{border:none; background-color:white; spacing:0px;}
-			QToolBar::separator{background: white}
-			QToolButton::hover{background-color:lightgray;}''')
+		# temp_plot.setStyleSheet(ui_stylesheet)
 
 		self.vbox.replaceWidget(self.toolbar,temp_plot.toolbar)
 		self.vbox.replaceWidget(self.plot,temp_plot)
-		del self.toolbar
-		del self.plot
+		self.toolbar.deleteLater()
+		self.plot.deleteLater()
 		self.toolbar = temp_plot.toolbar
+		self.update_toolbar_theme()
 		self.plot = temp_plot
 
 		self.gui.pref_edited.connect(self.plot.redrawplot)
 		# self.gui.new_selection_last.connect(self.catch_selection_change)
 		self.gui.data_update.connect(self.plot.initialize_plots)
-		# self.plot.redrawplot()
-
 
 		# sel = self.gui.maven.selection.selected
 		# if not sel is None:
 		# 	self.catch_selection_change(sel)
 		# else:
 		# 	self.catch_selection_change([0])
+
+		# self.plot.initialize_plots()
+
+		# from PyQt5.QtWidgets import QApplication
+		# QApplication.instance().processEvents()
+		# self.gui.show()
+		# self.gui.proc_data_update()
+		# self.plot.draw()
+
+		# self.plot.show()
+		self.plot.redrawplot()
+
+	def update_toolbar_theme(self):
+		if self.gui.lightdark_mode == 'light':
+			ldc = 'white'
+		elif self.gui.lightdark_mode == 'dark':
+			ldc = '#353535'
+		self.toolbar.setStyleSheet('''QToolBar{border:none; background-color:%s; spacing:0px;}
+			QToolBar::separator{background: %s}
+			QToolButton::hover{background-color:lightgray;}'''%(ldc,ldc))
+		self.toolbar.repaint()

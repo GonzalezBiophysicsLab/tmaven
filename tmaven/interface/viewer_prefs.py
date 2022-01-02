@@ -8,20 +8,30 @@ class preferences_viewer(QObject):
 	def __init__(self,gui):
 		super().__init__()
 		self.gui = gui
-		self.viewer = prefs_widget()
+		self.viewer = prefs_widget(parent=self.gui)
 		self.prefs_model = pref_model(self.gui.maven)
 		self.viewer.set_model(self.prefs_model)
 
-		self.dock = QDockWidget("Preferences")
-		from .stylesheet import ss_qdockwidget,ss_qtableview
-		self.dock.setStyleSheet(ss_qdockwidget)
-		self.viewer.setStyleSheet(ss_qtableview)
+		self.dock = QDockWidget("Preferences",self.gui)
+		# from .stylesheet import ss_qdockwidget,ss_qtableview
+		# self.dock.setStyleSheet(ss_qdockwidget)
+		# self.viewer.setStyleSheet(ss_qtableview)
 		self.dock.setWidget(self.viewer)
 		self.dock.setFeatures(QDockWidget.AllDockWidgetFeatures)
 		self.dock.setAllowedAreas(Qt.TopDockWidgetArea | Qt.BottomDockWidgetArea | Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
 		self.gui.addDockWidget(Qt.LeftDockWidgetArea, self.dock)
 		self.dock.hide()
 		# self.dock.closeEvent = lambda e: self.toggle()
+
+	def update_theme(self,palette):
+		self.viewer.setPalette(palette)
+		self.dock.setPalette(palette)
+		self.viewer.le_filter.setPalette(palette)
+		self.viewer.proxy_view.setPalette(palette)
+		self.viewer.proxy_view.horizontalHeader().setPalette(palette)
+		self.viewer.proxy_view.verticalHeader().setPalette(palette)
+		self.viewer.proxy_view.verticalScrollBar().setPalette(palette)
+		self.viewer.proxy_view.horizontalScrollBar().setPalette(palette)
 
 	def toggle(self):
 		if self.dock.isHidden():
@@ -163,8 +173,8 @@ class prefs_widget(QWidget):
 
 
 	'''
-	def __init__(self):
-		super().__init__()
+	def __init__(self,parent=None):
+		super().__init__(parent=parent)
 		self.setWindowTitle("Preferences")
 		self.setup_widgets()
 
@@ -182,10 +192,10 @@ class prefs_widget(QWidget):
 
 
 	def setup_widgets(self):
-		self.proxy_model = QSortFilterProxyModel()
+		self.proxy_model = QSortFilterProxyModel(parent=self.parent())
 		self.proxy_model.setDynamicSortFilter(True)
 
-		self.proxy_view = QTableView()
+		self.proxy_view = QTableView(parent=self.parent())
 		# self.delegate = precision_delegate()
 		# self.delegate.refocus = self.refocus_le
 		# self.proxy_view.setItemDelegate(self.delegate)
@@ -199,7 +209,7 @@ class prefs_widget(QWidget):
 		# self.proxy_view.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 		# self.proxy_view.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
-		self.le_filter = QLineEdit()
+		self.le_filter = QLineEdit(parent=self.parent())
 		self.le_filter.textChanged.connect(self.filter_regex_changed)
 		self.le_filter.setPlaceholderText("Filter")
 

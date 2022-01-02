@@ -9,8 +9,8 @@ import os
 def build_menu(gui):
 	from PyQt5.QtWidgets import QMenu, QAction
 
-	menu_load = QMenu('Load')
-	menu_save = QMenu('Export')
+	menu_load = QMenu('Load',gui)
+	menu_save = QMenu('Export',gui)
 
 	### Load
 	menu_load.addAction('Load (SMD)',lambda : load_interactive(gui),shortcut='Ctrl+O')
@@ -29,8 +29,8 @@ def build_menu(gui):
 	menu_other.addAction('Save raw (numpy)',lambda : export_numpy(gui))
 	menu_other.addAction('Save classes (txt)',lambda : export_text(gui))
 
-	from ..interface.stylesheet import ss_qmenu
-	[m.setStyleSheet(ss_qmenu) for m in [menu_load,menu_save,menu_raw,menu_other]]
+	# from ..interface.stylesheet import ss_qmenu
+	# [m.setStyleSheet(ss_qmenu) for m in [menu_load,menu_save,menu_raw,menu_other]]
 	return menu_load,menu_save
 
 def get_filenames(gui):

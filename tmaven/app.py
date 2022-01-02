@@ -91,14 +91,18 @@ def run_app(args=[]):
 	maven  = setup_maven(args)
 	app, gui = setup_gui(maven,args)
 
-	# Restore the previous session
+	# Restore the previous session?
 	if not '--safe_mode' in args:
 		gui.restore_session()
+	else:
+		gui.default_session()
+
 	for a in args:
 		if a.startswith('--startup='):
 			script_name = a[10:]
 			maven.scripts.run(script_name)
 		else: ### This is where other command line options are added
 			pass
+
 
 	sys.exit(app.exec_())

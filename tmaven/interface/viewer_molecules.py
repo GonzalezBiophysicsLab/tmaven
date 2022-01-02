@@ -4,6 +4,46 @@ import numpy as np
 
 class_keys = {Qt.Key_1:1,Qt.Key_2:2,Qt.Key_3:3,Qt.Key_4:4,Qt.Key_5:5,Qt.Key_6:6,Qt.Key_7:7,Qt.Key_8:8,Qt.Key_9:9,Qt.Key_0:0}
 
+class molecules_viewer(QObject):
+	def __init__(self,gui):
+		super().__init__()
+		self.gui = gui
+		self.viewer = molecules_widget(self.gui)
+		self.gui.data_update.connect(self.viewer.model.layoutChanged.emit)
+		self.dock = QDockWidget("Molecule Table",self.gui)
+
+		# from .stylesheet import ss_qdockwidget
+		# self.dock.setStyleSheet(ss_qdockwidget)
+		self.dock.setWidget(self.viewer)
+		self.dock.setFeatures(QDockWidget.AllDockWidgetFeatures)
+		self.dock.setAllowedAreas(Qt.TopDockWidgetArea | Qt.BottomDockWidgetArea | Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
+		self.gui.addDockWidget(Qt.LeftDockWidgetArea, self.dock)
+		self.dock.hide()
+		# self.dock.closeEvent = lambda e: self.toggle()
+
+	def update_theme(self,palette):
+		self.dock.setPalette(palette)
+		self.viewer.setPalette(palette)
+		self.viewer.horizontalHeader().setPalette(palette)
+		self.viewer.verticalHeader().setPalette(palette)
+		self.viewer.verticalScrollBar().setPalette(palette)
+		self.viewer.horizontalScrollBar().setPalette(palette)
+		for c in self.viewer.children():
+			try: c.setPalette(palette)
+			except: pass
+
+	def toggle(self):
+		if self.dock.isHidden():
+			self.dock.show()
+			if not self.gui.preferences_viewer.dock.isHidden():
+				self.gui.tabifyDockWidget(self.gui.preferences_viewer.dock,self.dock)
+		self.dock.raise_()
+
+	def update(self):
+		if not self.viewer is None:
+			self.viewer.model.dataChanged.emit(QModelIndex(),QModelIndex())
+
+
 class molecules_model(QAbstractTableModel):
 	'''
 	'''
@@ -172,11 +212,11 @@ class molecules_widget(QTableView):
 	def __init__(self,gui):
 		super().__init__()
 		self.gui = gui
-		self.wheelEvent = super().wheelEvent
+		# self.wheelEvent = super().wheelEvent
 
-		from .stylesheet import ss_qtableview
-		self.setStyleSheet(ss_qtableview)
-
+		# from .stylesheet import ss_qtableview
+		# self.setStyleSheet(ss_qtableview)
+		#
 		self.model = molecules_model(self.gui)
 		super().setModel(self.model)
 
@@ -187,7 +227,6 @@ class molecules_widget(QTableView):
 		# self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 		self.setSizePolicy(QSizePolicy.MinimumExpanding,QSizePolicy.MinimumExpanding)
 		self.resizeColumnsToContents()
-
 
 	def get_selection(self):
 		all = np.array([])
@@ -222,33 +261,3 @@ class molecules_widget(QTableView):
 			self.gui.vbox.insertStretch(0)
 		else:
 			self.gui.vbox.removeItem(self.gui.vbox.itemAt(0))
-
-
-class molecules_viewer(QObject):
-	def __init__(self,gui):
-		super().__init__()
-		self.gui = gui
-		self.viewer = molecules_widget(self.gui)
-		self.gui.data_update.connect(self.viewer.model.layoutChanged.emit)
-		self.dock = QDockWidget("Molecule Table")
-
-		from .stylesheet import ss_qdockwidget
-		self.dock.setStyleSheet(ss_qdockwidget)
-		self.dock.setWidget(self.viewer)
-		self.dock.setFeatures(QDockWidget.AllDockWidgetFeatures)
-		self.dock.setAllowedAreas(Qt.TopDockWidgetArea | Qt.BottomDockWidgetArea | Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
-		self.gui.addDockWidget(Qt.LeftDockWidgetArea, self.dock)
-		self.dock.hide()
-		# self.dock.closeEvent = lambda e: self.toggle()
-
-
-	def toggle(self):
-		if self.dock.isHidden():
-			self.dock.show()
-			if not self.gui.preferences_viewer.dock.isHidden():
-				self.gui.tabifyDockWidget(self.gui.preferences_viewer.dock,self.dock)
-		self.dock.raise_()
-
-	def update(self):
-		if not self.viewer is None:
-			self.viewer.model.dataChanged.emit(QModelIndex(),QModelIndex())
