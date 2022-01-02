@@ -63,7 +63,6 @@ class fret_canvas(FigureCanvas):
 		self.toolbar = NavigationToolbar(self,None)
 		self.toolbar.setIconSize(QSize(24,24))
 		self.toolbar.setSizePolicy(QSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Fixed))
-		# self.draw()
 		self.flag_drawing = False
 
 		self.initialize_plots()
@@ -75,6 +74,10 @@ class fret_canvas(FigureCanvas):
 		self.gui.wheelEvent = self.gui.slider_select.wheelEvent
 		# self.resize_figure()
 		# self.setGeometry(0,0,int(p['plot.fig_width']*self.dpi),int(p['plot.fig_height']*self.dpi))
+
+		# self.resize_figure()
+		# self.update_plots(-1)
+
 
 	def default_prefs(self):
 		default_prefs = {
@@ -398,7 +401,9 @@ class fret_canvas(FigureCanvas):
 		if self.gui.maven.prefs['plot.time_min'] < self.gui.maven.data.ntime*self.gui.maven.prefs['plot.time_dt']:
 			self.ax[1,0].set_xlim(self.gui.maven.prefs['plot.time_min'],self.gui.maven.data.ntime*self.gui.maven.prefs['plot.time_dt'])
 		else:
-			self.ax[1,0].set_xlim(self.gui.maven.prefs['plot.time_min'],self.gui.maven.prefs['plot.time_min']+1)
+			xt = self.ax[1,0].get_xticks()
+			self.ax[1,0].set_xlim(xt[0],xt[-1])
+			# self.ax[1,0].set_xlim(self.gui.maven.prefs['plot.time_min'],self.gui.maven.prefs['plot.time_min']+1)
 		self.ax[0,0].set_ylim(self.gui.maven.prefs['plot.intensity_min'],self.gui.maven.prefs['plot.intensity_max'])
 		self.ax[0,1].set_xlim(-0.01,1.1)#(0.01, 1.25)
 		self.ax[1,0].set_ylim(self.gui.maven.prefs['plot.fret_min'],self.gui.maven.prefs['plot.fret_max'])
@@ -413,7 +418,14 @@ class fret_canvas(FigureCanvas):
 	def set_ticks(self):
 		''' fix the ticks of self.ax '''
 		self.pretty_plot()
+
 		p = self.gui.maven.prefs
+		self.ax[0,0].set_yticks(self.best_ticks(p['plot.intensity_min'],p['plot.intensity_max'],p['plot.intensity_nticks']))
+		self.ax[1,0].set_yticks(self.best_ticks(p['plot.fret_min'],p['plot.fret_max'],p['plot.fret_nticks']))
+		ntime = self.gui.maven.data.ntime
+		if ntime == 0:
+			ntime = 1000
+		self.ax[1,0].set_xticks(self.best_ticks(p['plot.time_min'],ntime*p['plot.time_dt'],p['plot.time_nticks']))
 
 		plt.setp(self.ax[0][0].get_xticklabels(), visible=False)
 		for aa in [self.ax[0][1],self.ax[1][1]]:
@@ -422,10 +434,6 @@ class fret_canvas(FigureCanvas):
 			aa.set_xticks(())
 			aa.set_yticks(())
 		self.ax[0,0].tick_params(axis='x', which='both',length=0)
-
-		self.ax[0,0].set_yticks(self.best_ticks(p['plot.intensity_min'],p['plot.intensity_max'],p['plot.intensity_nticks']))
-		self.ax[1,0].set_yticks(self.best_ticks(p['plot.fret_min'],p['plot.fret_max'],p['plot.fret_nticks']))
-		self.ax[1,0].set_xticks(self.best_ticks(p['plot.time_min'],self.gui.maven.data.ntime*p['plot.time_dt'],p['plot.time_nticks']))
 
 	## Add axis labels to plots
 	def set_axis_labels(self):
@@ -499,31 +507,45 @@ class fret_canvas(FigureCanvas):
 			The index of the trace in self.gui.maven.data.corrected
 
 		'''
-		if index >= self.gui.maven.data.nmol or index < 0:
-			return
-		if self.gui.maven.data.ncolor != len(self.ax[0,0].lines)//3:
-			self.initialize_plots()
+		if self.gui.maven.data.nmol == 0:
+			self.clear_data()
+		elif self.gui.maven.data is None:
+			self.clear_data()
+		elif (index < self.gui.maven.data.nmol and index >= 0):
+			self.flag_drawing = True
+			if self.gui.maven.data.ncolor != len(self.ax[0,0].lines)//3:
+				self.initialize_plots()
+
+			t,intensities,rel,pretime,pbtime = self.calc_trajectory(index)
+			self.draw_traj(t,intensities,rel,pretime,pbtime)
+
+			if not self.gui.maven.modeler.model is None:
+				idealized = self.calc_model_traj(index)
+				if idealized is None:
+					self.draw_no_model()
+				else:
+					self.draw_model(t,idealized,pretime,pbtime)
+
+			intensity_hists,fret_hists = self.calc_histograms(intensities,rel,pretime,pbtime)
+			for i in range(len(intensity_hists)):
+				self.draw_hist(i,*intensity_hists[i])
+			for i in range(len(fret_hists)):
+				self.draw_fret_hist(i,*fret_hists[i])
+
+			self.restore_blits()
+			self.flag_drawing = False
+
+	def clear_data(self,index=0):
 		self.flag_drawing = True
-
-		t,intensities,rel,pretime,pbtime = self.calc_trajectory(index)
-		self.draw_traj(t,intensities,rel,pretime,pbtime)
-
-		if not self.gui.maven.modeler.model is None:
-			idealized = self.calc_model_traj(index)
-			if idealized is None:
-				self.draw_no_model()
-			else:
-				self.draw_model(t,idealized,pretime,pbtime)
-
-		intensity_hists,fret_hists = self.calc_histograms(intensities,rel,pretime,pbtime)
-		for i in range(len(intensity_hists)):
-			self.draw_hist(i,*intensity_hists[i])
-		for i in range(len(fret_hists)):
-			self.draw_fret_hist(i,*fret_hists[i])
-
+		for l in self.ax[0,0].lines:
+			l.set_ydata(l.get_ydata()*0.)
+		for l in self.ax[1,0].lines:
+			l.set_ydata(l.get_ydata()*0.)
+		for aa in [self.ax[0,1],self.ax[1,1]]:
+			for l in aa.lines:
+				l.set_xdata(l.get_xdata()*0.)
 		self.restore_blits()
 		self.flag_drawing = False
-
 
 	## Plot current trajectory
 	def update_plots(self,index):
@@ -537,10 +559,13 @@ class fret_canvas(FigureCanvas):
 			The index of the trace in self.gui.maven.data.corrected
 
 		'''
-		if self.gui.maven.data is None:
+		## stop if we're already drawing
+		if self.flag_drawing:
 			return
-		if self.gui.maven.data.nmol == 0:
-			return
+		# if self.gui.maven.data is None:
+		# 	return
+		# if self.gui.maven.data.nmol == 0:
+		# 	return
 		if self.gui.maven.data.ncolor != len(self.ax[0,0].lines)//3:
 			self.initialize_plots()
 		## fix fonts if not good font entered
@@ -549,15 +574,6 @@ class fret_canvas(FigureCanvas):
 		fontname = matplotlib.font_manager.get_font(floc).family_name
 		if fontname != self.gui.maven.prefs['plot.font']:
 			self.gui.maven.prefs['plot.font'] = fontname
-
-
-		## plot wasn't properly initialized so stop
-		if len(self.ax[0,0].lines) < 1:
-			return
-
-		## stop if we're already drawing
-		if self.flag_drawing:
-			return
 
 		## update the trace
 		self.update_data(index)
@@ -574,10 +590,10 @@ class fret_canvas(FigureCanvas):
 		# self.gui.updateGeometry()
 		self.updateGeometry()
 
-		## probably should remove this. turns off histograms
-		if type(self.gui.maven.prefs['draw_hist_show']) is bool:
-			for i in range(2):
-				self.ax[i][1].set_visible(self.gui.maven.prefs['draw_hist_show'])
+		# ## probably should remove this. turns off histograms
+		# if type(self.gui.maven.prefs['draw_hist_show']) is bool:
+		# 	for i in range(2):
+		# 		self.ax[i][1].set_visible(self.gui.maven.prefs['draw_hist_show'])
 
 		## draws the non-trace stuff
 		self.set_ticks()

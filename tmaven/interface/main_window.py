@@ -186,7 +186,9 @@ class main_window(QMainWindow):
 		from PyQt5.QtWidgets import QMessageBox
 		reply = QMessageBox.question(self,"Clear Data?","Are you sure you want to remove all the current data?",QMessageBox.Yes | QMessageBox.No)
 		if reply == QMessageBox.Yes:
+			self.index = 0
 			self.maven.io.clear_data()
+			self.proc_data_update()
 
 	def keyPressEvent(self,event):
 		kk = event.key()

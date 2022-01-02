@@ -375,7 +375,9 @@ class nd_canvas(FigureCanvas):
 		if self.gui.maven.prefs['plot.time_min'] < self.gui.maven.data.ntime*self.gui.maven.prefs['plot.time_dt']:
 			self.ax[0,0].set_xlim(self.gui.maven.prefs['plot.time_min'],self.gui.maven.data.ntime*self.gui.maven.prefs['plot.time_dt'])
 		else:
-			self.ax[0,0].set_xlim(self.gui.maven.prefs['plot.time_min'],self.gui.maven.prefs['plot.time_min']+1)
+			xt = self.ax[0,0].get_xticks()
+			self.ax[0,0].set_xlim(xt[0],xt[-1])
+			# self.ax[0,0].set_xlim(self.gui.maven.prefs['plot.time_min'],self.gui.maven.prefs['plot.time_min']+1)
 		self.ax[0,0].set_ylim(self.gui.maven.prefs['plot.intensity_min'],self.gui.maven.prefs['plot.intensity_max'])
 		# self.ax[0,1].set_ylim(self.gui.maven.prefs['plot.intensity_min'],self.gui.maven.prefs['plot.intensity_max'])
 		self.ax[0,1].set_xlim(-0.01, 1.1)
@@ -402,7 +404,10 @@ class nd_canvas(FigureCanvas):
 
 		self.ax[0,0].set_yticks(self.best_ticks(p['plot.intensity_min'],p['plot.intensity_max'],p['plot.intensity_nticks']))
 		# self.ax[1,0].set_yticks(self.best_ticks(p['plot.fret_min'],p['plot.fret_max'],p['plot.fret_nticks']))
-		self.ax[0,0].set_xticks(self.best_ticks(p['plot.time_min'],self.gui.maven.data.ntime*p['plot.time_dt'],p['plot.time_nticks']))
+		ntime = self.gui.maven.data.ntime
+		if ntime == 0:
+			ntime = 1000
+		self.ax[0,0].set_xticks(self.best_ticks(p['plot.time_min'],ntime*p['plot.time_dt'],p['plot.time_nticks']))
 
 	## Add axis labels to plots
 	def set_axis_labels(self):
@@ -476,30 +481,40 @@ class nd_canvas(FigureCanvas):
 			The index of the trace in self.gui.maven.data.corrected
 
 		'''
-		if index >= self.gui.maven.data.nmol or index < 0:
-			return
-		if self.gui.maven.data.ncolor != len(self.ax[0,0].lines)//3:
-			self.initialize_plots()
+		if self.gui.maven.data.nmol == 0:
+			self.clear_data()
+		elif self.gui.maven.data is None:
+			self.clear_data()
+		elif (index < self.gui.maven.data.nmol and index >= 0):
+			self.flag_drawing = True
+			if self.gui.maven.data.ncolor != len(self.ax[0,0].lines)//3:
+				self.initialize_plots()
 
+			t,intensities,pretime,pbtime = self.calc_trajectory(index)
+			self.draw_traj(t,intensities,pretime,pbtime)
+
+			if not self.gui.maven.modeler.model is None:
+				idealized = self.calc_model_traj(index)
+				if idealized is None:
+					self.draw_no_model()
+				else:
+					self.draw_model(t,idealized,pretime,pbtime)
+
+			intensity_hists = self.calc_histograms(intensities,pretime,pbtime)
+			for i in range(len(intensity_hists)):
+				self.draw_hist(i,*intensity_hists[i])
+
+			self.restore_blits()
+			self.flag_drawing = False
+
+	def clear_data(self,index=0):
 		self.flag_drawing = True
-
-		t,intensities,pretime,pbtime = self.calc_trajectory(index)
-		self.draw_traj(t,intensities,pretime,pbtime)
-
-		if not self.gui.maven.modeler.model is None:
-			idealized = self.calc_model_traj(index)
-			if idealized is None:
-				self.draw_no_model()
-			else:
-				self.draw_model(t,idealized,pretime,pbtime)
-
-		intensity_hists = self.calc_histograms(intensities,pretime,pbtime)
-		for i in range(len(intensity_hists)):
-			self.draw_hist(i,*intensity_hists[i])
-
+		for l in self.ax[0,0].lines:
+			l.set_ydata(l.get_ydata()*0.)
+		for l in self.ax[0,1].lines:
+			l.set_xdata(l.get_xdata()*0.)
 		self.restore_blits()
 		self.flag_drawing = False
-
 
 	## Plot current trajectory
 	def update_plots(self,index):
@@ -513,10 +528,13 @@ class nd_canvas(FigureCanvas):
 			The index of the trace in self.gui.maven.data.corrected
 
 		'''
-		if self.gui.maven.data is None:
+		## stop if we're already drawing
+		if self.flag_drawing:
 			return
-		if self.gui.maven.data.nmol == 0:
-			return
+		# if self.gui.maven.data is None:
+		# 	return
+		# if self.gui.maven.data.nmol == 0:
+		# 	return
 		if self.gui.maven.data.ncolor != len(self.ax[0,0].lines)//3:
 			self.plot_container.plot.initialize_plots()
 		## fix fonts if not good font entered
@@ -525,14 +543,6 @@ class nd_canvas(FigureCanvas):
 		fontname = matplotlib.font_manager.get_font(floc).family_name
 		if fontname != self.gui.maven.prefs['plot.font']:
 			self.gui.maven.prefs['plot.font'] = fontname
-
-		## plot wasn't properly initialized so stop
-		if len(self.ax[0,0].lines) < 1:
-			return
-
-		## stop if we're already drawing
-		if self.flag_drawing:
-			return
 
 		## update the trace
 		self.update_data(index)
@@ -549,9 +559,9 @@ class nd_canvas(FigureCanvas):
 		# self.gui.updateGeometry()
 		self.updateGeometry()
 
-		## probably should remove this. turns off histograms
-		if type(self.gui.maven.prefs['draw_hist_show']) is bool:
-			self.ax[0,1].set_visible(self.gui.maven.prefs['draw_hist_show'])
+		# ## probably should remove this. turns off histograms
+		# if type(self.gui.maven.prefs['draw_hist_show']) is bool:
+		# 	self.ax[0,1].set_visible(self.gui.maven.prefs['draw_hist_show'])
 
 		## draws the non-trace stuff
 		self.set_ticks()
