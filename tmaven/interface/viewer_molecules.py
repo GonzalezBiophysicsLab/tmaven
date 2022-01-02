@@ -1,6 +1,9 @@
 from PyQt5.QtWidgets import QTableView, QMenu, QSizePolicy, QDockWidget, QAbstractItemView
 from PyQt5.QtCore import Qt, QModelIndex, QAbstractTableModel, QVariant, QObject,QItemSelectionModel
+from PyQt5.QtGui import QKeySequence
 import numpy as np
+import logging
+logger = logging.getLogger(__name__)
 
 class_keys = {Qt.Key_1:1,Qt.Key_2:2,Qt.Key_3:3,Qt.Key_4:4,Qt.Key_5:5,Qt.Key_6:6,Qt.Key_7:7,Qt.Key_8:8,Qt.Key_9:9,Qt.Key_0:0}
 
@@ -208,10 +211,11 @@ def _is_int(x):
 
 
 class molecules_widget(QTableView):
-
 	def __init__(self,gui):
 		super().__init__()
 		self.gui = gui
+		self.undo = []
+		self.redo = []
 		# self.wheelEvent = super().wheelEvent
 
 		# from .stylesheet import ss_qtableview
@@ -241,18 +245,39 @@ class molecules_widget(QTableView):
 			new_class_ind = class_keys[event.key()]
 			sel = self.get_selection()
 			if not sel is None:
+				self.undo.append(self.gui.maven.data.classes.copy())
 				for i in sel:
 					self.gui.maven.data.classes[i] = new_class_ind
 			self.model.dataChanged.emit(QModelIndex(),QModelIndex())
 			return
-		elif event.key() == Qt.Key_Tab:
-			sel = self.get_selection()
-			if not sel is None:
-				for i in sel:
-					self.gui.maven.data.flag_ons[i] = not self.gui.maven.data.flag_ons[i]
-			self.model.dataChanged.emit(QModelIndex(),QModelIndex())
+		# elif event.key() == Qt.Key_Tab:
+		# 	sel = self.get_selection()
+		# 	if not sel is None:
+		# 		for i in sel:
+		# 			self.gui.maven.data.flag_ons[i] = not self.gui.maven.data.flag_ons[i]
+		# 	self.model.dataChanged.emit(QModelIndex(),QModelIndex())
+		elif event == QKeySequence.Undo:
+			self.undo()
+		elif event == QKeySequence.Redo:
+			self.redo()
 		else:
 			super().keyPressEvent(event)
+
+	def undo(self):
+		if len(self.undo) > 0:
+			old = self.undo.pop()
+			self.redo.append(self.gui.maven.data.classes.copy())
+			self.gui.maven.data.classes = old
+			self.model.dataChanged.emit(QModelIndex(),QModelIndex())
+			logger.info('undo classes change')
+
+	def redo(self):
+		if len(self.redo) > 0:
+			old = self.redo.pop()
+			self.undo.append(self.gui.maven.data.classes.copy())
+			self.gui.maven.data.classes = old
+			self.model.dataChanged.emit(QModelIndex(),QModelIndex())
+			logger.info('redo classes change')
 
 	def _toggle_viewer(self):
 		self.setVisible(not self.isVisible())
