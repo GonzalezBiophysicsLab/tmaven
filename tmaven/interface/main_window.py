@@ -334,16 +334,17 @@ class main_window(QMainWindow):
 		light_palette.setColor(QPalette.Window, QColor(255,255,255))
 		light_palette.setColor(QPalette.WindowText, Qt.black)
 		light_palette.setColor(QPalette.Base, QColor(230, 230, 230))
-		# light_palette.setColor(QPalette.AlternateBase, QColor(53, 53, 53))
-		# light_palette.setColor(QPalette.ToolTipBase, Qt.white)
-		# light_palette.setColor(QPalette.ToolTipText, Qt.white)
-		# light_palette.setColor(QPalette.Text, Qt.white)
-		# light_palette.setColor(QPalette.Button, QColor(53, 53, 53))
-		# light_palette.setColor(QPalette.ButtonText, Qt.white)
-		# light_palette.setColor(QPalette.BrightText, Qt.red)
-		# light_palette.setColor(QPalette.Link, QColor(42, 130, 218))
-		# light_palette.setColor(QPalette.Highlight, QColor(42, 130, 218))
-		# light_palette.setColor(QPalette.HighlightedText, Qt.black)
+		####
+		light_palette.setColor(QPalette.AlternateBase, QColor(202,202,202))
+		light_palette.setColor(QPalette.ToolTipBase, Qt.black)
+		light_palette.setColor(QPalette.ToolTipText, Qt.black)
+		light_palette.setColor(QPalette.Text, Qt.black)
+		light_palette.setColor(QPalette.Button, QColor(202,202,202))
+		light_palette.setColor(QPalette.ButtonText, Qt.black)
+		light_palette.setColor(QPalette.BrightText, Qt.blue)
+		light_palette.setColor(QPalette.Link, QColor(213, 125, 37))
+		light_palette.setColor(QPalette.Highlight, QColor(213, 125, 37))
+		light_palette.setColor(QPalette.HighlightedText, Qt.white)
 		return light_palette
 
 	def _change_theme(self,palette):
@@ -467,13 +468,6 @@ class main_window(QMainWindow):
 			},
 			"plot_mode": self.plot_mode,
 			"lightdark_mode" : self.lightdark_mode,
-			# "window.group": {
-			# 	"on": self.gui.molecule_group_viewer.menu_tabs.actions()[0].isChecked(),
-			# 	"id": self.gui.molecule_group_viewer.menu_tabs.actions()[2].isChecked(),
-			# 	"class": self.gui.molecule_group_viewer.menu_tabs.actions()[3].isChecked(),
-			# 	"onoff": self.gui.molecule_group_viewer.menu_tabs.actions()[4].isChecked(),
-			# 	"source": self.gui.molecule_group_viewer.menu_tabs.actions()[5].isChecked(),
-			# }
 		}
 		self.save_session(session)
 
