@@ -153,11 +153,10 @@ class main_window(QMainWindow):
 		self.menu_theme.addAction('Light',self.change_theme_light)
 		self.menu_theme.addAction('Dark',self.change_theme_dark)
 		# self.menu_view.addAction('SMD Info',self.smd_info_viewer.toggle)
+		self.menu_view.addAction('Show Log',self.show_log)
 		self.menu_view.addAction('Molecule Table',self.molecules_viewer.toggle,'Ctrl+T')
 		self.menu_view.addAction('Preferences',self.preferences_viewer.toggle,'Ctrl+P')
-		self.menu_view.addAction('Show Log',self.show_log)
 		self.menu_other.addAction(self.hdf5_viewer.action)
-
 		self.menu_scripts.addAction('Run Script',lambda:ui_scripts.run(self),'Ctrl+R')
 		self.menu_scripts.addAction('Run Input',lambda:ui_scripts.input_run(self))
 
