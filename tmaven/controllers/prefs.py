@@ -100,7 +100,8 @@ class prefs_object(dict):
 				self.__setitem__(k,dictionary[k],quiet=True)
 			except Exception as e:
 				pass
-			self.emit_changed()
+				# logger.info('failed to set %s as %s\n(%s)'%(k,dictionary[k],str(e)))
+		self.emit_changed()
 
 	def load(self,fname=None,quiet=True):
 		''' Load a text file of preferences

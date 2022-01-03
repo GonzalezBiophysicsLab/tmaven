@@ -501,5 +501,5 @@ class main_window(QMainWindow):
 		}
 		self.save_session(session)
 
-		logger.info("Quitting.\n\n")
+		logger.info("Quitting...")
 		return super(type(self),self).closeEvent(event)
