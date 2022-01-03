@@ -39,7 +39,12 @@ class popplot_container(QMainWindow):
 		self.toolbar = NavigationToolbar(self.canvas,None)
 		self.toolbar.setIconSize(QSize(24,24))
 		self.toolbar.setSizePolicy(QSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Fixed))
-		self.toolbar.addAction('Refresh',self.plot)
+		# self.toolbar.addAction('Refresh',self.plot)
+
+		self.menubar = self.menuBar()
+		self.menubar.setNativeMenuBar(False)
+		self.menubar.addAction('Refresh',self.plot)
+		self.menubar.addAction('Reset Preferences',self.reset_prefs)
 
 		qw = QWidget()
 		vbox = QVBoxLayout()
@@ -68,7 +73,6 @@ class popplot_container(QMainWindow):
 	def canvas_size_hint(self):
 		return QSize(self.maven_plot.prefs['fig_width']*self.dpi,self.maven_plot.prefs['fig_height']*self.dpi)
 
-
 	def resize_figure(self):
 		## OKAY -- call this when the mainwindow that houses the traj_plot_container is resized, because this widget never resizes otherwise
 		self.fig.set_figwidth(self.maven_plot.prefs['fig_width']/self.dpr)
@@ -76,12 +80,17 @@ class popplot_container(QMainWindow):
 		self.canvas.updateGeometry()
 		self.canvas.draw()
 
-	def plot(self):
+	def plot(self,event=None):
 		self.resize_figure()
 		self.ax.cla()
 		self.maven_plot.plot(self.fig,self.ax)
 		self.canvas.draw()
 
+	def reset_prefs(self,event=None):
+		self.maven_plot.defaults()
+		# from PyQt5.QtCore import QModelIndex
+		# self.prefs_model.dataChanged.emit(QModelIndex(),QModelIndex())
+		self.prefs_widget.proxy_model.layoutChanged.emit()
 
 	def keyPressEvent(self,event):
 		if event.key() == Qt.Key_Escape and not self.prefs_widget.le_filter.hasFocus():
