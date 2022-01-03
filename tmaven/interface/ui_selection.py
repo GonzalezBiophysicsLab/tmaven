@@ -131,6 +131,7 @@ def build_menu(gui):
 	menu_selection = QMenu('Selection',gui)
 	menu_on = QMenu('Turn On',gui)
 	menu_off = QMenu('Turn Off',gui)
+	menu_order = QMenu('Order by',gui)
 
 	menu_on.addAction('All',lambda : all_on(gui))
 	menu_on.addAction('Selection',lambda : selection_on(gui))
@@ -144,9 +145,12 @@ def build_menu(gui):
 	menu_selection.addAction('Toggle Selection',lambda : toggle_selection(gui))
 	menu_selection.addSeparator()
 	menu_selection.addAction('Display Class Counts',lambda : show_counts(gui))
-	menu_selection.addSeparator()
 	menu_selection.addAction('Set Class',lambda : set_class_from_selection(gui))
-	menu_selection.addAction('Order by CC',gui.maven.selection.order_fret_cross_corr)
+	menu_order.addAction('Original',gui.maven.selection.order_original)
+	menu_order.addAction('Cross-Correlation',gui.maven.selection.order_fret_cross_corr)
+	menu_order.addAction('Classes',gui.maven.selection.order_classes)
+	menu_selection.addMenu(menu_order)
+
 	menu_selection.addMenu(menu_on)
 	menu_selection.addMenu(menu_off)
 

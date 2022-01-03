@@ -101,3 +101,15 @@ class controller_selection(object):
 				logger.error('cross-correlation calculation failed')
 		else:
 			logger.error('Order by cross-correlation requires two color data')
+
+	def order_original(self):
+		neworder = np.argsort(self.maven.data.data_index)
+		self.maven.data.order(neworder)
+		self.maven.emit_data_update()
+		logger.info('Data reverted to original sort order')
+
+	def order_classes(self):
+		neworder = np.argsort(self.maven.data.classes)
+		self.maven.data.order(neworder)
+		self.maven.emit_data_update()
+		logger.info('Data ordered by classes')
