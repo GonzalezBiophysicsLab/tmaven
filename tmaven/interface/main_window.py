@@ -25,6 +25,7 @@ class main_window(QMainWindow):
 		self.index = 0
 		self.desired_index = 0
 		self.timer = None
+		self.lightdark_mode = 'light'
 		self.initialize_widgets()
 		self.show()
 

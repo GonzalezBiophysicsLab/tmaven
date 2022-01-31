@@ -77,8 +77,8 @@ if __name__ == "__main__":
 		keywords=KEYWORDS,
 		long_description=read("readme.md"),
 		long_description_content_type='text/markdown',
-		packages=setuptools.find_packages(where="./"),
-		package_dir={"": "./"},
+		packages=setuptools.find_packages(where="."),
+		package_dir={"": "."},
 		package_data={
 			"": ["*.png","*.svg"],
 		},
