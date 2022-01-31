@@ -40,9 +40,9 @@ class controller_selection(object):
 		self.maven.data.flag_ons[selection] = False
 
 	def on_all(self):
-		self.maven.data.flags_ons[:] = True
+		self.maven.data.flag_ons[:] = True
 	def off_all(self):
-		self.maven.data.flags_ons[:] = False
+		self.maven.data.flag_ons[:] = False
 
 	def set_class_from_selection(self,selection,i):
 		self.maven.data.classes[self.selected] = i
