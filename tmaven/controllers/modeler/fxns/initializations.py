@@ -19,9 +19,9 @@ def initialize_gmm(x,nstates,flag_kmeans=False):
 		# try:
 			from ..kmeans import kmeans
 			out = kmeans(x,nstates)
-			mu = out.mu
+			mu = out.mean
 			var = out.var
-			ppi = out.ppi
+			ppi = out.frac
 		# except:
 			# mu = kernel_sample(x,nstates)
 			# var = np.var(x)/nstates + np.zeros(nstates)

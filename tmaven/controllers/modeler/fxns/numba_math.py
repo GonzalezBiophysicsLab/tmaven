@@ -48,7 +48,74 @@ def psi(x):
 
 		return y
 
+@nb.vectorize([nb.float64(nb.float64)])
+def trigamma(q):
+	''' This is the Cephes version of zeta used in Scipy, but I rewrote it in Python for x = 2'''
 
+	A = [
+		12.0,
+		-720.0,
+		30240.0,
+		-1209600.0,
+		47900160.0,
+		-1.8924375803183791606e9,
+		7.47242496e10,
+		-2.950130727918164224e12,
+		1.1646782814350067249e14,
+		-4.5979787224074726105e15,
+		1.8152105401943546773e17,
+		-7.1661652561756670113e18
+	]
+	macheps =  2.22044604925e-16 ## double for numpy
+
+	if q <= 0.0:
+		if q == np.floor(q):
+			return np.nan
+		return np.inf
+
+	# /* Asymptotic expansion
+	#  * https://dlmf.nist.gov/25.11#E43
+	#  */
+	if (q > 1e8):
+		return (1. + .5/q) /q
+
+	# /* Euler-Maclaurin summation formula */
+	# /* Permit negative q but continue sum until n+q > +9 .
+	#  * This case should be handled by a reflection formula.
+	#  * If q<0 and x is an integer, there is a relation to
+	#  * the polyGamma function.
+	#  */
+	s = q**(-2.)
+	a = q
+	i = 0
+	b = 0.0
+
+	while ((i<9) or (a<=9.0)):
+		i+= 1
+		a += 1.0
+		b = a**(-2.)
+		s += b
+		if np.abs(b/s) < macheps:
+			return s
+
+	w = a
+	s += b*w
+	s -= .5*b
+	a = 1.
+	k = 0.
+	for i in range(12):
+		a *= 2+k
+		b /= w
+		t = a*b / A[i]
+		s = s +t
+		t = np.abs(t/s)
+		if t < macheps:
+			return s
+		k += 1.0
+		a *= 2 + k
+		b /= w
+		k += 1.
+	return s
 ### Test
 # psi(1.) # initialize - don't time the jit process
 # from scipy import special

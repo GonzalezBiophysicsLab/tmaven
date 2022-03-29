@@ -188,7 +188,7 @@ class controller_corrections(object):
 
 		Only works for ncolors = 2. Removes prefs['correction.bleedthrough']*data.corrected[:,:,0] from data.corrected[:,:,1]
 		'''
-		if maven.data.ncolors == 2:
+		if self.maven.data.ncolors == 2:
 			bleedthroughs = np.array(((0.,self.maven.prefs['correction.bleedthrough']),(0.,0.)))
 
 			# bleedthrough = self.gui.prefs['correction.bleedthrough']

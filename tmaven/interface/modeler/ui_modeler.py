@@ -17,10 +17,12 @@ def build_menu(gui):
 	gui.remove_models = lambda : remove_models(gui)
 	gui.update_idealization = lambda : update_idealization(gui)
 	gui.export_model = lambda : export(gui)
+	gui.load_model = lambda : load(gui)
 	menu_modeler.addAction('Remove Models',gui.remove_models)
 	menu_modeler.addAction('Clear Active',gui.clear_model)
 	menu_modeler.addAction('Change Active',gui.change_model)
 	menu_modeler.addAction('Export Active',gui.export_model)
+	menu_modeler.addAction('Load Active',gui.load_model)
 	menu_modeler.addAction('Update Idealized',gui.update_idealization)
 
 	menu_modeler.addSeparator()
@@ -38,11 +40,16 @@ def build_menu(gui):
 	ens.addAction('Threshold',lambda : launchers.launch_fret_threshold(gui))
 	ens.addAction('K-means',lambda : launchers.launch_fret_kmeans(gui))
 	ens.addAction('vbGMM',lambda : launchers.launch_fret_vbgmm(gui))
+	ens.addAction('vbGMM + Model selection',lambda : launchers.launch_fret_vbgmm_modelselection(gui))
 	ens.addAction('mlGMM',lambda : launchers.launch_fret_mlgmm(gui))
 	ens.addAction('vbHMM -> K-means', lambda: launchers.launch_fret_kmeans_vbhmm(gui))
 	ens.addAction('mlHMM -> K-means', lambda: launchers.launch_fret_kmeans_mlhmm(gui))
+	ens.addAction('vbHMM -> vbGMM', lambda: launchers.launch_fret_vbgmm_vbhmm(gui))
+	ens.addAction('vbHMM -> vbGMM + Model selection', lambda: launchers.launch_fret_vbgmm_vbhmm_modelselection(gui))
 	ens.addAction('vbConsensus', lambda: launchers.launch_fret_vbconhmm(gui))
 	ens.addAction('vbConsensus + Model selection', lambda: launchers.launch_fret_vbconhmm_modelselection(gui))
+	ens.addAction('ebHMM', lambda: launchers.launch_fret_ebhmm(gui))
+	ens.addAction('ebHMM + Model selection', lambda: launchers.launch_fret_ebhmm_modelselection(gui))
 
 	menu_modeler.addSeparator()
 	menu_modeler.addAction('Calculate Dwell Times', lambda: analyze_dwells(gui))
@@ -154,10 +161,21 @@ def export(gui):
 	if len(gui.maven.modeler.models) == 0:
 		return
 	from PyQt5.QtWidgets import QFileDialog
-	oname = QFileDialog.getSaveFileName(gui, 'Export Data', 'result.pickle','*.pickle')[0]
+	oname = QFileDialog.getSaveFileName(gui, 'Export Data', 'result.hdf5','*.hdf5')[0]
 	if oname == "":
 		return
-	gui.maven.modeler.export_result(gui.maven.modeler.model,oname)
+	success = gui.maven.modeler.export_result_to_hdf5(oname)
+	if not success:
+		logger.error("Failed to export model to {}".format(oname))
+
+def load(gui):
+	from PyQt5.QtWidgets import QFileDialog
+	oname = QFileDialog.getOpenFileName(gui, 'Load Data', '','*.hdf5')[0]
+	if oname == "":
+		return
+	success = gui.maven.modeler.load_result_from_hdf5(oname)
+	if not success:
+		logger.error("Failed to export model to {}".format(oname))
 
 def close_dialog(gui):
 	gui.model_dialog.close()

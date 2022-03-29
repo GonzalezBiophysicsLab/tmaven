@@ -99,29 +99,54 @@ def individual_e_step(x,a,b,beta,m,pik,tm):
 
 	return r,xi,lnz,E_lntm,E_lnlam,E_lnpi
 
-#@nb.jit(nb.types.Tuple((nb.float64[:,:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:,:],nb.float64[:],nb.float64[:],nb.float64[:,:],nb.float64[:,:],nb.int64))(nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:,:],nb.int64,nb.float64,nb.float64[:]),nopython=True)
-def outer_loop(x,mu,var,tm,maxiters,threshold,prior_strengths):
+'''
+@nb.jit(nb.types.Tuple(
+	(nb.float64[:,:],
+	 nb.float64[:],
+	 nb.float64[:],
+	 nb.float64[:],
+	 nb.float64[:],
+	 nb.float64[:],
+	 nb.float64[:,:],
+	 nb.float64[:],
+	 nb.float64[:],
+	 nb.float64[:,:],
+	 nb.float64[:,:],
+	 nb.int64))
+	 (nb.int64[:],
+	 nb.float64[:],
+	 nb.float64[:],
+	 nb.float64[:],
+	 nb.float64[:,:],
+	 nb.int64,
+	 nb.float64,
+	 nb.types.Tuple((nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:,:]))),
+	 nopython=True)
+	'''
+def outer_loop(xind,xdata,mu,var,tm,maxiters,threshold,priors):
 
-	flatx = np.concatenate(x)
+	N = xind[-1]+1
 
-	## priors - from vbFRET
-	beta0 = prior_strengths[0] + np.zeros_like(mu)
-	m0 = mu + np.zeros_like(mu)
-	a0 = prior_strengths[1] + np.zeros_like(mu)
-	b0 = prior_strengths[2] + np.zeros_like(mu)
-	pi0 = prior_strengths[3] + np.zeros_like(mu)
-	tm0 = prior_strengths[4] + np.zeros_like(tm)
+	## priors
+	m0 = priors[0]
+	beta0 = priors[1]
+	a0 = priors[2]
+	b0 = priors[3]
+	pi0 = priors[4]
+	tm0 = priors[5]
 
 	# initialize
-	prob = p_normal(flatx,mu,var)
-	r = np.zeros_like(prob)
+	prob = p_normal(xdata,mu,var)
+	T,K = prob.shape
+	r = np.zeros((T,K))
+
 	for i in range(r.shape[0]):
 		r[i] = prob[i]
 		r[i] /= np.sum(r[i]) + 1e-10 ## for stability
 
-	pik = np.copy(pi0)
-	tm = np.copy(tm0)
-	a,b,m,beta,nk,xbark,sk = m_updates(flatx,r,a0,b0,m0,beta0)
+	pik = pi0.copy()
+	tm = tm0.copy()
+	a,b,m,beta,nk,xbark,sk = m_updates(xdata,r,a0,b0,m0,beta0)
 
 
 	iteration = 0
@@ -132,14 +157,22 @@ def outer_loop(x,mu,var,tm,maxiters,threshold,prior_strengths):
 	while iteration < maxiters:
 		# E Step
 
-		r = []
-		xi = []
+		r = np.zeros((T,K))
+
+		xi_sum = np.zeros((K,K))
+		pi_sum = np.zeros((K))
 
 		ll0 = ll1
-		for i in range(len(x)):
-			ri,xii,lnzi,E_lntmi,E_lnlami,E_lnpii = individual_e_step(x[i],a,b,beta,m,pik,tm)
-			r.append(ri)
-			xi.append(xii)
+
+		for Ni in range(N):
+			ind = xind==Ni
+			trace = xdata[ind]
+			ri,xii,lnzi,E_lntmi,E_lnlami,E_lnpii = individual_e_step(trace,a,b,beta,m,pik,tm)
+			r[ind] = ri
+
+			pi_sum += ri[0]
+			xi_sum += xii.sum(0)
+
 			## This isn't quite right... multiple-counting the priors.... err like separate priors for everything
 			lli = calc_lowerbound(ri,a,b,m,beta,pik,tm,nk,xbark,sk,E_lnlami,E_lnpii,a0,b0,m0,beta0,pi0,tm0,lnzi)
 			ll[iteration] += lli
@@ -147,26 +180,25 @@ def outer_loop(x,mu,var,tm,maxiters,threshold,prior_strengths):
 
 		## likelihood
 		if iteration > 1:
-			dl = np.abs((ll1 - ll0)/ll0)
+			dl = (ll1 - ll0)/np.abs(ll0)
 			if dl < threshold or np.isnan(ll1):
 				break
 
-		a,b,m,beta,nk,xbark,sk = m_updates(flatx,np.concatenate(r,axis=0),a0,b0,m0,beta0)
+		a,b,m,beta,nk,xbark,sk = m_updates(xdata,r,a0,b0,m0,beta0)
 
 		### indivudal - copy this from simulataneous
-		pik = pi0 + np.sum([ri[0] for ri in r],axis=0)
-
+		pik = pi0 + pi_sum
 		tm = tm0.copy()
-		for i in range(len(xi)):
-			tm  += xi[i].sum(0)
+		tm  += xi_sum
 
 		if iteration < maxiters:
 			iteration += 1
 
-	_,_,_,E_lntm,E_lnlam,E_lnpi = individual_e_step(flatx,a,b,beta,m,pik,tm)
+	_,_,_,E_lntm,E_lnlam,E_lnpi = individual_e_step(xdata,a,b,beta,m,pik,tm)
 	return r,a,b,m,beta,pik,tm,E_lnlam,E_lnpi,E_lntm,ll,iteration
 
-def consensus_vb_em_hmm(x,nstates,maxiters=1000,threshold=1e-10,prior_strengths=None,init_kmeans=False):
+
+def consensus_vb_em_hmm(x,nstates,maxiters=1000,threshold=1e-10,nrestarts=1,priors=None,init_kmeans=False,mu_mode=False):
 	'''
 	Data convention is NxTxK
 	'''
@@ -174,9 +206,6 @@ def consensus_vb_em_hmm(x,nstates,maxiters=1000,threshold=1e-10,prior_strengths=
 	if x[0].ndim != 1:
 		raise Exception("Input data isn't 1D")
 
-	## Priors - beta, a, b, pi, alpha... mu is from GMM
-	if prior_strengths is None:
-		prior_strengths = np.array((0.25,2.5,.01,1.,1.))
 
 	# from ml_em_gmm import ml_em_gmm
 	# o = ml_em_gmm(x,nstates+1)
@@ -184,32 +213,111 @@ def consensus_vb_em_hmm(x,nstates,maxiters=1000,threshold=1e-10,prior_strengths=
 	# var = o.var[:-1]
 	# ppi = o.ppi[:-1]
 	# ppi /= ppi.sum() ## ignore outliers
+	xind = np.concatenate([np.zeros(x[i].size,dtype='int64')+i for i in range(len(x))])
+	xdata = np.concatenate(x)
 
-	mu,var,ppi = initialize_gmm(np.concatenate(x),nstates,init_kmeans)
+	mu,var,ppi = initialize_gmm(xdata,nstates,init_kmeans)
 	tmatrix = initialize_tmatrix(nstates)
 
+	## Priors - beta, a, b, pi, alpha... mu is from GMM
+	if priors is None:
+		beta_prior = np.ones_like(mu) *0.25
+		a_prior = np.ones_like(mu) *2.5
+		b_prior = np.ones_like(mu)*0.01
+		pi_prior = np.ones_like(mu)
+		tm_prior = np.ones_like(tmatrix)
+		mu_prior = mu
+
+		priors = (mu_prior,beta_prior, a_prior, b_prior, pi_prior, tm_prior)
+
+	else:
+		if not mu_mode:
+			mu_prior = mu
+		else:
+			mu_prior = priors[0]
+
+		beta_prior = priors[1]
+		a_prior = priors[2]
+		b_prior = priors[3]
+		pi_prior = priors[4]
+		tm_prior = priors[5]
+
+		priors = (mu_prior,beta_prior, a_prior, b_prior, pi_prior, tm_prior)
+
+
 	#### run calculation
-	r,a,b,mu,beta,pi,tmatrix,E_lnlam,E_lnpi,E_lntm,likelihood,iteration = outer_loop(x,mu,var,tmatrix,maxiters,threshold,prior_strengths)
-	likelihood = likelihood[:iteration+1]
+	res = []
+	ll_restarts = []
+
+	for nr in range(nrestarts):
+		if nr == 0:
+			kmu = mu
+			kvar = var
+		else:
+			kmu = mu + np.random.normal(nstates)*np.sqrt(1./beta_prior)
+			kvar = 1./np.random.gamma(size = nstates,shape=a_prior,scale=b_prior)
+
+		r,a,b,mu,beta,pi,tmatrix,E_lnlam,E_lnpi,E_lntm,likelihood,iteration = outer_loop(xind,xdata,kmu,kvar,tmatrix,maxiters,threshold,priors)
+		likelihood = likelihood[:iteration+1]
+
+		ll_restarts.append(likelihood[-1,0])
+		res.append([r,a,b,mu,beta,pi,tmatrix,E_lnlam,E_lnpi,E_lntm,likelihood,iteration])
+
+	ll_restarts = np.array(ll_restarts)
+
+	try:
+		best = np.nanargmax(ll_restarts)
+
+	except:
+		import logging
+		logger = logging.getLogger(__name__)
+		logger.info("vb Consensus HMM restarts all returned NaN ELBOs, Defaulting to first restart")
+
+		best = 0
+
+	print(ll_restarts, best, ll_restarts[best])
+	best_res = res[best]
+	r,a,b,mu,beta,pi,tmatrix,E_lnlam,E_lnpi,E_lntm,likelihood,iteration = best_res
 
 	#### collect results
-	from .modeler import model_container
-	ppi = np.sum([np.sum(ri,axis=0) for ri in r],axis=0)
+	from .model_container import model_container
+	ppi = np.sum(r,axis=0)
 	ppi /= ppi.sum()
 	var = 1./np.exp(E_lnlam)
 	tmstar = tmatrix.copy()
 	for i in range(tmstar.shape[0]):
 		tmstar[i] /= tmstar[i].sum()
 
-	out = model_container(type='vb Consensus HMM',nstates = nstates,
-							mu=mu,var=var,ppi=ppi,tmatrix=tmatrix,
-							elbo=likelihood,iteration=iteration,
-							r=r,a=a,b=b,beta=beta, pi=pi,
-							E_lnlam=E_lnlam,E_lnpi=E_lnpi,E_lntm=E_lntm,
-							priors = prior_strengths)
+	if nstates > 1:
+		rates = -np.log(1.-tmstar)/1.
+		for i in range(rates.shape[0]):
+			rates[i,i] = 0.
+	else:
+		rates = np.zeros_like(tmstar)
+
+	new_r = []
+	for i in range(xind[-1]+1):
+		ind = xind==i
+		new_r.append(r[ind])
+
+	priors = {'mu_prior':mu_prior,
+			  'beta_prior':beta_prior,
+			  'a_prior':a_prior,
+			  'b_prior':b_prior,
+			  'pi_prior':pi_prior,
+			  'tm_prior':tm_prior}
+
+
+	out = model_container(type='vb Consensus HMM',
+						  nstates = nstates,mean=mu,var=var,frac=ppi,
+						  tmatrix=tmatrix,rates=rates,
+						  likelihood=likelihood,
+						  iteration=iteration, r=new_r,a=a,b=b,beta=beta, pi=pi,
+						  E_lnlam=E_lnlam,E_lnpi=E_lnpi,E_lntm=E_lntm,
+						  priors=priors)
 	return out
 
-def consensus_vb_em_hmm_parallel(x,nstates,maxiters=1000,threshold=1e-10,nrestarts=1,prior_strengths=None,ncpu=1):
+def consensus_vb_em_hmm_parallel(x,nstates,maxiters=1000,threshold=1e-10,nrestarts=1,priors=None,ncpu=1,init_kmeans=False):
 	#
 	# if platform != 'win32' and ncpu != 1 and nrestarts != 1:
 	# 	pool = mp.Pool(processes = ncpu)
@@ -224,4 +332,4 @@ def consensus_vb_em_hmm_parallel(x,nstates,maxiters=1000,threshold=1e-10,nrestar
 	# except:
 	# 	best = 0
 	# return results[best]
-	return consensus_vb_em_hmm(x,nstates,maxiters,threshold,prior_strengths,True)
+	return consensus_vb_em_hmm(x,nstates,maxiters,threshold,nrestarts,priors,init_kmeans)
