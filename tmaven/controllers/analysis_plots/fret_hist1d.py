@@ -124,9 +124,9 @@ class controller_fret_hist1d(controller_base_analysisplot):
 				try:
 					x = np.linspace(self.prefs['fret_min'],self.prefs['fret_max'],1001)
 					y = np.zeros_like(x)
-					n = m.mu.size
+					n = m.mean.size
 					for i in range(n):
-						yi = m.ppi[i]*1./np.sqrt(2.*np.pi*m.var[i])*np.exp(-.5/m.var[i]*(x-m.mu[i])**2.)
+						yi = m.frac[i]*1./np.sqrt(2.*np.pi*m.var[i])*np.exp(-.5/m.var[i]*(x-m.mean[i])**2.)
 						y += yi
 						ax.plot(x,yi,color='k',lw=1,alpha=.8,ls='--')
 					ax.plot(x,y,color='k',lw=2,alpha=.8)

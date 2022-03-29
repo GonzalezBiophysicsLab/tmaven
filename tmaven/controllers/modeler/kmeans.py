@@ -90,8 +90,8 @@ def kmeans(x,nstates):
 		resp[r == k,k] = 1.
 
 	# print(pi)
-	from .modeler import model_container
-	out = model_container(type='kmeans',mu=mu,var=var,ppi=pi, nstates=nstates, r=resp)
+	from .model_container import model_container
+	out = model_container(type='kmeans',mean=mu,var=var,frac=pi, nstates=nstates, r=resp)
 	return out
 
 

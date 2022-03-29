@@ -38,7 +38,12 @@ def launch_fret_mlhmm_one(gui):
 
 def launch_fret_vbgmm(gui):
 	logger.info('Launching FRET VB GMM')
-	dialogs.dialog_vbmm(gui,lambda: fxn_fret_vbgmm(gui),'VB GMM')
+	dialogs.dialog_vbgmm(gui,lambda: fxn_fret_vbgmm(gui),'VB GMM')
+	gui.model_dialog.start()
+
+def launch_fret_vbgmm_modelselection(gui):
+	logger.info('Launching FRET VB GMM')
+	dialogs.dialog_vbgmm(gui,lambda: fxn_fret_vbgmm_modelselection(gui),'VB GMM',model_selection=True)
 	gui.model_dialog.start()
 
 def launch_fret_mlgmm(gui):
@@ -56,19 +61,39 @@ def launch_fret_vbconhmm(gui):
 	dialogs.dialog_vbconhmm(gui,lambda: fxn_fret_vbconhmm(gui),model_selection=False)
 	gui.model_dialog.start()
 
+def launch_fret_ebhmm(gui):
+	logger.info('Launching FRET EB HMM')
+	dialogs.dialog_ebhmm(gui,lambda: fxn_fret_ebhmm(gui),model_selection=False)
+	gui.model_dialog.start()
+
+def launch_fret_ebhmm_modelselection(gui):
+	logger.info('Launching FRET EB HMM + Model Selection')
+	dialogs.dialog_ebhmm(gui,lambda: fxn_fret_ebhmm_modelselection(gui),model_selection=True)
+	gui.model_dialog.start()
+
 def launch_fret_vbhmm(gui):
 	logger.info('Launching FRET VB HMM')
-	dialogs.dialog_vbmm(gui,lambda: fxn_fret_vbhmm(gui),'VB HMM',model_selection=False)
+	dialogs.dialog_vbhmm(gui,lambda: fxn_fret_vbhmm(gui),'VB HMM',model_selection=False)
 	gui.model_dialog.start()
 
 def launch_fret_vbhmm_modelselection(gui):
 	logger.info('Launching FRET VB HMM + Model Selection')
-	dialogs.dialog_vbmm(gui, lambda: fxn_fret_vbhmm_modelselection(gui),'VB HMM+Model selection',model_selection=True)
+	dialogs.dialog_vbhmm(gui, lambda: fxn_fret_vbhmm_modelselection(gui),'VB HMM+Model selection',model_selection=True)
 	gui.model_dialog.start()
 
 def launch_fret_kmeans_vbhmm(gui):
 	logger.info('Launching FRET VB HMM -> KMeans')
-	dialogs.dialog_vbmm(gui,lambda: fxn_fret_kmeans_vbhmm(gui),'VB HMM->KMeans',model_selection=False)
+	dialogs.dialog_vbhmm(gui,lambda: fxn_fret_kmeans_vbhmm(gui),'VB HMM->KMeans',model_selection=False)
+	gui.model_dialog.start()
+
+def launch_fret_vbgmm_vbhmm(gui):
+	logger.info('Launching FRET VB HMM -> VB GMM')
+	dialogs.dialog_vbgmm_vbhmm(gui,lambda: fxn_fret_vbgmm_vbhmm(gui),'VB HMM->VB GMM',model_selection=False)
+	gui.model_dialog.start()
+
+def launch_fret_vbgmm_vbhmm_modelselection(gui):
+	logger.info('Launching FRET VB HMM -> VB GMM + Model Selection')
+	dialogs.dialog_vbgmm_vbhmm(gui,lambda: fxn_fret_vbgmm_vbhmm_modelsection(gui),'VB HMM->VB GMM+Model selection',model_selection=True)
 	gui.model_dialog.start()
 
 def launch_fret_vbhmm_one(gui):
@@ -78,7 +103,7 @@ def launch_fret_vbhmm_one(gui):
 		from PyQt5.QtWidgets import QMessageBox
 		QMessageBox.warning(gui,"Error: Run all, Apply all","You have more than one molecule turned on")
 		return
-	dialogs.dialog_vbmm(gui,lambda: fxn_fret_vbhmm_one(gui),'VB HMM (One)')
+	dialogs.dialog_vbhmm(gui,lambda: fxn_fret_vbhmm_one(gui),'VB HMM (One)')
 	gui.model_dialog.start()
 
 def fxn_fret_threshold(gui):
@@ -122,6 +147,14 @@ def fxn_fret_vbgmm(gui):
 	close_dialog(gui)
 	gui.maven.modeler.run_fret_vbgmm(nstates)
 	logger.info('Finished FRET VB GMM')
+
+def fxn_fret_vbgmm_modelselection(gui):
+	logger.info('Executing FRET VB GMM + Model Selection')
+	nstates_min = gui.model_dialog.nstates_min.value()
+	nstates_max = gui.model_dialog.nstates_max.value()
+	close_dialog(gui)
+	gui.maven.modeler.run_fret_vbgmm_modelselection(nstates_min,nstates_max)
+	logger.info('Finished FRET VB GMM + Model Selection')
 
 def fxn_fret_mlgmm(gui):
 	logger.info('Executing FRET ML GMM')
@@ -173,9 +206,42 @@ def fxn_fret_kmeans_vbhmm(gui):
 	gui.maven.modeler.run_fret_kmeans_vbhmm(nstates)
 	logger.info('Finished FRET VB HMM->Kmeans')
 
+def fxn_fret_vbgmm_vbhmm_modelsection(gui):
+	logger.info('Executing FRET VB HMM->VB GMM + Model Selection')
+	nstates_min = gui.model_dialog.nstates_min.value()
+	nstates_max = gui.model_dialog.nstates_max.value()
+	close_dialog(gui)
+	gui.maven.modeler.run_fret_vbgmm_vbhmm_modelselection(nstates_min,nstates_max)
+	logger.info('Finished FRET VB HMM->VB GMM + Model Selection')
+
+def fxn_fret_vbgmm_vbhmm(gui):
+	logger.info('Executing FRET VB HMM->VB GMM')
+	nstates = gui.model_dialog.nstates.value()
+	close_dialog(gui)
+	gui.maven.modeler.run_fret_vbgmm_vbhmm(nstates)
+	logger.info('Finished FRET VB HMM->VB GMM')
+
 def fxn_fret_vbhmm_one(gui):
 	logger.info('Executing FRET VB HMM (One)')
 	nstates = gui.model_dialog.nstates.value()
 	close_dialog(gui)
 	gui.maven.modeler.run_fret_vbhmm_one(nstates)
 	logger.info('Finished FRET VB HMM (One)')
+
+def fxn_fret_ebhmm(gui):
+	logger.info('Executing FRET EB HMM')
+	nstates = gui.model_dialog.nstates.value()
+	close_dialog(gui)
+	gui.maven.modeler.run_fret_ebhmm(nstates)
+	logger.info('Finished FRET EB HMM')
+
+def fxn_fret_ebhmm_modelselection(gui):
+	logger.info('Executing FRET EB HMM + Model Selection')
+	nstates_min = gui.model_dialog.nstates_min.value()
+	nstates_max = gui.model_dialog.nstates_max.value()
+	if nstates_min > nstates_max:
+		logger.info('Error: nstates min > max')
+		return
+	close_dialog(gui)
+	gui.maven.modeler.run_fret_ebhmm_modelselection(nstates_min,nstates_max)
+	logger.info('Finished FRET EB HMM + Model Selection')

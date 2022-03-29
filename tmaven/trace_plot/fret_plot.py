@@ -747,7 +747,7 @@ class fret_canvas(FigureCanvas):
 
 	def calc_model_traj(self,index):
 		''' get data for idealized current trajectory '''
-		try: ## if a model doesn't have a .mu, then this should crash and fxn will return None,None
+		try: ## if a model doesn't have a corresponding idealized, then this should crash and fxn will return None,None
 			idealized = self.gui.maven.modeler.model.idealized[index]
 		except:
 			idealized = None

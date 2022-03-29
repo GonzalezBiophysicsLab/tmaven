@@ -70,9 +70,9 @@ def ml_em_hmm(x,nstates,maxiters=1000,threshold=1e-6,init_kmeans=False):
 	mu,var,r,ppi,tmatrix,likelihood,iteration = outer_loop(x,mu,var,ppi,tmatrix,maxiters,threshold)
 
 	#### collect results
-	from .modeler import model_container
-	out = model_container(type='ml HMM',nstates=nstates,r=r,mu=mu,var=var,
-						ppi=ppi,tmatrix=tmatrix,likelihood=likelihood,iteration=iteration)
+	from .model_container import model_container
+	out = model_container(type='ml HMM',nstates=nstates,r=r,mean=mu,var=var,
+						frac=ppi,tmatrix=tmatrix,likelihood=likelihood,iteration=iteration)
 
 	return out
 

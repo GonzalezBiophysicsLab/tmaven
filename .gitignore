@@ -8,3 +8,4 @@ dist
 *.egg-info
 env
 *_build
+*.hdf5

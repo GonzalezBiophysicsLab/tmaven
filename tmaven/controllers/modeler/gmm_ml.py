@@ -79,8 +79,10 @@ def ml_em_gmm(x,nstates,maxiters=1000,threshold=1e-6,init_kmeans=True):
 	mu,var,r,ppi,likelihood,iteration = outer_loop(x,mu,var,ppi,maxiters,threshold)
 
 	#### Collect results
-	from .modeler import model_container
-	out = model_container('ml gmm',r=r,mu=mu,var=var,ppi=ppi,likelihood=likelihood,iteration=iteration)
+	from .model_container import model_container
+	out = model_container(type='ml GMM',
+						  nstates=nstates,mean=mu,var=var,frac=ppi,
+						  r=r,likelihood=likelihood,iteration=iteration)
 	# out.idealized = out.r.argmax(-1)
 	return out
 

@@ -1,11 +1,18 @@
 import numpy as np
 import logging
 logger = logging.getLogger(__name__)
+import types
+import h5py as h
+from .model_container import model_container
 
 default_prefs = {
 	'modeler.nrestarts':4,
 	'modeler.converge':1e-10,
 	'modeler.maxiters':1000,
+	'modeler.vbgmm.prior.beta':0.25,
+	'modeler.vbgmm.prior.a':0.1,
+	'modeler.vbgmm.prior.b':0.01,
+	'modeler.vbgmm.prior.pi':1,
 	'modeler.vbhmm.prior.beta':0.25,
 	'modeler.vbhmm.prior.a':2.5,
 	'modeler.vbhmm.prior.b':0.01,
@@ -15,8 +22,37 @@ default_prefs = {
 	'modeler.vbconhmm.prior.a':2.5,
 	'modeler.vbconhmm.prior.b':0.01,
 	'modeler.vbconhmm.prior.alpha':1.,
-	'modeler.vbconhmm.prior.pi':1.
+	'modeler.vbconhmm.prior.pi':1.,
+	'modeler.ebhmm.prior.beta':0.25,
+	'modeler.ebhmm.prior.a':2.5,
+	'modeler.ebhmm.prior.b':0.01,
+	'modeler.ebhmm.prior.alpha':1.,
+	'modeler.ebhmm.prior.pi':1.
 }
+
+def export_dict_to_group(h_group, dicty, attributes=[]):
+	for k in dicty.keys():
+		if k in attributes:
+			pass
+		#print(k)
+		elif not dicty[k] is None:
+			if isinstance(dicty[k], dict):
+				hh_group = h_group.create_group(k)
+				export_dict_to_group(hh_group, dicty[k])
+			elif np.isscalar(dicty[k]):
+				h_group.create_dataset(k,data=dicty[k])
+			elif not isinstance(dicty[k],types.FunctionType):
+				h_group.create_dataset(k,data=dicty[k],compression='gzip')
+
+
+def load_group_to_dict(h_group):
+	dicty = {}
+	for key, item in h_group.items():
+		if isinstance(item, h._hl.dataset.Dataset):
+			dicty[key] = item[()]
+		elif isinstance(item, h._hl.group.Group):
+			dicty[key] = load_group_to_dict(item)
+	return dicty
 
 class controller_modeler(object):
 	''' Handles modeling data
@@ -113,18 +149,90 @@ class controller_modeler(object):
 		self._active_model_index = len(self.models)-1
 		self.maven.emit_data_update()
 
-	def export_result(self,result,fn):
-		import pickle
-		with open(fn, 'wb') as f:
-			pickle.dump(result,f)
-		logger.info('saved result in {}'.format(fn))
+	def export_result_to_hdf5(self,fn):
+		import time
 
-	def load_result(self,fn):
-		import pickle
-		with open(fn, 'rb') as f:
-			result = pickle.load(f)
-		logger.info('loaded result from {}'.format(fn))
-		return result
+		result = self.model
+		print(result.type)
+		model_dict = result.convert_to_dict()
+		print(result.type)
+
+
+		with h.File(fn,'a') as f:
+
+			if 'model' in f:
+				del f['model']
+				f.flush()
+
+			g = f.create_group('model')
+
+			attributes = ['type', 'time_made','rate_type']
+
+			for atts in attributes:
+				g.attrs[atts] = model_dict[atts]
+
+			g.attrs['time_modified'] = time.ctime()
+
+			export_dict_to_group(g, model_dict, attributes)
+
+			f.flush()
+			f.close()
+
+		logger.info('saved result in {}'.format(fn))
+		print(result)
+		return True
+
+	def load_result_from_hdf5(self,fn):
+		from os.path import isfile
+
+		success = False
+		result = None
+
+		if not isfile(fn):
+			logger.info('%s is not a file'%(fn))
+			return success,result
+
+		with h.File(fn,'r') as f:
+			#try:
+			if 1:
+				g = f['model']
+
+				result_dict = load_group_to_dict(g)
+
+				for key, item in g.attrs.items():
+					result_dict[key] = item
+
+				type = result_dict['type']
+
+				from .model_container import model_container
+
+				result = model_container(type = type)
+
+				result.convert_from_dict(result_dict)
+
+				if result.type in ["threshold","Threshold"]:
+					result.idealize = lambda : self.idealize_fret_threshold(result)
+				elif result.type in ["kmeans","k-means","Kmeans"]:
+					result.idealize = lambda : self.idealize_fret_kmeans(result)
+				elif result.type in ["ml GMM","ML GMM","vb GMM","VB GMM"]:
+					result.idealize = lambda : self.idealize_fret_gmm(result)
+				elif result.type in ["VB Consensus HMM",'vb Consensus HMM']:
+					result.idealize = lambda : self.idealize_fret_threshold(result)
+
+				success = True
+				self.model = result
+
+				logger.info('loaded result from {}'.format(fn))
+				self.make_report(result)
+				self.maven.emit_data_update()
+
+			#except:
+			else:
+				logger.info('%s is not kmd format'%(fn))
+
+			f.close()
+
+		return success,result
 
 	def update_idealization(self):
 		try:
@@ -162,14 +270,69 @@ class controller_modeler(object):
 			pass
 		return items
 
+	def make_report(self,model):
+		#model_dict = model.__dict__
+
+		#for i in ['idealize','idealized','ran']:
+			#model_dict.pop(i)
+
+		type = model.type
+		s = '\nModel type = {}\n'.format(type)
+		#model_dict.pop('type')
+
+		N = len(model.ran)
+		s += 'Model ran on {} traces\n'.format(N)
+
+		nstates = model.nstates
+		s += 'nstates = {}\n'.format(nstates)
+		#model_dict.pop('nstates')
+
+		mean = model.mean
+		s += 'means = {}\n'.format(mean)
+		#model_dict.pop('mean')
+
+		var = model.var
+		s += 'vars = {}\n'.format(var)
+		#model_dict.pop('var')
+
+		frac = model.frac
+		s += 'fracs = {}\n'.format(frac)
+		#model_dict.pop('nstates')
+
+		if not model.tmatrix is None:
+			tmatrix = model.tmatrix
+			s += 'tmatrix = \n{}\n'.format(tmatrix)
+
+		if not model.rates is None:
+			rate_type = model.rate_type
+			rates = model.rates
+			s += 'Rate type = {}\n'.format(rate_type)
+			s += 'Rates = \n{}\n'.format(rates)
+
+		logger.info(s)
+
 	def clip_traces(self,y,low=-1,high=2):
+		np.random.seed(666)
 		for i in range(len(y)):
 			yy = y[i]
 			## Clip traces and redistribute randomly
 			bad = np.bitwise_or((yy < -1.),np.bitwise_or((yy > 2),np.isnan(yy)))
 			yy[bad] = np.random.uniform(low=low,high=high,size=int(bad.sum()))
 			y[i] = yy
+		import time
+		np.random.seed(int(time.time()*1000)%(2**32-1))
 		return y
+
+	def recast_rs(self,result):
+		data = self.maven.calc_fret()[:,:,1]
+		N,T = data.shape
+		rs = result.r
+		result.r = np.zeros((N,T,result.nstates)) + np.nan
+		for i in range(N):
+			ii = result.ran[i]
+			pre = self.maven.data.pre_list[ii]
+			post = self.maven.data.post_list[ii]
+			result.r[ii,pre:post] = rs[i]
 
 	def cached_vbgmm(self,y,priors,nstates,maxiters,converge,nrestarts,ncpu):
 		''' Run individual VB GMM
@@ -208,7 +371,7 @@ class controller_modeler(object):
 			from .hmm_vb_consensus import consensus_vb_em_hmm, consensus_vb_em_hmm_parallel
 			self.cached_functions['VB CON HMM'] = consensus_vb_em_hmm_parallel
 
-		result = self.cached_functions['VB CON HMM'](y,nstates,maxiters=maxiters,threshold=converge,nrestarts=nrestarts,prior_strengths=priors,ncpu=ncpu)
+		result = self.cached_functions['VB CON HMM'](y,nstates,maxiters=maxiters,threshold=converge,nrestarts=nrestarts,priors=priors,ncpu=ncpu,init_kmeans=True)
 		return result
 
 	def cached_vbhmm(self,y,priors,nstates,maxiters,converge,nrestarts,ncpu):
@@ -220,7 +383,19 @@ class controller_modeler(object):
 			from .hmm_vb import vb_em_hmm,vb_em_hmm_parallel
 			self.cached_functions['VB HMM'] = vb_em_hmm_parallel
 
-		result = self.cached_functions['VB HMM'](y,nstates,maxiters=maxiters,threshold=converge,nrestarts=nrestarts,prior_strengths=priors,ncpu=ncpu)
+		result = self.cached_functions['VB HMM'](y,nstates,maxiters=maxiters,threshold=converge,nrestarts=nrestarts,priors=priors,ncpu=ncpu,init_kmeans=True)
+		return result
+
+	def cached_ebhmm(self,y,priors,nstates,maxiters,converge,nrestarts,ncpu):
+		''' Run ensemble EB HMM
+		priors is a 1D np.ndarray of eg [beta,a,b,pi,alpha] used for all states
+		'''
+		if not 'EB HMM' in self.cached_functions:
+			logger.info('Caching EB HMM...')
+			from .hmm_eb import eb_em_hmm
+			self.cached_functions['EB HMM'] = eb_em_hmm
+
+		result = self.cached_functions['EB HMM'](y,nstates,maxiters=maxiters,threshold=converge,nrestarts=nrestarts,priors=priors,ncpu=ncpu,init_kmeans=True)
 		return result
 
 	def cached_mlhmm(self,y,nstates,maxiters,converge,nrestarts,ncpu):
@@ -235,14 +410,17 @@ class controller_modeler(object):
 
 	def cached_threshold(self,y,threshold):
 		''' Idealize an np.ndarray with a threshold into classes 0 (<) and 1 (>)'''
+
 		#nstates = 2
-		result = model_container('threshold')
-		result.threshold = threshold
 		yclass = (y > threshold).astype('int')
-		result.mu = np.array([y[yclass==j].mean() for j in [0,1]]).astype('double')
-		result.var = np.array([y[yclass==j].var() for j in [0,1]]).astype('double')
-		result.ppi = np.array([(yclass==j).sum() for j in [0,1]]).astype('double')
-		result.ppi /= result.ppi.sum()
+		mean = np.array([y[yclass==j].mean() for j in [0,1]]).astype('double')
+		var = np.array([y[yclass==j].var() for j in [0,1]]).astype('double')
+		frac = np.array([(yclass==j).sum() for j in [0,1]]).astype('double')
+		frac /= frac
+
+		result = model_container(type='threshold',
+								 nstates=2,mean=mean,var=var,frac=frac,
+								 threshold=threshold)
 		return result
 
 	def cached_kmeans(self,y,nstates):
@@ -264,7 +442,9 @@ class controller_modeler(object):
 		result.ran = np.nonzero(keep)[0].tolist()
 		result.idealize = lambda : self.idealize_fret_kmeans(result)
 		result.idealize()
+		self.recast_rs(result)
 		self.model = result
+		self.make_report(result)
 		self.maven.emit_data_update()
 
 	def run_fret_vbgmm(self,nstates):
@@ -276,13 +456,47 @@ class controller_modeler(object):
 		converge = self.maven.prefs['modeler.converge']
 		nrestarts = self.maven.prefs['modeler.nrestarts']
 		ncpu = self.maven.prefs['ncpu']
-		priors = np.array([self.maven.prefs[sss] for sss in ['modeler.vbhmm.prior.beta','modeler.vbhmm.prior.a','modeler.vbhmm.prior.b','modeler.vbhmm.prior.pi']])
+		priors = np.array([self.maven.prefs[sss] for sss in ['modeler.vbgmm.prior.beta','modeler.vbgmm.prior.a','modeler.vbgmm.prior.b','modeler.vbgmm.prior.pi']])
 
 		result = self.cached_vbgmm(np.concatenate(y),priors,nstates,maxiters,converge,nrestarts,ncpu)
 		result.ran = np.nonzero(keep)[0].tolist()
 		result.idealize = lambda : self.idealize_fret_gmm(result)
 		result.idealize()
+		self.recast_rs(result)
 		self.model = result
+		self.make_report(result)
+		self.maven.emit_data_update()
+
+	def run_fret_vbgmm_modelselection(self,nstates_min,nstates_max):
+		success, keep, y = self.get_fret_traces()
+		if not success:
+			return
+
+		maxiters = self.maven.prefs['modeler.maxiters']
+		converge = self.maven.prefs['modeler.converge']
+		nrestarts = self.maven.prefs['modeler.nrestarts']
+		ncpu = self.maven.prefs['ncpu']
+		priors = np.array([self.maven.prefs[sss] for sss in ['modeler.vbgmm.prior.beta','modeler.vbgmm.prior.a','modeler.vbgmm.prior.b','modeler.vbgmm.prior.pi']])
+
+		results = []
+		for nstates in range(nstates_min,nstates_max+1):
+			result = self.cached_vbgmm(np.concatenate(y),priors,nstates,maxiters,converge,nrestarts,ncpu)
+			result.ran = np.nonzero(keep)[0].tolist()
+			result.idealize = lambda : self.idealize_fret_gmm(result)
+			result.idealize()
+			self.recast_rs(result)
+			results.append(result)
+
+		elbos = np.array([ri.likelihood[-1,0] for ri in results])
+		modelmax = np.argmax(elbos)
+		logger.info('vbconsensus hmm - best elbo: %f, nstates=%d'%(elbos[modelmax],results[modelmax].nstates))
+		for i in range(len(results)):
+			self.models.append(results[i])
+			if i == modelmax:
+				self._active_model_index = len(self.models)-1
+				self.make_report(results[i])
+
+		#self.model = result
 		self.maven.emit_data_update()
 
 	def run_fret_mlgmm(self,nstates):
@@ -299,7 +513,9 @@ class controller_modeler(object):
 		result.ran = np.nonzero(keep)[0].tolist()
 		result.idealize = lambda : self.idealize_fret_gmm(result)
 		result.idealize()
+		self.recast_rs(result)
 		self.model = result
+		self.make_report(result)
 		self.maven.emit_data_update()
 
 	def run_fret_mlhmm(self,nstates):
@@ -313,21 +529,31 @@ class controller_modeler(object):
 		ncpu = self.maven.prefs['ncpu']
 
 		from .fxns.hmm import viterbi
-		result = self.model_container('ml HMM')
+		from .model_container import trace_model_container
+
+		mu = np.ones(nstates)*np.nan
+		var = mu.copy()
+		frac = mu.copy()
+		result = self.model_container(type='ml HMM',nstates=nstates,mean=mu,var =var,frac=frac)
 		data = self.maven.calc_fret()[:,:,1]
 		result.idealized = np.zeros_like(data) + np.nan
-		result.hmms = []
+		trace_level = {}
 		result.ran = np.nonzero(keep)[0].tolist()
 
 		for i in range(len(y)):
 			yi = y[i].astype('double')
-			result.hmms.append(self.cached_mlhmm(yi,nstates,maxiters,converge,nrestarts,ncpu))
-			ri = result.hmms[-1]
+			r = self.cached_mlhmm(yi,nstates,maxiters,converge,nrestarts,ncpu)
 			ii = result.ran[i]
 			pre = self.maven.data.pre_list[ii]
 			post = self.maven.data.post_list[ii]
-			result.idealized[ii,pre:post] = ri.mu[viterbi(yi,ri.mu,ri.var,ri.tmatrix,ri.ppi).astype('int')]
+			result.idealized[ii,pre:post] = r.mean[viterbi(yi,r.mean,r.var,r.tmatrix,r.frac).astype('int')]
+			trace_level_inst = trace_model_container(r, ii)
+			trace_level_inst.idealized = result.idealized[ii]
+			trace_level[str(ii)] = trace_level_inst
+
+		result.trace_level = trace_level
 		self.model = result
+		self.make_report(result)
 		self.maven.emit_data_update()
 
 	def run_fret_kmeans_mlhmm(self,nstates):
@@ -341,29 +567,37 @@ class controller_modeler(object):
 		ncpu = self.maven.prefs['ncpu']
 
 		from .fxns.hmm import viterbi
-		hmms = []
+		from .model_container import trace_model_container
+
 		data = self.maven.calc_fret()[:,:,1]
-		vit = []
 		idealized = np.zeros_like(data) + np.nan
 		ran = np.nonzero(keep)[0].tolist()
 
+		trace_level = {}
+
 		for i in range(len(y)):
 			yi = y[i].astype('double')
-			hmms.append(self.cached_mlhmm(yi,nstates,maxiters,converge,nrestarts,ncpu))
-			ri = hmms[-1]
+			r = self.cached_mlhmm(yi,nstates,maxiters,converge,nrestarts,ncpu)
 			ii = ran[i]
 			pre = self.maven.data.pre_list[ii]
 			post = self.maven.data.post_list[ii]
-			vit.append(ri.mu[viterbi(yi,ri.mu,ri.var,ri.tmatrix,ri.ppi).astype('int')])
-			idealized[ii,pre:post] = vit[-1]
+			vit = r.mean[viterbi(yi,r.mean,r.var,r.tmatrix,r.frac).astype('int')]
+			idealized[ii,pre:post] = vit
+			trace_level_inst = trace_model_container(r, ii)
+			trace_level_inst.idealized = idealized[ii]
+			trace_level[str(ii)] = trace_level_inst
 
-		result = self.cached_kmeans(np.concatenate(vit),nstates)
-		result.hmms = hmms
+		vits = np.concatenate(idealized)
+		vits = vits[np.isfinite(vits)]
+		result = self.cached_kmeans(vits,nstates)
+		result.trace_level = trace_level
 		result.type = "kmeans + ml HMM"
 		result.ran = ran
 		result.idealize = lambda : self.idealize_fret_kmeans_viterbi(result,idealized)
 		result.idealize()
+		self.recast_rs(result)
 		self.model = result
+		self.make_report(result)
 		self.maven.emit_data_update()
 
 	def run_fret_mlhmm_one(self,nstates):
@@ -389,9 +623,11 @@ class controller_modeler(object):
 		success,keep,y = self.get_fret_traces()
 
 		result = self.cached_threshold(np.concatenate(y),threshold)
+		result.ran = np.nonzero(keep)[0].tolist()
 		result.idealize = lambda : self.idealize_fret_threshold(result)
 		result.idealize()
 		self.model = result
+		self.make_report(result)
 		self.maven.emit_data_update()
 
 	def run_fret_vbconhmm(self,nstates):
@@ -404,19 +640,25 @@ class controller_modeler(object):
 		converge = self.maven.prefs['modeler.converge']
 		nrestarts = self.maven.prefs['modeler.nrestarts']
 		ncpu = self.maven.prefs['ncpu']
-		priors = np.array([self.maven.prefs[sss] for sss in ['modeler.vbconhmm.prior.beta',
-						'modeler.vbconhmm.prior.a','modeler.vbconhmm.prior.b','modeler.vbconhmm.prior.pi',
-						'modeler.vbconhmm.prior.alpha']])
 
-		from .fxns.hmm import viterbi
+		mu_prior = np.percentile(np.concatenate(y),np.linspace(0,100,nstates+2))[1:-1]
+		beta_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbconhmm.prior.beta']
+		a_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbconhmm.prior.a']
+		b_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbconhmm.prior.b']
+		pi_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbconhmm.prior.pi']
+		tm_prior = np.ones((nstates,nstates))*self.maven.prefs['modeler.vbconhmm.prior.alpha']
+
+		priors = [mu_prior, beta_prior, a_prior, b_prior, pi_prior, tm_prior]
+
 		result = self.cached_vbconhmm(y,priors,nstates,maxiters,converge,nrestarts,ncpu)
 
-		data = self.maven.calc_fret()[:,:,1]
-		result.idealized = np.zeros_like(data) + np.nan
 		result.ran = np.nonzero(keep)[0].tolist()
 		result.idealize = lambda : self.idealize_fret_hmm(result)
 		result.idealize()
+		self.recast_rs(result)
+
 		self.model = result
+		self.make_report(result)
 		self.maven.emit_data_update()
 
 	def run_fret_vbconhmm_modelselection(self,nstates_min,nstates_max):
@@ -433,28 +675,36 @@ class controller_modeler(object):
 		converge = self.maven.prefs['modeler.converge']
 		nrestarts = self.maven.prefs['modeler.nrestarts']
 		ncpu = self.maven.prefs['ncpu']
-		priors = np.array([self.maven.prefs[sss] for sss in ['modeler.vbconhmm.prior.beta',
-						'modeler.vbconhmm.prior.a','modeler.vbconhmm.prior.b','modeler.vbconhmm.prior.pi',
-						'modeler.vbconhmm.prior.alpha']])
 
-		from .fxns.hmm import viterbi
 		data = self.maven.calc_fret()[:,:,1]
 		results = []
 		for nstates in range(nstates_min,nstates_max+1):
+			mu_prior = np.percentile(np.concatenate(y),np.linspace(0,100,nstates+2))[1:-1]
+			beta_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbconhmm.prior.beta']
+			a_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbconhmm.prior.a']
+			b_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbconhmm.prior.b']
+			pi_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbconhmm.prior.pi']
+			tm_prior = np.ones((nstates,nstates))*self.maven.prefs['modeler.vbconhmm.prior.alpha']
+
+			priors = [mu_prior, beta_prior, a_prior, b_prior, pi_prior, tm_prior]
+
 			result = self.cached_vbconhmm(y,priors,nstates,maxiters,converge,nrestarts,ncpu)
 			result.idealized = np.zeros_like(data) + np.nan
 			result.ran = np.nonzero(keep)[0].tolist()
 			result.idealize = lambda : self.idealize_fret_hmm(result)
 			result.idealize()
+			self.recast_rs(result)
+
 			results.append(result)
 
-		elbos = np.array([ri.elbo[-1,0] for ri in results])
+		elbos = np.array([ri.likelihood[-1,0] for ri in results])
 		modelmax = np.argmax(elbos)
-		logger.info('vbconsensus hmm - best elbo: %f, nstates=%d'%(elbos[modelmax],results[modelmax].mu.size))
+		logger.info('vbconsensus hmm - best elbo: %f, nstates=%d'%(elbos[modelmax],results[modelmax].nstates))
 		for i in range(len(results)):
 			self.models.append(results[i])
 			if i == modelmax:
 				self._active_model_index = len(self.models)-1
+				self.make_report(results[i])
 		self.maven.emit_data_update()
 
 	def run_fret_vbhmm(self,nstates):
@@ -466,26 +716,43 @@ class controller_modeler(object):
 		converge = self.maven.prefs['modeler.converge']
 		nrestarts = self.maven.prefs['modeler.nrestarts']
 		ncpu = self.maven.prefs['ncpu']
-		priors = np.array([self.maven.prefs[sss] for sss in ['modeler.vbhmm.prior.beta',
-						'modeler.vbhmm.prior.a','modeler.vbhmm.prior.b',
-						'modeler.vbhmm.prior.pi','modeler.vbhmm.prior.alpha']])
+
+		mu_prior = np.percentile(np.concatenate(y),np.linspace(0,100,nstates+2))[1:-1]
+		beta_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.beta']
+		a_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.a']
+		b_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.b']
+		pi_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.pi']
+		tm_prior = np.ones((nstates,nstates))*self.maven.prefs['modeler.vbhmm.prior.alpha']
+
+		priors = [mu_prior, beta_prior, a_prior, b_prior, pi_prior, tm_prior]
 
 		from .fxns.hmm import viterbi
-		result = self.model_container('vb HMM')
+		from .model_container import trace_model_container
+
+		mu = np.ones(nstates)*np.nan
+		var = mu.copy()
+		frac = mu.copy()
+		result = self.model_container(type='vb HMM',nstates=nstates,mean=mu,var =var,frac=frac)
+
 		data = self.maven.calc_fret()[:,:,1]
 		result.idealized = np.zeros_like(data) + np.nan
-		result.hmms = []
+		trace_level = {}
 		result.ran = np.nonzero(keep)[0].tolist()
 
 		for i in range(len(y)):
 			yi = y[i].astype('double')
-			result.hmms.append(self.cached_vbhmm(yi,priors,nstates,maxiters,converge,nrestarts,ncpu))
-			r = result.hmms[-1]
+			r = self.cached_vbhmm(yi,priors,nstates,maxiters,converge,nrestarts,ncpu)
 			ii = result.ran[i]
 			pre = self.maven.data.pre_list[ii]
 			post = self.maven.data.post_list[ii]
-			result.idealized[ii,pre:post] = r.mu[viterbi(yi,r.mu,r.var,r.tmatrix,r.ppi).astype('int')]
+			result.idealized[ii,pre:post] = r.mean[viterbi(yi,r.mean,r.var,r.tmatrix,r.frac).astype('int')]
+			trace_level_inst = trace_model_container(r, ii)
+			trace_level_inst.idealized = result.idealized[ii]
+			trace_level[str(ii)] = trace_level_inst
+
+		result.trace_level = trace_level
 		self.model = result
+		self.make_report(result)
 		self.maven.emit_data_update()
 
 	def run_fret_vbhmm_modelselection(self,nstates_min,nstates_max):
@@ -501,32 +768,51 @@ class controller_modeler(object):
 		converge = self.maven.prefs['modeler.converge']
 		nrestarts = self.maven.prefs['modeler.nrestarts']
 		ncpu = self.maven.prefs['ncpu']
-		priors = np.array([self.maven.prefs[sss] for sss in ['modeler.vbhmm.prior.beta',
-						'modeler.vbhmm.prior.a','modeler.vbhmm.prior.b',
-						'modeler.vbhmm.prior.pi','modeler.vbhmm.prior.alpha']])
+
 
 		from .fxns.hmm import viterbi
-		result = self.model_container('vb HMM')
+		from .model_container import trace_model_container
+
+		mu = np.ones(nstates_max)*np.nan
+		var = mu.copy()
+		frac = mu.copy()
+		result = self.model_container(type='vb HMM_model selection',nstates=nstates_max,mean=mu,var =var,frac=frac)
+
 		data = self.maven.calc_fret()[:,:,1]
 		result.idealized = np.zeros_like(data) + np.nan
-		result.hmms = []
+		trace_level = {}
 		result.ran = np.nonzero(keep)[0].tolist()
+		y_flat = np.concatenate(y)
 
 		for i in range(len(y)):
 			results = []
 			yi = y[i].astype('double')
 			for nstates in range(nstates_min,nstates_max+1):
+				mu_prior = np.percentile(y_flat,np.linspace(0,100,nstates+2))[1:-1]
+				beta_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.beta']
+				a_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.a']
+				b_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.b']
+				pi_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.pi']
+				tm_prior = np.ones((nstates,nstates))*self.maven.prefs['modeler.vbhmm.prior.alpha']
+
+				priors = [mu_prior, beta_prior, a_prior, b_prior, pi_prior, tm_prior]
+
 				results.append(self.cached_vbhmm(yi,priors,nstates,maxiters,converge,nrestarts,ncpu))
-			elbos = np.array([ri.elbo[-1,0] for ri in results])
+
+			elbos = np.array([ri.likelihood[-1,0] for ri in results])
 			modelmax = np.argmax(elbos)
 			r = results[modelmax]
-			result.hmms.append(r)
 			ii = result.ran[i]
 			pre = self.maven.data.pre_list[ii]
 			post = self.maven.data.post_list[ii]
-			result.idealized[ii,pre:post] = r.mu[viterbi(yi,r.mu,r.var,r.tmatrix,r.ppi).astype('int')]
+			result.idealized[ii,pre:post] = r.mean[viterbi(yi,r.mean,r.var,r.tmatrix,r.frac).astype('int')]
+			trace_level_inst = trace_model_container(r, ii)
+			trace_level_inst.idealized = result.idealized[ii]
+			trace_level[str(ii)] = trace_level_inst
 
+		result.trace_level = trace_level
 		self.model = result
+		self.make_report(result)
 		self.maven.emit_data_update()
 
 	def run_fret_kmeans_vbhmm(self,nstates):
@@ -538,34 +824,327 @@ class controller_modeler(object):
 		converge = self.maven.prefs['modeler.converge']
 		nrestarts = self.maven.prefs['modeler.nrestarts']
 		ncpu = self.maven.prefs['ncpu']
-		priors = np.array([self.maven.prefs[sss] for sss in ['modeler.vbhmm.prior.beta',
-						'modeler.vbhmm.prior.a','modeler.vbhmm.prior.b',
-						'modeler.vbhmm.prior.pi','modeler.vbhmm.prior.alpha']])
 
 		from .fxns.hmm import viterbi
-		hmms = []
+		from .model_container import trace_model_container
+
 		data = self.maven.calc_fret()[:,:,1]
-		vit = []
 		idealized = np.zeros_like(data) + np.nan
 		ran = np.nonzero(keep)[0].tolist()
 
+		trace_level = {}
+
+		y_flat = np.concatenate(y)
+
 		for i in range(len(y)):
 			yi = y[i].astype('double')
-			hmms.append(self.cached_vbhmm(yi,priors,nstates,maxiters,converge,nrestarts,ncpu))
-			ri = hmms[-1]
+			results = []
+			for k in range(1,nstates+1):
+				mu_prior = np.percentile(y_flat,np.linspace(0,100,k+2))[1:-1]
+				beta_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.beta']
+				a_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.a']
+				b_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.b']
+				pi_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.pi']
+				tm_prior = np.ones((k,k))*self.maven.prefs['modeler.vbhmm.prior.alpha']
+
+				priors = [mu_prior, beta_prior, a_prior, b_prior, pi_prior, tm_prior]
+				results.append(self.cached_vbhmm(yi,priors,k,maxiters,converge,nrestarts,ncpu))
+
+			elbos = np.array([ri.likelihood[-1,0] for ri in results])
+			modelmax = np.argmax(elbos)
+			r = results[modelmax]
 			ii = ran[i]
 			pre = self.maven.data.pre_list[ii]
 			post = self.maven.data.post_list[ii]
-			vit.append(ri.mu[viterbi(yi,ri.mu,ri.var,ri.tmatrix,ri.ppi).astype('int')])
-			idealized[ii,pre:post] = vit[-1]
 
-		result = self.cached_kmeans(np.concatenate(vit),nstates)
-		result.hmms = hmms
+			vit = r.mean[viterbi(yi,r.mean,r.var,r.tmatrix,r.frac).astype('int')]
+			idealized[ii,pre:post] = vit
+			trace_level_inst = trace_model_container(r, ii)
+			trace_level_inst.idealized = idealized[ii]
+			trace_level[str(ii)] = trace_level_inst
+
+		vits = np.concatenate(idealized)
+		vits = vits[np.isfinite(vits)]
+		result = self.cached_kmeans(vits,nstates)
+		result.trace_level = trace_level
 		result.type = "kmeans + vb HMM"
 		result.ran = ran
 		result.idealize = lambda : self.idealize_fret_kmeans_viterbi(result,idealized)
 		result.idealize()
+		self.recast_rs(result)
 		self.model = result
+		self.make_report(result)
+		self.maven.emit_data_update()
+
+	def run_fret_vbgmm_vbhmm(self,nstates):
+		success, keep, y = self.get_fret_traces()
+		if not success:
+			return
+
+		maxiters = self.maven.prefs['modeler.maxiters']
+		converge = self.maven.prefs['modeler.converge']
+		nrestarts = self.maven.prefs['modeler.nrestarts']
+		ncpu = self.maven.prefs['ncpu']
+
+		from .fxns.hmm import viterbi
+		from .model_container import trace_model_container
+
+		data = self.maven.calc_fret()[:,:,1]
+		idealized = np.zeros_like(data) + np.nan
+		ran = np.nonzero(keep)[0].tolist()
+
+		trace_level = {}
+		y_flat = np.concatenate(y)
+
+		for i in range(len(y)):
+			yi = y[i].astype('double')
+			results = []
+			for k in range(1,nstates+1):
+				mu_prior = np.percentile(y_flat,np.linspace(0,100,k+2))[1:-1]
+				beta_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.beta']
+				a_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.a']
+				b_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.b']
+				pi_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.pi']
+				tm_prior = np.ones((k,k))*self.maven.prefs['modeler.vbhmm.prior.alpha']
+
+				priors = [mu_prior, beta_prior, a_prior, b_prior, pi_prior, tm_prior]
+				results.append(self.cached_vbhmm(yi,priors,k,maxiters,converge,nrestarts,ncpu))
+
+			elbos = np.array([ri.likelihood[-1,0] for ri in results])
+			modelmax = np.argmax(elbos)
+			r = results[modelmax]
+			ii = ran[i]
+			pre = self.maven.data.pre_list[ii]
+			post = self.maven.data.post_list[ii]
+
+			vit = r.mean[viterbi(yi,r.mean,r.var,r.tmatrix,r.frac).astype('int')]
+			idealized[ii,pre:post] = vit
+			trace_level_inst = trace_model_container(r, ii)
+			trace_level_inst.idealized = idealized[ii]
+			trace_level[str(ii)] = trace_level_inst
+
+		vits = np.concatenate(idealized)
+		vits = vits[np.isfinite(vits)]
+		priors = np.array([self.maven.prefs[sss] for sss in ['modeler.vbgmm.prior.beta','modeler.vbgmm.prior.a','modeler.vbgmm.prior.b','modeler.vbgmm.prior.pi']])
+
+		result = self.cached_vbgmm(vits,priors,nstates,maxiters,converge,nrestarts,ncpu)
+		result.trace_level = trace_level
+		result.type = "vb GMM + vb HMM"
+		result.ran = ran
+		result.idealize = lambda : self.idealize_fret_gmm_viterbi(result,idealized)
+		result.idealize()
+
+		viterbi_var = result.var
+		#var = (result.r*((y_flat[:,None] - result.mean[None,:])**2)).sum(0)/(result.r).sum()
+		var = np.zeros_like(result.mean)
+		for i,state in enumerate(np.argmax(result.r, axis = 1)):
+			var[state] += (y_flat[i] - result.mean[state])**2
+
+		var /= result.r.sum()
+
+		print(viterbi_var,var)
+		result.var = var
+		result.viterbi_var = viterbi_var
+		self.recast_rs(result)
+
+		self.model = result
+		self.make_report(result)
+		self.maven.emit_data_update()
+
+	def run_fret_vbgmm_vbhmm_modelselection(self,nstates_min,nstates_max):
+		success, keep, y = self.get_fret_traces()
+		if not success:
+			return
+
+		maxiters = self.maven.prefs['modeler.maxiters']
+		converge = self.maven.prefs['modeler.converge']
+		nrestarts = self.maven.prefs['modeler.nrestarts']
+		ncpu = self.maven.prefs['ncpu']
+
+		from .fxns.hmm import viterbi
+		from .model_container import trace_model_container
+
+		data = self.maven.calc_fret()[:,:,1]
+		idealized = np.zeros_like(data) + np.nan
+		ran = np.nonzero(keep)[0].tolist()
+		results_ens = []
+		y_flat = np.concatenate(y)
+
+
+		for nstates in range(nstates_min,nstates_max+1):
+			trace_level = {}
+
+			for i in range(len(y)):
+				yi = y[i].astype('double')
+				results = []
+				for k in range(1,nstates+1):
+					mu_prior = np.percentile(y_flat,np.linspace(0,100,k+2))[1:-1]
+					beta_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.beta']
+					a_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.a']
+					b_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.b']
+					pi_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.pi']
+					tm_prior = np.ones((k,k))*self.maven.prefs['modeler.vbhmm.prior.alpha']
+
+					priors = [mu_prior, beta_prior, a_prior, b_prior, pi_prior, tm_prior]
+					results.append(self.cached_vbhmm(yi,priors,k,maxiters,converge,nrestarts,ncpu))
+
+				elbos = np.array([ri.likelihood[-1,0] for ri in results])
+				modelmax = np.argmax(elbos)
+				r = results[modelmax]
+				ii = ran[i]
+				pre = self.maven.data.pre_list[ii]
+				post = self.maven.data.post_list[ii]
+
+				vit = r.mean[viterbi(yi,r.mean,r.var,r.tmatrix,r.frac).astype('int')]
+				idealized[ii,pre:post] = vit
+				trace_level_inst = trace_model_container(r, ii)
+				trace_level_inst.idealized = idealized[ii]
+				trace_level[str(ii)] = trace_level_inst
+
+			vits = np.concatenate(idealized)
+			vits = vits[np.isfinite(vits)]
+			priors = np.array([self.maven.prefs[sss] for sss in ['modeler.vbgmm.prior.beta','modeler.vbgmm.prior.a','modeler.vbgmm.prior.b','modeler.vbgmm.prior.pi']])
+
+			result = self.cached_vbgmm(vits,priors,nstates,maxiters,converge,nrestarts,ncpu)
+			result.trace_level = trace_level
+			result.type = "vb GMM + vb HMM"
+			result.ran = ran
+			result.idealize = lambda : self.idealize_fret_gmm_viterbi(result,idealized)
+			result.idealize()
+			self.recast_rs(result)
+			results_ens.append(result)
+
+		elbos = np.array([ri.likelihood[-1,0] for ri in results_ens])
+		modelmax = np.argmax(elbos)
+		logger.info('VB HMM->VB GMM - best elbo: %f, nstates=%d'%(elbos[modelmax],results_ens[modelmax].nstates))
+		for i in range(len(results_ens)):
+			self.models.append(results_ens[i])
+			if i == modelmax:
+				self._active_model_index = len(self.models)-1
+				self.make_report(results_ens[i])
+		self.maven.emit_data_update()
+
+	def run_fret_ebhmm(self,nstates):
+		success,keep,y = self.get_fret_traces()
+		if not success:
+			logger.info('failed to get traces')
+			return
+
+		maxiters = self.maven.prefs['modeler.maxiters']
+		converge = self.maven.prefs['modeler.converge']
+		nrestarts = self.maven.prefs['modeler.nrestarts']
+		ncpu = self.maven.prefs['ncpu']
+
+		mu_prior = np.percentile(np.concatenate(y),np.linspace(0,100,nstates+2))[1:-1]
+		beta_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.ebhmm.prior.beta']
+		a_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.ebhmm.prior.a']
+		b_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.ebhmm.prior.b']
+		pi_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.ebhmm.prior.pi']
+		tm_prior = np.ones((nstates,nstates))*self.maven.prefs['modeler.ebhmm.prior.alpha']
+
+		priors = [mu_prior, beta_prior, a_prior, b_prior, pi_prior, tm_prior]
+
+		result, vbs = self.cached_ebhmm(y,priors,nstates,maxiters,converge,nrestarts,ncpu)
+		result.ran = np.nonzero(keep)[0].tolist()
+
+		data = self.maven.calc_fret()[:,:,1]
+		idealized = np.zeros_like(data) + np.nan
+		trace_level = {}
+		rs = []
+
+		from .fxns.hmm import viterbi
+		from .model_container import trace_model_container
+
+		for i in range(len(y)):
+			yi = y[i].astype('double')
+			r = vbs[i]
+			rs.append(r.r)
+			ii = result.ran[i]
+			pre = self.maven.data.pre_list[ii]
+			post = self.maven.data.post_list[ii]
+
+			vit = r.mean[viterbi(yi,r.mean,r.var,r.tmatrix,r.frac).astype('int')]
+			idealized[ii,pre:post] = vit
+			trace_level_inst = trace_model_container(r, ii)
+			trace_level_inst.idealized = idealized[ii]
+			trace_level[str(ii)] = trace_level_inst
+
+		result.trace_level = trace_level
+		result.r = rs
+		self.recast_rs(result)
+		result.idealized = idealized
+		self.model = result
+		self.make_report(result)
+		self.maven.emit_data_update()
+
+	def run_fret_ebhmm_modelselection(self,nstates_min,nstates_max):
+		if nstates_min > nstates_max:
+			logger.info('nstates min > max')
+			return
+
+		success,keep,y = self.get_fret_traces()
+		if not success:
+			logger.info('failed to get traces')
+			return
+
+		maxiters = self.maven.prefs['modeler.maxiters']
+		converge = self.maven.prefs['modeler.converge']
+		nrestarts = self.maven.prefs['modeler.nrestarts']
+		ncpu = self.maven.prefs['ncpu']
+
+		data = self.maven.calc_fret()[:,:,1]
+		results = []
+
+		from .fxns.hmm import viterbi
+		from .model_container import trace_model_container
+
+		for nstates in range(nstates_min,nstates_max+1):
+			mu_prior = np.percentile(np.concatenate(y),np.linspace(0,100,nstates+2))[1:-1]
+			beta_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.ebhmm.prior.beta']
+			a_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.ebhmm.prior.a']
+			b_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.ebhmm.prior.b']
+			pi_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.ebhmm.prior.pi']
+			tm_prior = np.ones((nstates,nstates))*self.maven.prefs['modeler.ebhmm.prior.alpha']
+
+			priors = [mu_prior, beta_prior, a_prior, b_prior, pi_prior, tm_prior]
+
+			result, vbs = self.cached_ebhmm(y,priors,nstates,maxiters,converge,nrestarts,ncpu)
+			result.ran = np.nonzero(keep)[0].tolist()
+
+			data = self.maven.calc_fret()[:,:,1]
+			idealized = np.zeros_like(data) + np.nan
+			trace_level = {}
+			rs = []
+
+
+			for i in range(len(y)):
+				yi = y[i].astype('double')
+				r = vbs[i]
+				rs.append(r.r)
+				ii = result.ran[i]
+				pre = self.maven.data.pre_list[ii]
+				post = self.maven.data.post_list[ii]
+
+				vit = r.mean[viterbi(yi,r.mean,r.var,r.tmatrix,r.frac).astype('int')]
+				idealized[ii,pre:post] = vit
+				trace_level_inst = trace_model_container(r, ii)
+				trace_level_inst.idealized = idealized[ii]
+				trace_level[str(ii)] = trace_level_inst
+
+			result.trace_level = trace_level
+			result.idealized = idealized
+			result.r = rs
+			self.recast_rs(result)
+			results.append(result)
+
+		elbos = np.array([ri.likelihood[-1] for ri in results])
+		modelmax = np.argmax(elbos)
+		logger.info('EB HMM - best elbo: %f, nstates=%d'%(elbos[modelmax],results[modelmax].nstates))
+		for i in range(len(results)):
+			self.models.append(results[i])
+			if i == modelmax:
+				self._active_model_index = len(self.models)-1
+				self.make_report(results[i])
 		self.maven.emit_data_update()
 
 	def run_fret_vbhmm_one(self,nstates):
@@ -579,9 +1158,15 @@ class controller_modeler(object):
 		converge = self.maven.prefs['modeler.converge']
 		nrestarts = self.maven.prefs['modeler.nrestarts']
 		ncpu = self.maven.prefs['ncpu']
-		priors = np.array([self.maven.prefs[sss] for sss in ['modeler.vbhmm.prior.beta',
-						'modeler.vbhmm.prior.a','modeler.vbhmm.prior.b',
-						'modeler.vbhmm.prior.pi','modeler.vbhmm.prior.alpha']])
+
+		mu_prior = np.percentile(np.concatenate(y),np.linspace(0,100,nstates+2))[1:-1]
+		beta_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.beta']
+		a_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.a']
+		b_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.b']
+		pi_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.pi']
+		tm_prior = np.ones((nstates,nstates))*self.maven.prefs['modeler.vbhmm.prior.alpha']
+
+		priors = [mu_prior, beta_prior, a_prior, b_prior, pi_prior, tm_prior]
 
 		result = self.cached_vbhmm(y[0].astype('double'),priors,nstates,maxiters,converge,nrestarts,ncpu)
 
@@ -589,17 +1174,20 @@ class controller_modeler(object):
 		result.idealize = lambda : self.idealize_fret_hmm(result)
 		result.idealize()
 		self.model = result
+		self.make_report(result)
 		self.maven.emit_data_update()
 
 	def idealize_fret_gmm(self,result):
 		data = self.maven.calc_fret()[:,:,1]
 		result.idealized = np.zeros_like(data) + np.nan
-
-		prob = 1./np.sqrt(2.*np.pi*result.var[None,None,:])*np.exp(-.5/result.var[None,None,:]*(data[:,:,None]-result.mu[None,None,:])**2.)
-		prob /= prob.sum(2)[:,:,None]
-		prob *= result.ppi[None,None,:]
-		idealpath = np.argmax(prob,axis=2).astype('int64')
-		result.idealized = result.mu[idealpath]
+		for ii in result.ran:
+			pre = self.maven.data.pre_list[ii]
+			post = self.maven.data.post_list[ii]
+			prob = 1./np.sqrt(2.*np.pi*result.var[None,None,:])*np.exp(-.5/result.var[None,None,:]*(data[ii,pre:post,None]-result.mean[None,None,:])**2.)
+			prob /= prob.sum(2)[:,:,None]
+			prob *= result.frac[None,None,:]
+			idealpath = np.argmax(prob,axis=2).astype('int64')
+			result.idealized[ii, pre:post] = result.mean[idealpath]
 
 	def idealize_fret_kmeans(self,result):
 		data = self.maven.calc_fret()[:,:,1]
@@ -608,8 +1196,8 @@ class controller_modeler(object):
 			#ii = result.ran[i]
 			pre = self.maven.data.pre_list[ii]
 			post = self.maven.data.post_list[ii]
-			idealpath = np.abs(data[ii,pre:post,None] - result.mu[None,:]).argmin(1).astype('int64')
-			result.idealized[ii, pre:post] = result.mu[idealpath]
+			idealpath = np.abs(data[ii,pre:post,None] - result.mean[None,:]).argmin(1).astype('int64')
+			result.idealized[ii, pre:post] = result.mean[idealpath]
 
 	def idealize_fret_threshold(self,result):
 		data = self.maven.calc_fret()[:,:,1]
@@ -621,7 +1209,7 @@ class controller_modeler(object):
 		result.idealized = np.zeros_like(data)
 		for i in range(data.shape[0]):
 			idealpath = (data[i] > threshold).astype('int')
-			result.idealized[i] = result.mu[idealpath]
+			result.idealized[i] = result.mean[idealpath]
 
 	def idealize_fret_kmeans_viterbi(self,result,vit):
 		result.idealized = np.zeros_like(vit) + np.nan
@@ -629,8 +1217,20 @@ class controller_modeler(object):
 			#ii = result.ran[i]
 			pre = self.maven.data.pre_list[ii]
 			post = self.maven.data.post_list[ii]
-			idealpath = np.abs(vit[ii,pre:post,None] - result.mu[None,:]).argmin(1).astype('int64')
-			result.idealized[ii, pre:post] = result.mu[idealpath]
+			idealpath = np.abs(vit[ii,pre:post,None] - result.mean[None,:]).argmin(1).astype('int64')
+			result.idealized[ii, pre:post] = result.mean[idealpath]
+
+	def idealize_fret_gmm_viterbi(self,result, vit):
+		result.idealized = np.zeros_like(vit) + np.nan
+
+		for ii in result.ran:
+			pre = self.maven.data.pre_list[ii]
+			post = self.maven.data.post_list[ii]
+			prob = 1./np.sqrt(2.*np.pi*result.var[None,None,:])*np.exp(-.5/result.var[None,None,:]*(vit[ii,pre:post,None]-result.mean[None,None,:])**2.)
+			prob /= prob.sum(2)[:,:,None]
+			prob *= result.frac[None,None,:]
+			idealpath = np.argmax(prob,axis=2).astype('int64')
+			result.idealized[ii, pre:post] = result.mean[idealpath]
 
 	def idealize_fret_hmm(self,result):
 		from .fxns.hmm import viterbi
@@ -640,39 +1240,4 @@ class controller_modeler(object):
 		post = self.maven.data.post_list
 		for i in range(data.shape[0]):
 			if post[i]-pre[i]>=2:
-				result.idealized[i,pre[i]:post[i]] = result.mu[viterbi(data[i,pre[i]:post[i]],result.mu,result.var,result.tmatrix,result.ppi).astype('int')]
-
-
-class model_container(object):
-	'''
-	A container object for the details of any (ensemble) model learnt from sm data.
-	A model must contain:
-		- type (str): Identifies the specific model used
-		- ran (list/None): List of indices of molecules the model was run on or None
-		- idealized (np.ndarray/None): representation of the model in dataspace -- shape should probably match maven.data.raw.shape
-
-	Optional top level model information (populated depending on 'type'):
-		These are all duck-typed. Check to make sure that the model type has one of these.
-
-	.idealize is an overwritten function that should update .idealized all by itself (or just not do anything)
-	'''
-	def __init__(self, type, ran=[], idealized=None, **kwargs):
-		self.type = type
-		self.ran = ran
-		self.idealized = idealized
-		self.__dict__.update(kwargs)
-
-		import time
-		self.time_made = time.ctime()
-
-	def description(self):
-		mem = hex(id(self))
-		try:
-			t = '{} ({})'.format(self.type,str(self.nstates))
-		except:
-			t = self.type
-
-		return '[{}] {} - {}'.format(mem,t,self.time_made)
-
-	def idealize(self):
-		pass
+				result.idealized[i,pre[i]:post[i]] = result.mean[viterbi(data[i,pre[i]:post[i]],result.mean,result.var,result.tmatrix,result.frac).astype('int')]

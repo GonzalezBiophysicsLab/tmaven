@@ -130,7 +130,7 @@ def outer_loop(x,mu,var,ppi,maxiters,threshold,prior_strengths):
 
 		## likelihood
 		if iteration > 1:
-			dl = np.abs((ll1 - ll0)/ll0)
+			dl = (ll1 - ll0)/np.abs(ll0)
 			if dl < threshold or np.isnan(ll1):
 				break
 
@@ -165,12 +165,18 @@ def vb_em_gmm(x,nstates,maxiters=1000,threshold=1e-6,prior_strengths=None,init_k
 	likelihood = likelihood[:iteration+1]
 
 	#### Collect results
-	from .modeler import model_container
-	out = model_container('vb gmm',r=r,a=a,b=b,mu=mu,beta=beta,alpha=alpha,E_lnlam=E_lnlam,E_lnpi=E_lnpi,elbo=likelihood,iteration=iteration)
-	out.var = 1./np.exp(out.E_lnlam)
-	out.ppi = out.r.sum(0) / out.r.sum()
-	out.priors = prior_strengths
-	out.idealized = out.r.argmax(-1)
+	from .model_container import model_container
+	var = 1./np.exp(E_lnlam)
+	ppi = r.sum(0) / r.sum()
+	priors = prior_strengths
+	out = model_container(type='vb GMM',
+						  nstates=nstates,mean=mu,var=var,frac=ppi,
+						  likelihood=likelihood,
+						  iteration=iteration, r=r,a=a,b=b,beta=beta,alpha=alpha,
+						  E_lnlam=E_lnlam,E_lnpi=E_lnpi,
+						  priors=priors)
+
+	#out.idealized = out.r.argmax(-1)
 	return out
 
 def vb_em_gmm_parallel(x,nstates,maxiters=1000,threshold=1e-10,nrestarts=1,prior_strengths=None,ncpu=1):
