@@ -4,7 +4,7 @@ import numpy as np
 
 def build_menu(gui):
 	from . import launchers
-	from ...controllers.modeler.dwell import analyze_dwells
+	from ...controllers.modeler.dwells import analyze_dwells
 	from PyQt5.QtWidgets import QMenu
 	logger.info('Adding menu modeler')
 

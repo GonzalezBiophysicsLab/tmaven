@@ -270,6 +270,14 @@ class controller_modeler(object):
 			pass
 		return items
 
+	def get_survival_dwells(self, state):
+		result = self.model
+		dwells_model = result.dwells
+		from .dwells import survival
+		tau, survival_norm = survival(np.array(dwells_model[str(state)]))
+		return tau, survival_norm
+
+
 	def make_report(self,model):
 		#model_dict = model.__dict__
 
