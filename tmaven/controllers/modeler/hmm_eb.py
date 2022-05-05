@@ -628,16 +628,8 @@ def eb_em_hmm(x,nstates,maxiters=1000,nrestarts=1,threshold=1e-10,priors=None,nc
 	frac = E_z.sum(0)/E_z.sum()
 	#frac = pi/(pi.sum())
 
-	tmstar = tmatrix.copy()
-	for i in range(tmstar.shape[0]):
-		tmstar[i] /= tmstar[i].sum()
-
-	if nstates > 1:
-		rates = -np.log(1.-tmstar)/1.
-		for i in range(rates.shape[0]):
-			rates[i,i] = 0.
-	else:
-		rates = np.zeros_like(tmstar)
+	from .dwells import convert_tmatrix
+	rates = convert_tmatrix(tmatrix)
 
 	priors = {'mu_prior':mu_prior,
 			  'beta_prior':beta_prior,

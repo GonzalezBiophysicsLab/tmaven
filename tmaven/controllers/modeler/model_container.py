@@ -27,7 +27,7 @@ class model_container(object):
 				 nstates = None, mean=None, var=None, frac=None,
 				 likelihood=None,
 				 idealized=None,
-				 tmatrix=None, rates=None,
+				 tmatrix=None, rates=None, dwells =None,
 				 ran=[],
 				 **kwargs):
 
@@ -47,6 +47,7 @@ class model_container(object):
 		# Kinetic parameters
 		self.tmatrix = tmatrix
 		self.rates = rates
+		self.dwells = dwells
 
 		#self.check_consistency()
 

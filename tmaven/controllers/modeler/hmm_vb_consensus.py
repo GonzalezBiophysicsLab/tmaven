@@ -284,16 +284,9 @@ def consensus_vb_em_hmm(x,nstates,maxiters=1000,threshold=1e-10,nrestarts=1,prio
 	ppi = np.sum(r,axis=0)
 	ppi /= ppi.sum()
 	var = 1./np.exp(E_lnlam)
-	tmstar = tmatrix.copy()
-	for i in range(tmstar.shape[0]):
-		tmstar[i] /= tmstar[i].sum()
 
-	if nstates > 1:
-		rates = -np.log(1.-tmstar)/1.
-		for i in range(rates.shape[0]):
-			rates[i,i] = 0.
-	else:
-		rates = np.zeros_like(tmstar)
+	from .dwells import convert_tmatrix
+	rates = convert_tmatrix(tmatrix)
 
 	new_r = []
 	for i in range(xind[-1]+1):

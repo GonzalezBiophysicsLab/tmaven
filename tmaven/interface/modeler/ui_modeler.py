@@ -4,7 +4,7 @@ import numpy as np
 
 def build_menu(gui):
 	from . import launchers
-	from ...controllers.modeler.dwells import analyze_dwells
+
 	from PyQt5.QtWidgets import QMenu
 	logger.info('Adding menu modeler')
 
@@ -52,7 +52,8 @@ def build_menu(gui):
 	ens.addAction('ebHMM + Model selection', lambda: launchers.launch_fret_ebhmm_modelselection(gui))
 
 	menu_modeler.addSeparator()
-	menu_modeler.addAction('Calculate Dwell Times', lambda: analyze_dwells(gui))
+	#menu_modeler.addAction('Calculate Dwell Times', lambda: analyze_dwells(gui))
+	menu_modeler.addAction('Analyze Dwell Times', lambda: launchers.launch_fret_dwell_analysis(gui))
 
 	return menu_modeler
 
@@ -142,7 +143,7 @@ def update_idealization(gui):
 
 def change_model(gui):
 	old = gui.maven.modeler._active_model_index
-	success,indexes = select_model_popup(gui,'Change Activate Model',False)
+	success,indexes = select_model_popup(gui,'Change Active Model',False)
 	if success:
 		gui.maven.modeler.set_model(indexes[0])
 		logger.info('Changed active model from {} to {}'.format(old,gui.maven.modeler._active_model_index))

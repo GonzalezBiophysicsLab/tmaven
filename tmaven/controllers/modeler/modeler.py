@@ -64,7 +64,6 @@ class controller_modeler(object):
 
 	### TODO:
 		cache compile in a separate thread fxns that need to be numba'd?
-		remove ??? * .result - is None or holds a model result
 	'''
 
 	def __init__(self,maven):
@@ -440,6 +439,17 @@ class controller_modeler(object):
 
 		result = self.cached_functions['kmeans'](y,nstates)
 		return result
+
+	def cache_exponential_fxn(self,type):
+		from .dwells import optimize_single_surv, optimize_double_surv, optimize_triple_surv, optimize_stretch_surv
+		if type == 'Single Exponential':
+			self.cached_functions[type] = optimize_single_surv
+		if type == 'Double Exponential':
+			self.cached_functions[type] = optimize_double_surv
+		if type == 'Triple Exponential':
+			self.cached_functions[type] = optimize_triple_surv
+		if type == 'Stretched Exponential':
+			self.cached_functions[type] = optimize_stretch_surv
 
 	def run_fret_kmeans(self,nstates):
 		success, keep, y = self.get_fret_traces()
@@ -1184,6 +1194,42 @@ class controller_modeler(object):
 		self.model = result
 		self.make_report(result)
 		self.maven.emit_data_update()
+
+	def run_fret_dwell_analysis(self, type, state, fix_A = False):
+		tau,surv = self.get_survival_dwells(state)
+
+		if not type in self.cached_functions:
+			self.cache_exponential_fxn(type)
+
+		rates = self.cached_functions[type](tau,surv,fix_A)
+
+		model = self.model
+
+		if model.rate_type in ["Transition Matrix", "N/A"]:
+			model.rate_type = "Dwell Analysis"
+			model.rates = {}
+
+		model.rates[state] = {}
+		model.rates[state]['ks'] = rates[0]
+		model.rates[state]['As'] = rates[-1]
+
+		if type == "Stretched Exponential":
+			model.rates[state]["betas"] = rates[1]
+		elif "betas" in model.rates:
+			model.rates.pop('betas')
+
+		self.model = model
+
+	def run_fret_tmatrix(self):
+		model = self.model
+
+		if not model.tmatrix is None:
+			from .dwells import convert_tmatrix
+			model.rates = convert_tmatrix(model.tmatrix)
+			model.rate_type = "Transition Matrix"
+		else:
+			return
+
 
 	def idealize_fret_gmm(self,result):
 		data = self.maven.calc_fret()[:,:,1]

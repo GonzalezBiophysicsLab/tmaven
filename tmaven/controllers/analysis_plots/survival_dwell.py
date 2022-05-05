@@ -3,6 +3,8 @@ import logging
 logger = logging.getLogger(__name__)
 
 from .base import controller_base_analysisplot
+from ..modeler.dwells import (single_exp_surv, double_exp_surv, triple_exp_surv, stretched_exp_surv,
+							 single_exp_hist, double_exp_hist, triple_exp_hist, stretched_exp_hist)
 
 class controller_survival_dwell(controller_base_analysisplot):
 	def __init__(self,maven):
@@ -62,16 +64,19 @@ class controller_survival_dwell(controller_base_analysisplot):
 		## Decide if we should be plotting at all
 		if self.maven.modeler.model is None:
 			logger.error('No model')
-		elif not hasattr(self.maven.modeler.model, 'dwells'):
+			error_dwell = True
+		elif self.maven.modeler.model.dwells is None:
 			logger.error('Incorrect model')
-
+			error_dwell = True
 		elif self.prefs['dwell_state'] > self.maven.modeler.model.nstates - 1:
 			logger.error('State number out of bounds')
-
-		try:
+			error_dwell = True
+		else:
 			self.d = np.array(self.maven.modeler.model.dwells[str(self.prefs['dwell_state'])])
 			tau, self.surv = self.maven.modeler.get_survival_dwells(self.prefs['dwell_state'])
-		except:
+			error_dwell = False
+
+		if error_dwell:
 			self.d = np.array([])
 			tau =  np.array([])
 			self.surv = np.array([])
@@ -101,10 +106,28 @@ class controller_survival_dwell(controller_base_analysisplot):
 						self.k = k
 						self.a = 1
 						decay = np.exp(-tau*k)
-						color = self.prefs['model_color']
-						if not colors.is_color_like(color):
-							color = 'black'
-						ax.plot(tau,decay,color=color,ls =self.prefs['model_ls'])
+						self.beta = None
+					elif self.maven.modeler.model.rate_type == "Dwell Analysis":
+						rate = self.maven.modeler.model.rates[self.prefs['dwell_state']]
+						self.k = rate['ks']
+						self.a = rate['As']
+						if 'betas' in rate:
+							self.beta = rate['betas']
+							decay = stretched_exp_surv(tau, self.k, self.beta, self.a)
+						elif len(self.k) == 1:
+							self.beta = None
+							decay = single_exp_surv(tau, self.k, self.a)
+						elif len(self.k) == 2:
+							self.beta = None
+							decay = double_exp_surv(tau, self.k[0], self.k[1], self.a[0]/self.a.sum(), self.a.sum())
+						elif len(self.k) == 3:
+							self.beta = None
+							decay = triple_exp_surv(tau, self.k[0], self.k[1], self.k[1],self.a[0]/self.a.sum(), self.a[1]/self.a.sum(),self.a.sum())
+
+					color = self.prefs['model_color']
+					if not colors.is_color_like(color):
+						color = 'black'
+					ax.plot(tau,decay,color=color,ls =self.prefs['model_ls'])
 
 			if self.prefs['hist_log_y']:
 				ax.set_yscale('log')
@@ -127,19 +150,40 @@ class controller_survival_dwell(controller_base_analysisplot):
 			if self.prefs['hist_log_y']:
 				ax.set_yscale('log')
 
+
+
 			if self.prefs['model_on']:
 				if not self.maven.modeler.model.rates is None:
+					drange=np.arange(d.min(),d.max())
 					if self.maven.modeler.model.rate_type == "Transition Matrix":
-						d_range=np.arange(d.min(),d.max())
+						#d_range=np.arange(d.min(),d.max())
 						k = self.maven.modeler.model.rates[self.prefs['dwell_state']].sum()
 						self.k = k
 						self.a = 1
-						decay = k*np.exp(-d_range*k)
-						color = self.prefs['model_color']
-						if not colors.is_color_like(color):
-							color = 'black'
+						decay = k*np.exp(-drange*k)
+						self.beta = None
+					elif self.maven.modeler.model.rate_type == "Dwell Analysis":
+						rate = self.maven.modeler.model.rates[self.prefs['dwell_state']]
+						self.k = rate['ks']
+						self.a = rate['As']
+						if 'betas' in rate:
+							self.beta = rate['betas']
+							decay = stretched_exp_hist(drange, self.k, self.beta, self.a)
+						elif len(self.k) == 1:
+							self.beta = None
+							decay = single_exp_hist(drange, self.k, self.a)
+						elif len(self.k) == 2:
+							self.beta = None
+							decay = double_exp_hist(drange, self.k[0], self.k[1], self.a[0]/self.a.sum(), self.a.sum())
+						elif len(self.k) == 3:
+							self.beta = None
+							decay = triple_exp_hist(drange, self.k[0], self.k[1], self.k[1],self.a[0]/self.a.sum(), self.a[1]/self.a.sum(),self.a.sum())
 
-						ax.plot(d_range,decay,color=color,ls =self.prefs['model_ls'])
+					color = self.prefs['model_color']
+					if not colors.is_color_like(color):
+						color = 'black'
+
+					ax.plot(drange,decay,color=color,ls =self.prefs['model_ls'])
 
 		self.garnish(fig,ax)
 		fig.canvas.draw()
@@ -182,7 +226,11 @@ class controller_survival_dwell(controller_base_analysisplot):
 			family=self.prefs['font'])
 
 		if self.prefs['model_on']:
-			lstr2 = 'A = {:.3f} \nk = {:.3f}'.format(self.a, self.k)
+			print(self.beta)
+			if not self.beta is None:
+				lstr2 ='A = {} \nk = {}\n'.format(np.around(self.a, decimals = 3),np.around(self.k, decimals = 3)) + r'$\beta$ = {}'.format(np.around(self.beta, decimals = 3))
+			else:
+				lstr2 = 'A = {} \nk = {}'.format(np.around(self.a, decimals = 3), np.around(self.k, decimals = 3))
 			ax.annotate(lstr2,xy=(self.prefs['textbox_x'], self.prefs['textbox_y'] - self.prefs['textbox_offset']),
 				xycoords='axes fraction', ha='right', color='k',
 				bbox=bbox_props, fontsize=self.prefs['textbox_fontsize']/dpr,
