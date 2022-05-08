@@ -199,7 +199,7 @@ def load_raw_numpy(gui):
 
 	try:
 		logger.info('Trying to load %s'%(fname))
-		smd = gui.maven.io.load_numpy(fname,order,missing,decollate,decollate_axis)
+		smd = gui.maven.io.load_smd_numpy(fname,order,missing,decollate,decollate_axis)
 		gui.maven.io.add_data(smd,None)
 		gui.maven.emit_data_update()
 	except Exception as e:

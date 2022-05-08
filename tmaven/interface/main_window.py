@@ -115,7 +115,7 @@ class main_window(QMainWindow):
 		self.maven.emit_data_update()
 
 	def reset_menus(self):
-		from . import ui_io, ui_scripts, ui_cull, ui_corrections, ui_selection, ui_photobleaching, ui_trace_filter
+		from . import ui_io, ui_scripts, ui_cull, ui_corrections, ui_selection, ui_photobleaching, ui_trace_filter, ui_experimental
 		from .modeler import ui_modeler
 
 		logger.info('Building Menus')
@@ -129,6 +129,7 @@ class main_window(QMainWindow):
 
 		self.menu_load,self.menu_save = ui_io.build_menu(self)
 		self.menu_scripts = self.menu_other.addMenu('Script Runner')
+		self.menu_experimental = self.menu_other.addMenu('Experimental')
 		self.trace_filter = ui_trace_filter.container_trace_filter(self)
 		self.menu_cull = ui_cull.build_menu(self)
 		self.menu_corrections,self.menu_correction_filters = ui_corrections.build_menu(self)
@@ -157,9 +158,11 @@ class main_window(QMainWindow):
 		self.menu_view.addAction('Show Log',self.show_log)
 		self.menu_view.addAction('Molecule Table',self.molecules_viewer.toggle,'Ctrl+T')
 		self.menu_view.addAction('Preferences',self.preferences_viewer.toggle,'Ctrl+P')
+
 		self.menu_other.addAction(self.hdf5_viewer.action)
 		self.menu_scripts.addAction('Run Script',lambda:ui_scripts.run(self),'Ctrl+R')
 		self.menu_scripts.addAction('Run Input',lambda:ui_scripts.input_run(self))
+		self.menu_experimental.addAction('Dwell Inversion',lambda:ui_experimental.dwell_inversion(self))
 
 		self.menu_tools.addMenu(self.menu_selection)
 		self.menu_tools.addMenu(self.menu_cull)
