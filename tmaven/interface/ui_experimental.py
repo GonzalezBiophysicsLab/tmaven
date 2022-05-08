@@ -25,7 +25,7 @@ def dwell_inversion(gui):
 			w /= w.sum()*delta
 			lnL = .5*np.sum((r-np.sum(w*np.exp(-k[None,:]*t[:,None]),axis=1))**2.)
 			l1 = lnL
-			rel = (l1-l0)/np.abs(l0)
+			rel = np.abs(l1-l0)/np.abs(l0)
 			if verbose: print(iter, rel, lnL)
 			l0 = l1
 			if rel < 1e-10 and iter > 4:
@@ -38,9 +38,15 @@ def dwell_inversion(gui):
 		def fxn(w,s,delta,k,t):
 			if np.any(w < 0):
 				return np.inf
+			intsum = w.sum()*delta
+			if intsum < .99 or intsum > 1.01:
+				return np.inf
 			return np.sum((s - (1.-np.exp(-delta*t))/t * np.sum(w[:,None]*np.exp(-k[:,None]*t[None,:]),axis=0))**2.)
-		out = minimize(fxn,x0=w,args=(s,delta,k,t),method='Nelder-Mead')
+
+		out = minimize(fxn,x0=w,args=(s,delta,k,t),method='Nelder-Mead',options={'maxiter':1000000})
+		print(out.success)
 		ww = out.x
+		# ww /= ww.sum()*delta
 		ss = (1.-np.exp(-delta*t))/t * np.sum(ww[:,None]*np.exp(-k[:,None]*t[None,:]),axis=0)
 		return ww,ss
 
@@ -58,13 +64,15 @@ def dwell_inversion(gui):
 		logger.info('Failed to get dwells')
 		return
 
-	n = np.min((500,t.size//2))
-	k = np.linspace(0,(t[1]-t[0])/2.,n+1)[1:]
+	# n = np.min((500,t.size//2))
+	n = 100
+	k = np.linspace(0,1./(t[1]-t[0])*.5,n+1)[1:]
 	w = np.ones(k.size)/((k[1]-k[0])*k.size)
 	logger.info('Running Newton optimizer')
 	w1,s1 = newton(w,k,t,s,verbose=False)
 	logger.info('Running Nelder-Mead optimizer')
 	w2,s2 = simplex(w1,k,t,s)
+
 
 	from PyQt5.QtWidgets import QMainWindow,QApplication,QSizePolicy,QVBoxLayout,QWidget
 	from PyQt5.QtCore import QSize
@@ -108,10 +116,10 @@ def dwell_inversion(gui):
 	ax[2].set_ylabel(r'Spectral Density')
 	# ax[1].legend(['GS1->GS2 (?)','GS2->GS1 (?)'])
 	ax[1].set_xscale('log')
-	ax[1].set_xlabel(r'k (frame$^{-1}$)')
+	ax[1].set_xlabel(r'k (s$^{-1}$)')
 	ax[1].set_ylabel(r'Spectral Density')
 	# ax[1].set_xlim(k.min(),k.max())
-	ax[0].set_xlabel(r'Time (frame)')
+	ax[0].set_xlabel(r'Time (s)')
 	ax[0].set_ylabel(r'Survival ($\tau > t$)')
 	fig.tight_layout()
 	qmw.show()
