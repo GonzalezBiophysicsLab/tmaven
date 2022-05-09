@@ -106,16 +106,6 @@ def launch_fret_vbhmm_one(gui):
 	dialogs.dialog_vbhmm(gui,lambda: fxn_fret_vbhmm_one(gui),'VB HMM (One)')
 	gui.model_dialog.start()
 
-def launch_fret_dwell_analysis(gui):
-	logger.info('Launching FRET Dwell Analysis')
-	if gui.maven.modeler.model is None:
-		pass
-	else:
-		model = gui.maven.modeler.model
-		dialogs.dialog_dwell_analysis(gui,model)
-		gui.dwell_dialog.start()
-
-
 def fxn_fret_threshold(gui):
 	logger.info('Executing FRET threshold')
 	threshold = float(gui.model_dialog.threshold.text())

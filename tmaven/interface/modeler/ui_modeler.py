@@ -4,6 +4,7 @@ import numpy as np
 
 def build_menu(gui):
 	from . import launchers
+	from ..ui_dwell import launch_fret_dwell_analysis
 
 	from PyQt5.QtWidgets import QMenu
 	logger.info('Adding menu modeler')
@@ -53,7 +54,7 @@ def build_menu(gui):
 
 	menu_modeler.addSeparator()
 	#menu_modeler.addAction('Calculate Dwell Times', lambda: analyze_dwells(gui))
-	menu_modeler.addAction('Analyze Dwell Times', lambda: launchers.launch_fret_dwell_analysis(gui))
+	menu_modeler.addAction('Analyze Dwell Times', lambda: launch_fret_dwell_analysis(gui))
 
 	return menu_modeler
 
