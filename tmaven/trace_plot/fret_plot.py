@@ -221,8 +221,9 @@ class fret_canvas(FigureCanvas):
 
 	def redrawplot(self,*args,**kwargs):
 		''' convenience function to redraw figure '''
-		self.update_plots(self.gui.index)
-		self.resize_figure()
+		if not self.gui.maven.data is None:
+			self.update_plots(self.gui.index)
+			self.resize_figure()
 	#
 	# def redrawplot2(self,*args,**kwargs):
 	# 	''' convenience function to redraw figure '''
