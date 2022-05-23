@@ -13,15 +13,20 @@ def build_menu(gui):
 	menu_save = QMenu('Export',gui)
 
 	### Load
-	menu_load.addAction('Load (SMD)',lambda : load_interactive(gui),shortcut='Ctrl+O')
-	menu_raw = menu_load.addMenu('Raw')
-	menu_raw.addAction('Load HDF5 Dataset',lambda : load_raw_hdf5dataset(gui))
-	menu_raw.addAction('Load Numpy',lambda : load_raw_numpy(gui))
-	menu_raw.addAction('Load text',lambda : load_raw_text(gui))
-	menu_lother = menu_load.addMenu('Other')
-	menu_lother.addAction('Classes (HDF5 Dataset)',lambda : load_classes_hdf5dataset(gui))
-	menu_lother.addAction('Pre Time (HDF5 Dataset)',lambda : load_pre_hdf5dataset(gui))
-	menu_lother.addAction('Post Time (HDF5 Dataset)',lambda : load_post_hdf5dataset(gui))
+	menu_load.addAction('SMD',lambda : load_interactive(gui),shortcut='Ctrl+O')
+	menu_hdf5 = menu_load.addMenu('HDF5 Dataset')
+	menu_hdf5.addAction('Raw',lambda : load_raw_hdf5dataset(gui), shortcut='Ctrl+Shift+O')
+	menu_hdf5.addAction('Classes',lambda : load_classes_hdf5dataset(gui))
+	menu_hdf5.addAction('Pre Time',lambda : load_pre_hdf5dataset(gui))
+	menu_hdf5.addAction('Post Time',lambda : load_post_hdf5dataset(gui))
+
+	menu_txt = menu_load.addMenu('ASCII Text files')
+	menu_txt.addAction('Raw',lambda : load_raw_text(gui))
+	menu_txt.addAction('Classes, Pre, Post', lambda : load_clprpo_text(gui))
+
+	menu_npy = menu_load.addMenu('Numpy arrays')
+	menu_npy.addAction('Raw',lambda : load_raw_numpy(gui))
+
 
 	### save
 	menu_save.addAction('Save (SMD)',lambda : export_smd(gui),shortcut='Ctrl+S')
@@ -208,7 +213,7 @@ def load_raw_numpy(gui):
 
 def load_raw_text(gui):
 	from PyQt5.QtWidgets import QFileDialog
-	fname = QFileDialog.getOpenFileName(gui,'Choose .npy binary file to load dataset from','./')[0]
+	fname = QFileDialog.getOpenFileName(gui,'Choose .dat ASCII file to load dataset from','./')[0]
 	if fname == "":
 		logger.info('No file to load')
 		return
@@ -222,12 +227,35 @@ def load_raw_text(gui):
 		logger.info('Trying to load %s'%(fname))
 		skiprows = gui.maven.prefs['io.skiprows']
 		delimiter = gui.maven.prefs['io.delimiter']
-		smd = gui.maven.io.load_txt(fname,skiprows,delimiter,order,missing,decollate,decollate_axis)
+		smd = gui.maven.io.load_smd_txt(fname,skiprows,delimiter,order,missing,decollate,decollate_axis)
 		gui.maven.io.add_data(smd,None)
 		gui.maven.emit_data_update()
 	except Exception as e:
 		logging.error('failed to load %s\n%s'%(fname,str(e)))
 		return
+
+def load_clprpo_text(gui):
+	from PyQt5.QtWidgets import QFileDialog
+	fname = QFileDialog.getOpenFileName(gui,'Choose .dat ASCII file to load classes from','./')[0]
+	if fname == "":
+		logger.info('No file to load')
+		return
+
+	try:
+		logger.info('Trying to load %s'%(fname))
+		skiprows = gui.maven.prefs['io.skiprows']
+		delimiter = gui.maven.prefs['io.delimiter']
+
+		temp = np.loadtxt(fname,skiprows=skiprows,delimiter=delimiter)
+		name_list = ['classes','pre_list','post_list']
+		for i in range(3):
+			object.__setattr__(gui.maven.data,name_list[i],temp[:,i].astype('int'))
+		gui.maven.emit_data_update()
+
+	except Exception as e:
+		logging.error('failed to load %s\n%s'%(fname,str(e)))
+		return
+
 
 def _load_x_hdf5dataset(gui,x_str,x_var):
 	from PyQt5.QtWidgets import QFileDialog
