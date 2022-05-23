@@ -239,7 +239,7 @@ class controller_corrections(object):
 				return
 			else:
 				for i in range(self.maven.data.nmol):
-					diff = self.maven.data.corrected[i,:-cutoff,1].mean() - self.maven.data.corrected[i,:-cutoff,0].mean()
+					diff = self.maven.data.corrected[i,-cutoff:,1].mean() - self.maven.data.corrected[i,-cutoff:,0].mean()
 					self.maven.data.corrected[i,:,1] -= diff
 				logger.info('Background correction: %s frames'%(str(cutoff)))
 				self.correction_update()
