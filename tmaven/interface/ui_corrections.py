@@ -36,6 +36,7 @@ def build_menu(gui):
 
 	menu.addAction('Bleedthrough',gui.maven.corrections.bleedthrough)
 	menu.addAction('Gamma',gui.maven.corrections.gamma)
+	menu.addAction('Background',gui.maven.corrections.background_correct)
 
 
 	# from .stylesheet import ss_qmenu
