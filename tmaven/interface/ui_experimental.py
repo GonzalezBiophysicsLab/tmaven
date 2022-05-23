@@ -7,48 +7,46 @@ def dwell_inversion(gui):
 
 	import numpy as np
 	import matplotlib.pyplot as plt
-	from scipy.optimize import minimize
 
-	def newton(w,k,t,s,verbose=False):
-		delta = k[1]-k[0]
-		r = s*t/(1-np.exp(-delta*t))
-		gamma = .1
-		l0 = -np.inf
-		for iter in range(100):
-			dlnL = -np.sum(np.exp(-k[:,None]*t[None,:])*(r-np.sum(w[:,None]*np.exp(-k[:,None]*t[None,:]),axis=0)),axis=1)
-			ddlnL = +1.*np.sum(np.exp(-(k[:,None,None]+k[None,:,None])*t[None,None,:]),axis=2)
-			ddlnLinv = np.linalg.inv(ddlnL)
-			w = w - gamma*np.dot(ddlnLinv,dlnL)
-			w = np.abs(w)
-			# from scipy.ndimage import gaussian_filter1d
-			# w = gaussian_filter1d(w,.5)
-			w /= w.sum()*delta
-			lnL = .5*np.sum((r-np.sum(w*np.exp(-k[None,:]*t[:,None]),axis=1))**2.)
-			l1 = lnL
-			rel = np.abs(l1-l0)/np.abs(l0)
-			if verbose: print(iter, rel, lnL)
+	def fxn(x,args):
+		### data is N[nbatch],x
+		if np.any(x<0):
+			return np.inf
+		data,taua,taub,tauc,k, = args
+		t = data[:,0]
+		s = data[:,1]
+		x /= np.sum(x*(k[1:]-k[:-1]))
+
+		out = -taua/2.*np.sum((s*t - np.sum(x[None,:]*(np.exp(-k[None,:-1]*t[:,None])-np.exp(-k[None,1:]*t[:,None])),axis=1))**2.)
+		out += -taub/8.*np.sum((x[2:]-2.*x[1:-1]+x[:-2])**2.)
+		out += -taub/2.*((x[1]-x[0])**2. + (x[-1]-x[-2])**2.)
+		# out += -tauc/2.*(1.-np.sum(x*(k[1:]-k[:-1])))**2.
+		return -out
+
+	def minimize(w,k,data):
+		from scipy.optimize import minimize
+		r2 = 1.
+		l0 = np.inf
+		iter = 0
+		args = [data,1.e2,1.e1,1.e1,k]
+		# args = [data,1.e5,1.e4,1.e2,k]
+		while True:
+			iter += 1
+			out = minimize(fxn,x0=w,args=args,method='Nelder-Mead', options={'maxiter':1000})
+			w = out.x
+			w /= np.sum(w*(k[1:]-k[:-1]))
+			ss = 1./t * np.sum(w[None,:]*(np.exp(-k[None,:-1]*t[:,None])-np.exp(-k[None,1:]*t[:,None])),axis=1)
+			r2 = np.nansum((ss-s)**2.)/np.sum(s**2.)
+
+			l1 = out.fun
+			rel = np.abs(l0-l1)/np.abs(l0)
 			l0 = l1
-			if rel < 1e-10 and iter > 4:
+			print(iter,r2,out.success,out.fun,rel)
+			if rel < 1e-4:
 				break
-		ss = (1.-np.exp(-delta*t))/t * np.sum(w[:,None]*np.exp(-k[:,None]*t[None,:]),axis=0)
-		return w,ss
-
-	def simplex(w,k,t,s):
-		delta = k[1]-k[0]
-		def fxn(w,s,delta,k,t):
-			if np.any(w < 0):
-				return np.inf
-			intsum = w.sum()*delta
-			if intsum < .99 or intsum > 1.01:
-				return np.inf
-			return np.sum((s - (1.-np.exp(-delta*t))/t * np.sum(w[:,None]*np.exp(-k[:,None]*t[None,:]),axis=0))**2.)
-
-		out = minimize(fxn,x0=w,args=(s,delta,k,t),method='Nelder-Mead',options={'maxiter':1000000})
-		print(out.success)
-		ww = out.x
-		# ww /= ww.sum()*delta
-		ss = (1.-np.exp(-delta*t))/t * np.sum(ww[:,None]*np.exp(-k[:,None]*t[None,:]),axis=0)
-		return ww,ss
+			if out.success:
+				break
+		return w,ss,r2,out.success,out.fun
 
 	try:
 		from ..controllers.modeler.dwells import calculate_dwells
@@ -60,19 +58,23 @@ def dwell_inversion(gui):
 		t = t[1:].astype('double')
 		s = s[1:].astype('double')
 		t *= gui.maven.prefs['plot.time_dt']
+		# np.save('temp.npy',np.array((t,s)))
 	except:
 		logger.info('Failed to get dwells')
 		return
 
-	# n = np.min((500,t.size//2))
-	n = 100
-	k = np.linspace(0,1./(t[1]-t[0])*.5,n+1)[1:]
-	w = np.ones(k.size)/((k[1]-k[0])*k.size)
-	logger.info('Running Newton optimizer')
-	w1,s1 = newton(w,k,t,s,verbose=False)
-	logger.info('Running Nelder-Mead optimizer')
-	w2,s2 = simplex(w1,k,t,s)
+	cutoff = .01
+	ndiv = 1
+	k = np.logspace(np.log10(1./t[-1]),np.log10(1./(t[1]-t[0])),np.sum(s>cutoff)//ndiv+1)
+	t = t[s>cutoff]
+	s = s[s>cutoff]
+	data = np.swapaxes(np.array((t,s)),0,1)
 
+	logger.info('Running Optimizer')
+	w = np.random.rand(k.size)[:-1]*.1
+	w /= np.sum(w*(k[1:]-k[:-1]))
+	w,ss,r2,success,fun = minimize(w,k,data)
+	np.save('temp.npy',np.array((k,w,t,s)))
 
 	from PyQt5.QtWidgets import QMainWindow,QApplication,QSizePolicy,QVBoxLayout,QWidget
 	from PyQt5.QtCore import QSize
@@ -100,18 +102,27 @@ def dwell_inversion(gui):
 	qw.setLayout(vbox)
 	qmw.setCentralWidget(qw)
 
-	ax[0].step(t,s,'k')
-	ax[0].step(t,s2)
+	stepx = np.zeros((w.size+1)*2)
+	stepy = np.zeros_like(stepx)
+	stepx[0::2] = k
+	stepx[1::2] = k
+	stepy[1:-1:2] = w
+	stepy[2:-1:2] = w
 
-	ax[1].step(k,w2)
+	ax[0].plot(t,s,'k')
+	ax[0].plot(t,ss)
+
+	ax[1].semilogx(stepx[1:-1],stepy[1:-1])
 
 	beta = 1./0.593 ## kt @ room temp in kcal/mol
 	A = 1./(1.6*10**(-13.)) #kappa kb T / h; kappa = 1
-	E = -np.log(k/A)/beta
-	p_E = w2 * beta*k
+	kavg = .5*(k[1:]+k[:-1])
+	E = -np.log(kavg/A)/beta
+	p_E = w * beta*kavg
 	ax[2].step(E,p_E)
 
 	# ax[2].legend(['GS1->GS2 (?)','GS2->GS1 (?)'])
+	# ax[0].set_yscale('log')
 	ax[2].set_xlabel(r'E (kcal/mol)')
 	ax[2].set_ylabel(r'Spectral Density')
 	# ax[1].legend(['GS1->GS2 (?)','GS2->GS1 (?)'])
