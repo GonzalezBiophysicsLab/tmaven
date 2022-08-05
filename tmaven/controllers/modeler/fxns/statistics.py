@@ -2,7 +2,7 @@ import numpy as np
 import numba as nb
 from .numba_math import psi,gammaln
 
-@nb.jit(nb.double[:,:](nb.double[:],nb.double[:],nb.double[:]),nopython=True)
+@nb.jit(nb.double[:,:](nb.double[:],nb.double[:],nb.double[:]),nopython=True,cache=True)
 def ln_p_normal(x,mu,var):
 	out = np.zeros((x.size,mu.size))
 	for j in range(mu.size):
@@ -14,12 +14,12 @@ def ln_p_normal(x,mu,var):
 				out[i,j] = -np.inf
 	return out
 
-@nb.jit(nb.double[:,:](nb.double[:],nb.double[:],nb.double[:]),nopython=True)
+@nb.jit(nb.double[:,:](nb.double[:],nb.double[:],nb.double[:]),nopython=True,cache=True)
 def p_normal(x,mu,var):
 	return np.exp(ln_p_normal(x,mu,var))
 
 
-@nb.jit(nb.float64[:,:](nb.float64[:,:]),nopython=True)
+@nb.jit(nb.float64[:,:](nb.float64[:,:]),nopython=True,cache=True)
 def dirichlet_estep(alpha):
 	E_ln_theta = psi(alpha)
 	for i in range(alpha.shape[0]):
@@ -29,7 +29,7 @@ def dirichlet_estep(alpha):
 	# E_ln_theta = psi(alpha) - psi(np.sum(alpha,axis=-1))[...,None]
 	return E_ln_theta
 
-@nb.jit(nb.float64(nb.float64[:],nb.float64[:]),nopython=True)
+@nb.jit(nb.float64(nb.float64[:],nb.float64[:]),nopython=True,cache=True)
 def dkl_dirichlet(p,q):
 	phat = np.sum(p)
 	qhat = np.sum(q)
@@ -39,21 +39,21 @@ def dkl_dirichlet(p,q):
 	dkl += np.sum((p-q)*(psi(p)-psi(phat)))
 	return dkl
 
-@nb.jit(nb.float64(nb.float64[:,:],nb.float64[:,:]),nopython = True)
+@nb.jit(nb.float64(nb.float64[:,:],nb.float64[:,:]),nopython = True,cache=True)
 def dkl_dirichlet_2D(p,q):
 	D_kl = 0.
 	for i in range(p.shape[0]):
 		D_kl += dkl_dirichlet(p[i],q[i])
 	return D_kl
 
-@nb.jit(nopython = True)
+@nb.jit(nopython = True,cache=True)
 def log_B(log_det_W, nu, D):
     ans = - (nu / 2) * log_det_W - (nu * D / 2) * np.log(2) - (D * (D-1) / 4) * np.log(np.pi) \
         - gammaln(0.5 * nu)
     return ans
 
 @nb.jit(nopython = True)
-def dkl_normgamma(p_mu, p_beta, p_a, p_b, q_mu, q_beta, q_a, q_b):
+def dkl_normgamma(p_mu, p_beta, p_a, p_b, q_mu, q_beta, q_a, q_b,cache=True):
 
     # Copied & translated from JWvdM so will use Normal-Wishart
     p_nu = 2 * p_a

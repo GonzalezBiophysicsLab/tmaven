@@ -71,7 +71,13 @@ def dwell_inversion(gui):
 	data = np.swapaxes(np.array((t,s)),0,1)
 
 	logger.info('Running Optimizer')
-	w = np.random.rand(k.size)[:-1]*.1
+	from scipy.ndimage import gaussian_filter1d
+	w = np.zeros(k.size-1)
+	k0 = 1./((t[1]-t[0])*np.sum(s))
+	w[np.searchsorted(k,k0)] = 1.
+	# w = uniform_filter(w,100)
+	w = gaussian_filter1d(w,5.)
+	w += np.random.rand(w.size)*.1
 	w /= np.sum(w*(k[1:]-k[:-1]))
 	w,ss,r2,success,fun = minimize(w,k,data)
 	np.save('temp.npy',np.array((k,w,t,s)))

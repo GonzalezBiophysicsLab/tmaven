@@ -10,7 +10,7 @@ from .fxns.numba_math import psi,gammaln
 from .fxns.initializations import initialize_gmm, initialize_tmatrix
 from .fxns.hmm import forward_backward, viterbi
 
-@nb.jit(nb.types.Tuple((nb.float64[:],nb.float64[:],nb.float64[:]))(nb.float64[:],nb.float64[:,:]),nopython=True)
+@nb.jit(nb.types.Tuple((nb.float64[:],nb.float64[:],nb.float64[:]))(nb.float64[:],nb.float64[:,:]),nopython=True,cache=True)
 def m_sufficient_statistics(x,r):
 	#### M Step
 	## Sufficient Statistics
@@ -30,7 +30,7 @@ def m_sufficient_statistics(x,r):
 		sk[i] /= nk[i]
 	return nk,xbark,sk
 
-@nb.jit(nb.types.Tuple((nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:]))(nb.float64[:],nb.float64[:,:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:]),nopython=True)
+@nb.jit(nb.types.Tuple((nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:]))(nb.float64[:],nb.float64[:,:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:]),nopython=True,cache=True)
 def m_updates(x,r,a0,b0,m0,beta0):
 	#### M Step
 	## Updates
@@ -50,7 +50,7 @@ def m_updates(x,r,a0,b0,m0,beta0):
 
 	return a,b,m,beta,nk,xbark,sk
 
-@nb.jit(nb.float64[:](nb.float64[:,:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:,:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:,:],nb.float64),nopython=True)
+@nb.jit(nb.float64[:](nb.float64[:,:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:,:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:,:],nb.float64),nopython=True,cache=True)
 def calc_lowerbound(r,a,b,m,beta,pik,tm,nk,xbark,sk,E_lnlam,E_lnpi,a0,b0,m0,beta0,pi0,tm0,lnz):
 
 	lt74 = 0.
@@ -78,7 +78,7 @@ def calc_lowerbound(r,a,b,m,beta,pik,tm,nk,xbark,sk,E_lnlam,E_lnpi,a0,b0,m0,beta
 	ll1 = lnz + Fgw + Fpi + Ftm
 	return np.array((ll1,lnz,Fgw,Fpi,Ftm))
 
-@nb.jit(nb.types.Tuple((nb.float64[:,:],nb.float64[:,:,:],nb.float64,nb.float64[:,:],nb.float64[:],nb.float64[:]))(nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:,:]),nopython=True)
+@nb.jit(nb.types.Tuple((nb.float64[:,:],nb.float64[:,:,:],nb.float64,nb.float64[:,:],nb.float64[:],nb.float64[:]))(nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:,:]),nopython=True,cache=True)
 def individual_e_step(x,a,b,beta,m,pik,tm):
 	E_lntm = np.zeros_like(tm)
 	E_dld = np.zeros((x.size,m.size))
@@ -121,7 +121,8 @@ def individual_e_step(x,a,b,beta,m,pik,tm):
 	 nb.int64,
 	 nb.float64,
 	 nb.types.Tuple((nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:,:]))),
-	 nopython=True)
+	 nopython=True,
+	 cache=True)
 	'''
 def outer_loop(xind,xdata,mu,var,tm,maxiters,threshold,priors):
 

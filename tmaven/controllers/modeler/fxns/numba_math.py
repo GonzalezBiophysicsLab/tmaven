@@ -3,15 +3,15 @@ import numba as nb
 from math import lgamma
 from math import erf as erff
 
-@nb.vectorize
+@nb.vectorize(cache=True)
 def erf(x):
 	return erff(x)
 
-@nb.vectorize
+@nb.vectorize(cache=True)
 def gammaln(x):
 	return lgamma(x)
 
-@nb.vectorize
+@nb.vectorize(cache=True)
 def psi(x):
 	''' This is the Cephes version used in Scipy, but I rewrote it in Python'''
 	A = [
@@ -48,7 +48,7 @@ def psi(x):
 
 		return y
 
-@nb.vectorize([nb.float64(nb.float64)])
+@nb.vectorize([nb.float64(nb.float64)],cache=True)
 def trigamma(q):
 	''' This is the Cephes version of zeta used in Scipy, but I rewrote it in Python for x = 2'''
 

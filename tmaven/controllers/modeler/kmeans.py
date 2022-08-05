@@ -3,7 +3,7 @@ import numba as nb
 from math import lgamma
 import time
 
-@nb.njit
+@nb.njit(cache=True)
 def _kmeans(x,nstates):
 	## normalize
 	xmean = x.mean()
