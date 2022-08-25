@@ -9,3 +9,4 @@ dist
 env
 *_build
 *.hdf5
+*.dat

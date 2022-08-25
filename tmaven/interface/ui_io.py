@@ -14,6 +14,7 @@ def build_menu(gui):
 
 	### Load
 	menu_load.addAction('SMD',lambda : load_interactive(gui),shortcut='Ctrl+O')
+
 	menu_hdf5 = menu_load.addMenu('HDF5 Dataset')
 	menu_hdf5.addAction('Raw',lambda : load_raw_hdf5dataset(gui), shortcut='Ctrl+Shift+O')
 	menu_hdf5.addAction('Classes',lambda : load_classes_hdf5dataset(gui))
@@ -180,7 +181,12 @@ def load_raw_hdf5dataset(gui):
 		success,dataset_name = get_datasetname_hdf5(gui,fname)
 
 		with h5py.File(fname,'r') as f:
-			d = f[dataset_name][:]
+			dat = f[dataset_name][:]
+
+			if dat.ndim == 4:
+				d = dat[:,:,:,0]
+			else:
+				d = dat
 
 		smd = gui.maven.io.convert_numpy_smd(d)
 		gui.maven.io.add_data(smd,None)
@@ -226,7 +232,7 @@ def load_raw_text(gui):
 	try:
 		logger.info('Trying to load %s'%(fname))
 		skiprows = gui.maven.prefs['io.skiprows']
-		delimiter = gui.maven.prefs['io.delimiter']
+		delimiter = str(gui.maven.prefs['io.delimiter'])
 		smd = gui.maven.io.load_smd_txt(fname,skiprows,delimiter,order,missing,decollate,decollate_axis)
 		gui.maven.io.add_data(smd,None)
 		gui.maven.emit_data_update()
