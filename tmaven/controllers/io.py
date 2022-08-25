@@ -132,6 +132,8 @@ class controller_io(object):
 
 	def load_smd_txt(self,fname,skiprows,delimiter,order,missing,decollate,decollate_axis):
 		try:
+			if delimiter == r'\t':
+				delimiter = '\t'
 			d = np.loadtxt(fname,skiprows=skiprows,delimiter=delimiter)
 			logger.info('loaded txt {}. skiprows {}, delimiter {}'.format(fname, skiprows, delimiter))
 			d,success = self.fix_decollate(d,decollate,decollate_axis)
@@ -152,6 +154,7 @@ class controller_io(object):
 			return smd
 		except Exception as e:
 			logger.error('txt load failed {}\n{}'.format(fname,str(e)))
+
 
 	def load_smd_numpy(self,fname,order,missing,decollate,decollate_axis):
 		try:
@@ -213,6 +216,9 @@ class controller_io(object):
 				d = d.reshape((1,d.shape[0],d.shape[1]))
 				logger.info('added dimension 0')
 				success = True
+		elif d.ndim == 4:
+			d = d[:,:,:,0]
+			logger.info('removed extra dimension')
 		else:
 			success = True
 		return d,success

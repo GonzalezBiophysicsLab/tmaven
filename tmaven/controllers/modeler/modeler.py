@@ -507,7 +507,7 @@ class controller_modeler(object):
 
 		elbos = np.array([ri.likelihood[-1,0] for ri in results])
 		modelmax = np.argmax(elbos)
-		logger.info('vbconsensus hmm - best elbo: %f, nstates=%d'%(elbos[modelmax],results[modelmax].nstates))
+		logger.info('vbgmm - best elbo: %f, nstates=%d'%(elbos[modelmax],results[modelmax].nstates))
 		for i in range(len(results)):
 			self.models.append(results[i])
 			if i == modelmax:

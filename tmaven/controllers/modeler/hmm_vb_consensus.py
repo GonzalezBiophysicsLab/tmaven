@@ -276,7 +276,7 @@ def consensus_vb_em_hmm(x,nstates,maxiters=1000,threshold=1e-10,nrestarts=1,prio
 
 		best = 0
 
-	print(ll_restarts, best, ll_restarts[best])
+	#print(ll_restarts, best, ll_restarts[best])
 	best_res = res[best]
 	r,a,b,mu,beta,pi,tmatrix,E_lnlam,E_lnpi,E_lntm,likelihood,iteration = best_res
 
