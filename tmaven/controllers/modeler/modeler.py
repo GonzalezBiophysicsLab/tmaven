@@ -1067,6 +1067,8 @@ class controller_modeler(object):
 
 		data = self.maven.calc_fret()[:,:,1]
 		idealized = np.zeros_like(data) + np.nan
+		chain = np.zeros_like(idealized).astype('int')
+
 		trace_level = {}
 		rs = []
 
@@ -1081,16 +1083,20 @@ class controller_modeler(object):
 			pre = self.maven.data.pre_list[ii]
 			post = self.maven.data.post_list[ii]
 
-			vit = r.mean[viterbi(yi,r.mean,r.var,r.tmatrix,r.frac).astype('int')]
+			idealpath = viterbi(yi,r.mean,r.var,r.tmatrix,r.frac).astype('int')
+			vit = r.mean[idealpath]
 			idealized[ii,pre:post] = vit
+			chain[ii,pre:post] = idealpath.copy()
 			trace_level_inst = trace_model_container(r, ii)
 			trace_level_inst.idealized = idealized[ii]
+			trace_level_inst.chain = chain[ii]
 			trace_level[str(ii)] = trace_level_inst
 
 		result.trace_level = trace_level
 		result.r = rs
 		self.recast_rs(result)
 		result.idealized = idealized
+		result.chain = chain
 		self.model = result
 		self.make_report(result)
 		self.maven.emit_data_update()
@@ -1131,6 +1137,8 @@ class controller_modeler(object):
 
 			data = self.maven.calc_fret()[:,:,1]
 			idealized = np.zeros_like(data) + np.nan
+			chain = np.zeros_like(idealized).astype('int')
+
 			trace_level = {}
 			rs = []
 
@@ -1143,14 +1151,18 @@ class controller_modeler(object):
 				pre = self.maven.data.pre_list[ii]
 				post = self.maven.data.post_list[ii]
 
-				vit = r.mean[viterbi(yi,r.mean,r.var,r.tmatrix,r.frac).astype('int')]
+				idealpath = viterbi(yi,r.mean,r.var,r.tmatrix,r.frac).astype('int')
+				vit = r.mean[idealpath]
 				idealized[ii,pre:post] = vit
+				chain[ii,pre:post] = idealpath.copy()
 				trace_level_inst = trace_model_container(r, ii)
 				trace_level_inst.idealized = idealized[ii]
+				trace_level_inst.chain = chain[ii]
 				trace_level[str(ii)] = trace_level_inst
 
 			result.trace_level = trace_level
 			result.idealized = idealized
+			result.chain = chain
 			result.r = rs
 			self.recast_rs(result)
 			results.append(result)
@@ -1234,6 +1246,8 @@ class controller_modeler(object):
 	def idealize_fret_gmm(self,result):
 		data = self.maven.calc_fret()[:,:,1]
 		result.idealized = np.zeros_like(data) + np.nan
+		result.chain = np.zeros_like(result.idealized).astype('int')
+
 		for ii in result.ran:
 			pre = self.maven.data.pre_list[ii]
 			post = self.maven.data.post_list[ii]
@@ -1241,16 +1255,20 @@ class controller_modeler(object):
 			prob /= prob.sum(2)[:,:,None]
 			prob *= result.frac[None,None,:]
 			idealpath = np.argmax(prob,axis=2).astype('int64')
+			result.chain[ii, pre:post] = idealpath.copy()
 			result.idealized[ii, pre:post] = result.mean[idealpath]
 
 	def idealize_fret_kmeans(self,result):
 		data = self.maven.calc_fret()[:,:,1]
 		result.idealized = np.zeros_like(data) + np.nan
+		result.chain = np.zeros_like(result.idealized).astype('int')
+
 		for ii in result.ran:
 			#ii = result.ran[i]
 			pre = self.maven.data.pre_list[ii]
 			post = self.maven.data.post_list[ii]
 			idealpath = np.abs(data[ii,pre:post,None] - result.mean[None,:]).argmin(1).astype('int64')
+			result.chain[ii, pre:post] = idealpath.copy()
 			result.idealized[ii, pre:post] = result.mean[idealpath]
 
 	def idealize_fret_threshold(self,result):
@@ -1261,21 +1279,26 @@ class controller_modeler(object):
 		threshold = result.threshold
 
 		result.idealized = np.zeros_like(data)
+		result.chain = np.zeros_like(result.idealized).astype('int')
 		for i in range(data.shape[0]):
 			idealpath = (data[i] > threshold).astype('int')
+			result.chain[i] = idealpath.copy()
 			result.idealized[i] = result.mean[idealpath]
 
 	def idealize_fret_kmeans_viterbi(self,result,vit):
 		result.idealized = np.zeros_like(vit) + np.nan
+		result.chain = np.zeros_like(result.idealized).astype('int')
 		for ii in result.ran:
 			#ii = result.ran[i]
 			pre = self.maven.data.pre_list[ii]
 			post = self.maven.data.post_list[ii]
 			idealpath = np.abs(vit[ii,pre:post,None] - result.mean[None,:]).argmin(1).astype('int64')
+			result.chain[ii,pre:post] = idealpath.copy()
 			result.idealized[ii, pre:post] = result.mean[idealpath]
 
 	def idealize_fret_gmm_viterbi(self,result, vit):
 		result.idealized = np.zeros_like(vit) + np.nan
+		result.chain = np.zeros_like(result.idealized).astype('int')
 
 		for ii in result.ran:
 			pre = self.maven.data.pre_list[ii]
@@ -1284,14 +1307,17 @@ class controller_modeler(object):
 			prob /= prob.sum(2)[:,:,None]
 			prob *= result.frac[None,None,:]
 			idealpath = np.argmax(prob,axis=2).astype('int64')
+			result.chain[ii,pre:post] = idealpath.copy()
 			result.idealized[ii, pre:post] = result.mean[idealpath]
 
 	def idealize_fret_hmm(self,result):
 		from .fxns.hmm import viterbi
 		data = self.maven.calc_fret()[:,:,1].astype('double')
 		result.idealized = np.zeros_like(data) + np.nan
+		result.chain = np.zeros_like(result.idealized).astype('int')
 		pre = self.maven.data.pre_list
 		post = self.maven.data.post_list
 		for i in range(data.shape[0]):
 			if post[i]-pre[i]>=2:
-				result.idealized[i,pre[i]:post[i]] = result.mean[viterbi(data[i,pre[i]:post[i]],result.mean,result.var,result.tmatrix,result.frac).astype('int')]
+				result.chain[i,pre[i]:post[i]] = viterbi(data[i,pre[i]:post[i]],result.mean,result.var,result.tmatrix,result.frac).astype('int')
+				result.idealized[i,pre[i]:post[i]] = result.mean[result.chain[i,pre[i]:post[i]]]

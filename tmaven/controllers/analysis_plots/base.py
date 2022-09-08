@@ -138,6 +138,14 @@ class controller_base_analysisplot(object):
 		if self.maven.modeler.model is None:
 			return None
 		return self.maven.modeler.model.idealized.copy()
+		
+	def get_chain_data(self):
+		''' Get toggled idealized data for plotting
+		this might be busted by not considering flag_ons?
+		'''
+		if self.maven.modeler.model is None:
+			return None
+		return self.maven.modeler.model.chain.copy()
 
 	def devicePixelRatio(self):
 		## maybe look this up from the figure?

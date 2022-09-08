@@ -153,7 +153,8 @@ class controller_fret_hist2d(controller_base_analysisplot):
 			number of frames on the LHS of the synchronization point
 
 		'''
-		try:
+		# try:
+		if 1:
 			fpb = self.get_plot_fret()[:,:,1].copy()
 			flag = False
 
@@ -162,15 +163,16 @@ class controller_fret_hist2d(controller_base_analysisplot):
 
 			if flag: ## postsync time
 				viterbis = self.get_idealized_data()
+				chains = self.get_chain_data()
 				vi = self.prefs['sync_hmmstate_1']
 				vj = self.prefs['sync_hmmstate_2']
 
 				if self.prefs['sync_singledwell']:
-					synclist = gen_sync_list_single(viterbis,vi,vj)
+					synclist = gen_sync_list_single(chains,vi,vj)
 				else:
 					dt = self.prefs['sync_preframe']
 					n = self.prefs['time_nbins']
-					synclist = gen_sync_list_fixed(viterbis,vi,vj,dt,n-dt+1)
+					synclist = gen_sync_list_fixed(chains,vi,vj,dt,n-dt+1)
 
 				nmol = np.unique(synclist[:,0]).size
 				npoints = synclist.shape[0]
@@ -188,8 +190,8 @@ class controller_fret_hist2d(controller_base_analysisplot):
 					self.prefs['fret_nbins'])
 			return out,nmol,npoints
 
-		except:
-			return np.zeros((self.prefs['time_nbins'],self.prefs['fret_nbins'])),0,0
+		# except:
+			# return np.zeros((self.prefs['time_nbins'],self.prefs['fret_nbins'])),0,0
 
 	def plot(self,fig,ax):
 		## Decide if we should be plotting at all
