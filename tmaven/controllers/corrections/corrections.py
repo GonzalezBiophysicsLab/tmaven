@@ -228,23 +228,37 @@ class controller_corrections(object):
 			logger.error('gammas not implemented for %d colors'%(self.maven.data.ncolors))
 
 	def background_correct(self):
-		'''
-		Experimental for now. Tries to fix high background in red (for now)
-		'''
-		if self.maven.data.ncolors == 2:
-			cutoff = int(self.maven.prefs['correction.backgroundframes'])
+		cutoff = int(self.maven.prefs['correction.backgroundframes'])
 
-			if cutoff >= self.maven.data.ntime:
-				logger.error('Background frames cutoff needs to be less than total frames')
-				return
-			else:
-				for i in range(self.maven.data.nmol):
-					diff = self.maven.data.corrected[i,-cutoff:,1].mean() - self.maven.data.corrected[i,-cutoff:,0].mean()
-					self.maven.data.corrected[i,:,1] -= diff
-				logger.info('Background correction: %s frames'%(str(cutoff)))
-				self.correction_update()
+		if cutoff >= self.maven.data.ntime:
+			logger.error('Background frames cutoff needs to be less than total frames')
+			return
+		elif cutoff < 2:
+			logger.error('background frames cutoff needs to be >1')
+			return
 		else:
-			logger.error('Background correction not implemented for %d colors'%(self.maven.data.ncolors))
+			for i in range(self.maven.data.nmol):
+				self.maven.data.corrected[i] -= np.median(self.maven.data.corrected[i,-cutoff:,:],axis=0)[None,:]
+			logger.info('Background correction: %s frames'%(str(cutoff)))
+			self.correction_update()
+
+		# '''
+		# Experimental for now. Tries to fix high background in red (for now)
+		# '''
+		# if self.maven.data.ncolors == 2:
+		# 	cutoff = int(self.maven.prefs['correction.backgroundframes'])
+		#
+		# 	if cutoff >= self.maven.data.ntime:
+		# 		logger.error('Background frames cutoff needs to be less than total frames')
+		# 		return
+		# 	else:
+		# 		for i in range(self.maven.data.nmol):
+		# 			diff = self.maven.data.corrected[i,-cutoff:,1].mean() - self.maven.data.corrected[i,-cutoff:,0].mean()
+		# 			self.maven.data.corrected[i,:,1] -= diff
+		# 		logger.info('Background correction: %s frames'%(str(cutoff)))
+		# 		self.correction_update()
+		# else:
+		# 	logger.error('Background correction not implemented for %d colors'%(self.maven.data.ncolors))
 
 	def correction_update(self):
 		self.maven.emit_data_update()
