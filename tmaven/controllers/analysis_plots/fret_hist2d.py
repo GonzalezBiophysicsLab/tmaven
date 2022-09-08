@@ -153,8 +153,7 @@ class controller_fret_hist2d(controller_base_analysisplot):
 			number of frames on the LHS of the synchronization point
 
 		'''
-		# try:
-		if 1:
+		try:
 			fpb = self.get_plot_fret()[:,:,1].copy()
 			flag = False
 
@@ -190,8 +189,8 @@ class controller_fret_hist2d(controller_base_analysisplot):
 					self.prefs['fret_nbins'])
 			return out,nmol,npoints
 
-		# except:
-			# return np.zeros((self.prefs['time_nbins'],self.prefs['fret_nbins'])),0,0
+		except:
+			return np.zeros((self.prefs['time_nbins'],self.prefs['fret_nbins'])),0,0
 
 	def plot(self,fig,ax):
 		## Decide if we should be plotting at all
