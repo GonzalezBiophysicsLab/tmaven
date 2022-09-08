@@ -173,10 +173,10 @@ class gui_trace_filter(QMainWindow):
 		self.maven.trace_filter.skip_frames = int(self.le_skip_frames.text())
 		self.maven.trace_filter.mode = self.combo_data.currentIndex()
 
-
 	def calculate_model(self,event):
 		self.push_params()
 		self.maven.trace_filter.calculate_model()
+		self.label_proportions.setText(self.maven.trace_filter.label_proportions)
 		self.ax.cla()
 		self.maven.trace_filter._plot(self.fig,self.ax)
 		self.canvas.draw()
