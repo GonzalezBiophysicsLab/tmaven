@@ -17,8 +17,11 @@ class controller_fret_tdp(controller_base_analysisplot):
 			'subplots_right':0.83,
 			'subplots_left':0.18,
 			'axes_topright':True,
-			'xlabel_offset':-0.24,
-			'ylabel_offset':-0.34,
+			'xlabel_offset':-0.2,
+			'ylabel_offset':-0.26,
+
+			'colorbar_widthpercent':5,
+			'colorbar_padpercent':2,
 
 			'fret_min':-.25,
 			'fret_max':1.25,
@@ -67,6 +70,8 @@ class controller_fret_tdp(controller_base_analysisplot):
 			# return
 
 		## Setup
+		if len(fig.axes)>1:
+			[aa.remove() for aa in fig.axes[1:]]
 		ax.cla()
 		self.fix_ax(fig,ax)
 
@@ -95,11 +100,10 @@ class controller_fret_tdp(controller_base_analysisplot):
 		ext='neither'
 		if vmin > z.min():
 			ext = 'min'
-		if len(fig.axes) == 1:
-			cb = fig.colorbar(pc,extend=ext)
-		else:
-			fig.axes[1].cla()
-			cb = fig.colorbar(pc,cax=fig.axes[1],extend=ext)
+		from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable
+		ax_divider = make_axes_locatable(ax)
+		cax = ax_divider.append_axes("right", size="%d%%"%(self.prefs['colorbar_widthpercent']), pad="%d%%"%(self.prefs['colorbar_padpercent']))
+		cb = fig.colorbar(pc,extend=ext,cax=cax)
 
 		if not self.prefs['hist_log']:
 			cbticks = np.linspace(vmin,vmax,self.prefs['color_nticks'])

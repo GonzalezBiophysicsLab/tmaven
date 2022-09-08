@@ -46,16 +46,19 @@ class controller_fret_hist2d(controller_base_analysisplot):
 			'subplots_hspace':0.040000,
 			'subplots_bottom':0.170000,
 			'subplots_top':0.970000,
-			'subplots_right':0.89,
+			'subplots_right':0.85,
 			'subplots_left':0.22,
 			'axes_topright':'True',
+
+			'colorbar_widthpercent':5,
+			'colorbar_padpercent':2,
 
 			'tick_fontsize':10.000000,
 			'xlabel_text':r'Time (s)',
 			'ylabel_text':r'E$_{\rm{FRET}}$',
 			'label_fontsize':10.000000,
-			'xlabel_offset':-0.15,
-			'ylabel_offset':-0.40,
+			'xlabel_offset':-0.14,
+			'ylabel_offset':-0.34,
 
 			'textbox_x':0.96,
 			'textbox_y':0.93,
@@ -194,7 +197,8 @@ class controller_fret_hist2d(controller_base_analysisplot):
 			logger.error('more than 2 colors not implemented')
 
 		## Setup
-		ax.cla()
+		if len(fig.axes)>1:
+			[aa.remove() for aa in fig.axes[1:]]
 		self.fix_ax(fig,ax)
 
 		hist,nmol,npoints = self.get_data()
@@ -224,11 +228,10 @@ class controller_fret_hist2d(controller_base_analysisplot):
 		ext='neither'
 		if vmin > z.min():
 			ext = 'min'
-		if len(fig.axes) == 1:
-			cb = fig.colorbar(pc,extend=ext)
-		else:
-			fig.axes[1].cla()
-			cb = fig.colorbar(pc,cax=fig.axes[1],extend=ext)
+		from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable
+		ax_divider = make_axes_locatable(ax)
+		cax = ax_divider.append_axes("right", size="%d%%"%(self.prefs['colorbar_widthpercent']), pad="%d%%"%(self.prefs['colorbar_padpercent']))
+		cb = fig.colorbar(pc,extend=ext,cax=cax)
 
 		cbticks = np.linspace(0,vmax,self.prefs['color_nticks'])
 		cbticks = np.array(self.best_ticks(0,self.prefs['color_ceiling'],self.prefs['color_nticks']))
@@ -251,7 +254,6 @@ class controller_fret_hist2d(controller_base_analysisplot):
 		cb.outline.set_linewidth(self.prefs['axes_linewidth']/dpr)
 		cb.solids.set_edgecolor('face')
 		cb.solids.set_rasterized(True)
-
 
 		self.npoints = npoints
 		self.nmol = nmol
