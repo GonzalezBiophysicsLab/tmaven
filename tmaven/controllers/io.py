@@ -127,7 +127,7 @@ class controller_io(object):
 			logging.error('failed to load %s\n%s'%(fname,str(e)))
 			return
 
-	def load_smd_txt(self,fname,skiprows,delimiter):
+	def load_raw_txt(self,fname,skiprows,delimiter):
 		try:
 			if delimiter == r'\t':
 				delimiter = '\t'
@@ -150,6 +150,24 @@ class controller_io(object):
 			self.maven.emit_data_update()
 		except Exception as e:
 			logger.error('np load failed {}\n{}'.format(fname,str(e)))
+
+	def load_spartan(self, fname):
+		from .io_special.io_spartan import read_spartan
+
+		try:
+			chNames,time,channels,metadata = read_spartan(fname)
+			d = channels[:2,:,:]
+			smd = self.convert_to_smd(d,fname) #[1,2,0]
+			print(smd.raw.shape)
+			smd.source_names[0] = '{}'.format(fname)
+			smd.time = time
+			smd.chNames = chNames[:2]
+			smd.__dict__.update(metadata)
+			self.add_data(smd, None)
+			self.maven.emit_data_update()
+
+		except Exception as e:
+			logger.error('spartan load failed {}\n{}'.format(fname,str(e)))
 
 	def load_tmaven_all_hdf5(self, fname, datasets):
 		try:

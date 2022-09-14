@@ -30,7 +30,7 @@ def build_menu(gui):
 	menu_npy = menu_load.addMenu('Numpy arrays')
 	menu_npy.addAction('Raw',lambda : load_raw_numpy(gui))
 
-
+	menu_load.addAction('SPARTAN traces',lambda : load_raw_spartan(gui))
 	### save
 	menu_save.addAction('Save (SMD)',lambda : export_smd(gui),shortcut='Ctrl+S')
 	menu_other = menu_save.addMenu('Other')
@@ -199,7 +199,7 @@ def load_raw_text(gui):
 		logger.info('Trying to load %s'%(fname))
 		skiprows = gui.maven.prefs['io.skiprows']
 		delimiter = str(gui.maven.prefs['io.delimiter'])
-		gui.maven.io.load_smd_txt(fname,skiprows,delimiter)
+		gui.maven.io.load_raw_txt(fname,skiprows,delimiter)
 
 	except Exception as e:
 		logging.error('failed to load %s\n%s'%(fname,str(e)))
@@ -219,6 +219,19 @@ def load_raw_numpy(gui):
 		logging.error('failed to load %s\n%s'%(fname,str(e)))
 		return
 
+def load_raw_spartan(gui):
+	from PyQt5.QtWidgets import QFileDialog
+	fname = QFileDialog.getOpenFileName(gui,'Choose .traces spartan file to load dataset from','./')[0]
+	if fname == "":
+		logger.info('No file to load')
+		return
+
+	try:
+		logger.info('Trying to load %s'%(fname))
+		gui.maven.io.load_spartan(fname)
+	except Exception as e:
+		logging.error('failed to load %s\n%s'%(fname,str(e)))
+		return
 
 def load_tmaven_dataset_hdf5(gui,d_name):
 	from PyQt5.QtWidgets import QFileDialog
