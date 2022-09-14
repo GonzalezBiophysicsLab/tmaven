@@ -46,17 +46,21 @@ class controller_io(object):
 		self.find_smds_in_hdf5 = find_smds_in_hdf5
 
 	def add_data(self,new_smd,new_tmaven=None):
-		if self.maven.smd.raw.shape == (0,0,0):
-			self.maven.smd = new_smd
-			self.maven.data.initialize_tmaven_params()
-		else:
-			self.maven.smd = concatenate_smds(self.maven.smd,new_smd)
-			self.maven.data.update_tmaven_params()
+		if not new_smd is None:
+			if self.maven.smd.raw.shape == (0,0,0):
+				self.maven.smd = new_smd
+				self.maven.data.initialize_tmaven_params()
+			else:
+				self.maven.smd = concatenate_smds(self.maven.smd,new_smd)
+				self.maven.data.update_tmaven_params()
 		if not new_tmaven is None:
 			classes, pre_list, post_list = new_tmaven
-			self.maven.data.classes[-classes.size:] = classes.copy()
-			self.maven.data.pre_list[-classes.size:] = pre_list.copy()
-			self.maven.data.post_list[-classes.size:] = post_list.copy()
+			if not classes is None:
+				self.maven.data.classes[-classes.size:] = classes.copy()
+			if not pre_list is None:
+				self.maven.data.pre_list[-pre_list.size:] = pre_list.copy()
+			if not post_list is None:
+				self.maven.data.post_list[-post_list.size:] = post_list.copy()
 		self.process_data_change()
 
 	def process_data_change(self):
@@ -87,98 +91,6 @@ class controller_io(object):
 			logger.error('smdload failed {}/{}\nerror:{}'.format(fname,gname,str(e)))
 		raise Exception('smdload was not successful {}/{}'.format(fname,gname))
 
-	def load_smd_group_hdf5(self,fname,group,dataset,order,missing,decollate,decollate_axis):
-		try:
-			classkey = None
-			classes = None
-			with h5py.File(fname,'r') as f:
-				if group is None:
-					g = f
-				else:
-					g = f[group]
-				d = g[dataset][:]
-
-				for k in g.keys():
-					if k.lower().startswith('class'):
-						classkey = k
-						classes = g[classkey][:]
-						logger.info('found classes in {}'.format(classkey))
-			logger.info('loaded group hdf5 {} with key {}/{}.'.format(fname, group, dataset))
-			d,success = self.fix_decollate(d,decollate,decollate_axis)
-			if not success:
-				logger.error('group hdf5 load failed {} {}/{} because of bad decollating'.format(fname,group,dataset))
-				return None
-			d,success = self.fix_missing_dimensions(d,missing)
-			if not success:
-				logger.error('group hdf5 load failed {} {}/{} because of bad missing dimension'.format(fname,group,dataset))
-				return None
-			d,success = self.fix_axis_order(d,order)
-			if not success:
-				logger.error('group hdf5 load failed {} {}/{} because of bad ordering'.format(fname,group,dataset))
-				return None
-
-			smd = self.blank_smd()
-			smd.initialize_data(d)
-			if group is None:
-				smd.source_names[0] = '{}:{}'.format(fname,dataset)
-			else:
-				smd.source_names[0] = '{}:{}/{}'.format(fname,group,dataset)
-			if not classes is None:
-				if d.shape[0] == classes.size:
-					smd.classes = classes
-			return smd
-		except Exception as e:
-			logger.error('group hdf5 load failed {}\n{}'.format(fname,str(e)))
-
-	def load_smd_txt(self,fname,skiprows,delimiter,order,missing,decollate,decollate_axis):
-		try:
-			if delimiter == r'\t':
-				delimiter = '\t'
-			d = np.loadtxt(fname,skiprows=skiprows,delimiter=delimiter)
-			logger.info('loaded txt {}. skiprows {}, delimiter {}'.format(fname, skiprows, delimiter))
-			d,success = self.fix_decollate(d,decollate,decollate_axis)
-			if not success:
-				logger.error('txt load failed {} {}/{} because of bad decollating'.format(fname,group,dataset))
-				return None
-			d,success = self.fix_missing_dimensions(d,missing)
-			if not success:
-				logger.error('txt load failed {} because of bad missing dimension'.format(fname))
-				return
-			d,success = self.fix_axis_order(d,order)
-			if not success:
-				logger.error('txt load failed {} because of bad ordering'.format(fname))
-				return
-			smd = self.blank_smd()
-			smd.initialize_data(d)
-			smd.source_names[0] = '{}'.format(fname)
-			return smd
-		except Exception as e:
-			logger.error('txt load failed {}\n{}'.format(fname,str(e)))
-
-
-	def load_smd_numpy(self,fname,order,missing,decollate,decollate_axis):
-		try:
-			d = np.load(fname)
-			logger.info('loaded np {}'.format(fname))
-			d,success = self.fix_decollate(d,decollate,decollate_axis)
-			if not success:
-				logger.error('txt load failed {} {}/{} because of bad decollating'.format(fname,group,dataset))
-				return None
-			d,success = self.fix_missing_dimensions(d,missing)
-			if not success:
-				logger.error('np load failed {} because of bad missing dimension'.format(fname))
-				return
-			d,success = self.fix_axis_order(d,order)
-			if not success:
-				logger.error('np load failed {} because of bad ordering'.format(fname))
-				return
-			smd = self.blank_smd()
-			smd.initialize_data(d)
-			smd.source_names[0] = '{}'.format(fname)
-			return smd
-		except Exception as e:
-			logger.error('np load failed {}\n{}'.format(fname,str(e)))
-
 	def load_tmaven_hdf5(self,fname,gname):
 		success = False
 		try:
@@ -201,6 +113,106 @@ class controller_io(object):
 		logger.error("Failed to load tMAVEN from HDF5 file: %s in group: %s"%(fname,gname))
 		return None
 
+	def load_raw_hdf5(self,fname,dataset):
+		success = False
+		try:
+			with h5py.File(fname,'r') as f:
+				dat = f[dataset][:]
+			logger.info('loaded HDF5 {}. dataset {}'.format(fname, dataset))
+			smd = self.convert_to_smd(dat,dataset)
+			smd.source_names[0] = '{}:{}'.format(fname,dataset)
+			self.add_data(smd, None)
+			self.maven.emit_data_update()
+		except Exception as e:
+			logging.error('failed to load %s\n%s'%(fname,str(e)))
+			return
+
+	def load_smd_txt(self,fname,skiprows,delimiter):
+		try:
+			if delimiter == r'\t':
+				delimiter = '\t'
+			d = np.loadtxt(fname,skiprows=skiprows,delimiter=delimiter)
+			logger.info('loaded txt {}. skiprows {}, delimiter {}'.format(fname, skiprows, delimiter))
+			smd = self.convert_to_smd(d,fname)
+			smd.source_names[0] = '{}'.format(fname)
+			self.add_data(smd, None)
+			self.maven.emit_data_update()
+		except Exception as e:
+			logger.error('txt load failed {}\n{}'.format(fname,str(e)))
+
+	def load_raw_numpy(self,fname):
+		try:
+			d = np.load(fname)
+			logger.info('loaded np {}'.format(fname))
+			smd = self.convert_to_smd(d,fname)
+			smd.source_names[0] = '{}'.format(fname)
+			self.add_data(smd, None)
+			self.maven.emit_data_update()
+		except Exception as e:
+			logger.error('np load failed {}\n{}'.format(fname,str(e)))
+
+	def load_tmaven_all_hdf5(self, fname, datasets):
+		try:
+			temp = []
+			with h5py.File(fname,'r') as f:
+				for i in datasets:
+					if not i is None:
+						temp.append(f[i][:].astype('int'))
+					else:
+						temp.append(None)
+
+			tmaven = (temp[0], temp[1],temp[2])
+			self.add_data(None, tmaven)
+			self.maven.emit_data_update()
+
+		except Exception as e:
+			logging.error('failed to load %s\n%s'%(fname,str(e)))
+			return
+
+	def load_tmaven_all_txt(self, fname, skiprows, delimiter, d_name):
+		temp = np.loadtxt(fname,skiprows=skiprows,delimiter=delimiter)
+
+		if d_name == "all":
+			classes = temp[:, 0].astype('int')
+			pre_list = temp[:, 1].astype('int')
+			post_list = temp[:, 2].astype('int')
+		elif d_name == "class":
+			classes = temp[:, 0].astype('int')
+			pre_list = None
+			post_list = None
+		elif d_name == "pre-post":
+			classes = None
+			pre_list = temp[:, 1].astype('int')
+			post_list = temp[:, 2].astype('int')
+
+		tmaven = (classes, pre_list, post_list)
+		self.add_data(None, tmaven)
+		self.maven.emit_data_update()
+
+	def convert_to_smd(self,d,dname):
+		order = self.maven.prefs['io.axis_order']
+		missing = self.maven.prefs['io.missing_axis']
+		decollate = self.maven.prefs['io.decollate']
+		decollate_axis = self.maven.prefs['io.decollate_axis']
+
+
+		d,success = self.fix_decollate(d,decollate,decollate_axis)
+		if not success:
+			logger.error('Dataset load failed {} because of bad decollating'.format(dname))
+			return None
+		d,success = self.fix_missing_dimensions(d,missing)
+		if not success:
+			logger.error('Dataset load failed {} because of bad missing dimension'.format(dname))
+			return None
+		d,success = self.fix_axis_order(d,order)
+		if not success:
+			logger.error('Dataset load failed {} because of bad ordering'.format(dname))
+			return None
+
+		smd = self.blank_smd()
+		smd.initialize_data(d)
+		return smd
+
 	def fix_missing_dimensions(self,d,missing):
 		success = False
 		if d.ndim == 1:
@@ -217,34 +229,13 @@ class controller_io(object):
 				logger.info('added dimension 0')
 				success = True
 		elif d.ndim == 4:
+			#this is a hard-coded solution for vbscope hdf5 files
 			d = d[:,:,:,0]
 			logger.info('removed extra dimension')
+			success = True
 		else:
 			success = True
 		return d,success
-
-	def convert_numpy_smd(self,d):
-		order = self.maven.prefs['io.axis_order']
-		missing = self.maven.prefs['io.missing_axis']
-		decollate = self.maven.prefs['io.decollate']
-		decollate_axis = self.maven.prefs['io.decollate_axis']
-
-		d,success = self.fix_decollate(d,decollate,decollate_axis)
-		if not success:
-			logger.error('group hdf5 load failed {} {}/{} because of bad decollating'.format(fname,group,dataset))
-			return None
-		d,success = self.fix_missing_dimensions(d,missing)
-		if not success:
-			logger.error('group hdf5 load failed {} {}/{} because of bad missing dimension'.format(fname,group,dataset))
-			return None
-		d,success = self.fix_axis_order(d,order)
-		if not success:
-			logger.error('group hdf5 load failed {} {}/{} because of bad ordering'.format(fname,group,dataset))
-			return None
-
-		smd = self.blank_smd()
-		smd.initialize_data(d)
-		return smd
 
 	def fix_axis_order(self,d,order):
 		if order == [0,1,2]:

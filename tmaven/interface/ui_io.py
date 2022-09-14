@@ -17,13 +17,15 @@ def build_menu(gui):
 
 	menu_hdf5 = menu_load.addMenu('HDF5 Dataset')
 	menu_hdf5.addAction('Raw',lambda : load_raw_hdf5dataset(gui), shortcut='Ctrl+Shift+O')
-	menu_hdf5.addAction('Classes',lambda : load_classes_hdf5dataset(gui))
-	menu_hdf5.addAction('Pre Time',lambda : load_pre_hdf5dataset(gui))
-	menu_hdf5.addAction('Post Time',lambda : load_post_hdf5dataset(gui))
+	menu_hdf5.addAction('All tMAVEN',lambda : load_tmaven_dataset_hdf5(gui, "all"))
+	menu_hdf5.addAction('Classes',lambda : load_tmaven_dataset_hdf5(gui, "class"))
+	menu_hdf5.addAction('Pre-Post Times',lambda : load_tmaven_dataset_hdf5(gui, "pre-post"))
 
 	menu_txt = menu_load.addMenu('ASCII Text files')
 	menu_txt.addAction('Raw',lambda : load_raw_text(gui))
-	menu_txt.addAction('Classes, Pre, Post', lambda : load_clprpo_text(gui))
+	menu_txt.addAction('All tMAVEN',lambda : load_tmaven_dataset_txt(gui, "all"))
+	menu_txt.addAction('Classes',lambda : load_tmaven_dataset_txt(gui, "class"))
+	menu_txt.addAction('Pre-Post Times',lambda : load_tmaven_dataset_txt(gui, "pre-post"))
 
 	menu_npy = menu_load.addMenu('Numpy arrays')
 	menu_npy.addAction('Raw',lambda : load_raw_numpy(gui))
@@ -114,11 +116,11 @@ def get_items_dialog(gui,items,title,subtitle,flag_select_multiple):
 	success,value = dialog.exec_()
 	return success,value
 
-def get_datasetname_hdf5(gui,fname):
+def get_datasetname_hdf5(gui,fname, dataset_name):
 	from ..pysmd import find_datasets_in_hdf5
 	datasets = find_datasets_in_hdf5(fname)
 	ds = ['%s %s'%(datasets[i][0],str(datasets[i][1])) for i in range(len(datasets))]
-	success,indexes = get_items_dialog(gui,ds,"Select one Dataset",fname,False)
+	success,indexes = get_items_dialog(gui,ds,"Select one Dataset for {}".format(dataset_name),fname,False)
 	if success:
 		return success,datasets[indexes[0]][0]
 	else:
@@ -178,19 +180,26 @@ def load_raw_hdf5dataset(gui):
 
 	try:
 		logger.info('Trying to load %s'%(fname))
-		success,dataset_name = get_datasetname_hdf5(gui,fname)
+		success,dataset_name = get_datasetname_hdf5(gui,fname, "Raw traces")
 
-		with h5py.File(fname,'r') as f:
-			dat = f[dataset_name][:]
+		gui.maven.io.load_raw_hdf5(fname,dataset_name)
 
-			if dat.ndim == 4:
-				d = dat[:,:,:,0]
-			else:
-				d = dat
+	except Exception as e:
+		logging.error('failed to load %s\n%s'%(fname,str(e)))
+		return
 
-		smd = gui.maven.io.convert_numpy_smd(d)
-		gui.maven.io.add_data(smd,None)
-		gui.maven.emit_data_update()
+def load_raw_text(gui):
+	from PyQt5.QtWidgets import QFileDialog
+	fname = QFileDialog.getOpenFileName(gui,'Choose .dat ASCII file to load dataset from','./')[0]
+	if fname == "":
+		logger.info('No file to load')
+		return
+
+	try:
+		logger.info('Trying to load %s'%(fname))
+		skiprows = gui.maven.prefs['io.skiprows']
+		delimiter = str(gui.maven.prefs['io.delimiter'])
+		gui.maven.io.load_smd_txt(fname,skiprows,delimiter)
 
 	except Exception as e:
 		logging.error('failed to load %s\n%s'%(fname,str(e)))
@@ -203,46 +212,49 @@ def load_raw_numpy(gui):
 		logger.info('No file to load')
 		return
 
-	order = gui.maven.prefs['io.axis_order']
-	missing = gui.maven.prefs['io.missing_axis']
-	decollate = gui.maven.prefs['io.decollate']
-	decollate_axis = gui.maven.prefs['io.decollate_axis']
-
 	try:
 		logger.info('Trying to load %s'%(fname))
-		smd = gui.maven.io.load_smd_numpy(fname,order,missing,decollate,decollate_axis)
-		gui.maven.io.add_data(smd,None)
-		gui.maven.emit_data_update()
+		gui.maven.io.load_smd_numpy(fname)
 	except Exception as e:
 		logging.error('failed to load %s\n%s'%(fname,str(e)))
 		return
 
-def load_raw_text(gui):
+
+def load_tmaven_dataset_hdf5(gui,d_name):
 	from PyQt5.QtWidgets import QFileDialog
-	fname = QFileDialog.getOpenFileName(gui,'Choose .dat ASCII file to load dataset from','./')[0]
+	fname = QFileDialog.getOpenFileName(gui,'Choose one HDF5 file to load dataset from','./')[0]
 	if fname == "":
 		logger.info('No file to load')
 		return
 
-	order = gui.maven.prefs['io.axis_order']
-	missing = gui.maven.prefs['io.missing_axis']
-	decollate = gui.maven.prefs['io.decollate']
-	decollate_axis = gui.maven.prefs['io.decollate_axis']
-
 	try:
 		logger.info('Trying to load %s'%(fname))
-		skiprows = gui.maven.prefs['io.skiprows']
-		delimiter = str(gui.maven.prefs['io.delimiter'])
-		smd = gui.maven.io.load_smd_txt(fname,skiprows,delimiter,order,missing,decollate,decollate_axis)
-		gui.maven.io.add_data(smd,None)
-		gui.maven.emit_data_update()
+
+		if d_name == "all":
+			success1,class_name = get_datasetname_hdf5(gui,fname, "Classes")
+			success2,pre_name = get_datasetname_hdf5(gui,fname, "Pre-time")
+			success3,post_name = get_datasetname_hdf5(gui,fname, "Post-time")
+		elif d_name == "class":
+			success1,class_name = get_datasetname_hdf5(gui,fname, "Classes")
+			success2,pre_name = (True, None)
+			success3,post_name = (True, None)
+		elif d_name == "pre-post":
+			success1,class_name = (True, None)
+			success2,pre_name = get_datasetname_hdf5(gui,fname, "Pre-time")
+			success3,post_name = get_datasetname_hdf5(gui,fname, "Post-time")
+
+		if success1 and success2 and success3:
+			datasets = [class_name, pre_name, post_name]
+
+		gui.maven.io.load_tmaven_all_hdf5(fname,datasets)
+
 	except Exception as e:
 		logging.error('failed to load %s\n%s'%(fname,str(e)))
 		return
 
-def load_clprpo_text(gui):
+def load_tmaven_dataset_txt(gui,d_name):
 	from PyQt5.QtWidgets import QFileDialog
-	fname = QFileDialog.getOpenFileName(gui,'Choose .dat ASCII file to load classes from','./')[0]
+	fname = QFileDialog.getOpenFileName(gui,'Choose .dat ASCII file to load from','./')[0]
 	if fname == "":
 		logger.info('No file to load')
 		return
@@ -251,49 +263,13 @@ def load_clprpo_text(gui):
 		logger.info('Trying to load %s'%(fname))
 		skiprows = gui.maven.prefs['io.skiprows']
 		delimiter = gui.maven.prefs['io.delimiter']
-
-		temp = np.loadtxt(fname,skiprows=skiprows,delimiter=delimiter)
-		name_list = ['classes','pre_list','post_list']
-		for i in range(3):
-			object.__setattr__(gui.maven.data,name_list[i],temp[:,i].astype('int'))
-		gui.maven.emit_data_update()
+		gui.maven.io.load_tmaven_all_txt(fname,skiprows,delimiter,d_name)
 
 	except Exception as e:
 		logging.error('failed to load %s\n%s'%(fname,str(e)))
 		return
 
 
-def _load_x_hdf5dataset(gui,x_str,x_var):
-	from PyQt5.QtWidgets import QFileDialog
-	fname = QFileDialog.getOpenFileName(gui,'Choose one HDF5 file to load classes dataset from','./')[0]
-	if fname == "":
-		logger.info('No file to load')
-		return
-
-	try:
-		logger.info('Trying to load %s'%(fname))
-		success,dataset_name = get_datasetname_hdf5(gui,fname)
-
-		with h5py.File(fname,'r') as f:
-			d = f[dataset_name][:]
-
-		if d.size != gui.maven.data.nmol:
-			logger.error('%s dataset is different size than number of molecules'%(x_str))
-			return
-
-		object.__setattr__(gui.maven.data,x_var,d.astype('int'))
-		gui.maven.emit_data_update()
-
-	except Exception as e:
-		logging.error('failed to load %s\n%s'%(fname,str(e)))
-		return
-
-def load_classes_hdf5dataset(gui):
-	_load_x_hdf5dataset(gui,'Classes','classes')
-def load_pre_hdf5dataset(gui):
-	_load_x_hdf5dataset(gui,'Pre List','pre_list')
-def load_post_hdf5dataset(gui):
-	_load_x_hdf5dataset(gui,'Post List','post_list')
 
 def export_smd(gui):
 	from PyQt5.QtWidgets import QFileDialog,QInputDialog
