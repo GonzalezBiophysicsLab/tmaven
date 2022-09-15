@@ -33,7 +33,8 @@ def read_spartan(filename):
 			buffer = f.read(nTraces*nFrames*4)
 			channels[ic] = np.frombuffer(buffer,dtype=dtype).reshape((nFrames,nTraces)).T
 
-		print(channels.shape)
+		# print(channels.shape)
+		channels = channels.astype('double')
 		#### Read metadata
 		## Note: an undocumented Null byte at the end of each metadataheader
 		metadata = {}

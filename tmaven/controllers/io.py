@@ -157,6 +157,7 @@ class controller_io(object):
 		try:
 			chNames,time,channels,metadata = read_spartan(fname)
 			d = channels[:2,:,:]
+			self.maven.prefs['io.axis_order'] = [1,2,0]
 			smd = self.convert_to_smd(d,fname) #[1,2,0]
 			print(smd.raw.shape)
 			smd.source_names[0] = '{}'.format(fname)

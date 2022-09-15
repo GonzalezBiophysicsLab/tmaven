@@ -63,7 +63,7 @@ class gui_trace_filter(QMainWindow):
 		self.canvas.setSizePolicy(QSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding))
 		# self.toolbar.setSizePolicy(QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed))
 		self.fig.set_dpi(self.dpi)
-		self.canvas.sizeHint = lambda : QSize(5*self.dpi, 3*self.dpi)
+		self.canvas.sizeHint = lambda : QSize(int(5*self.dpi), int(3*self.dpi))
 		self.maven.trace_filter._plot(self.fig,self.ax)
 
 

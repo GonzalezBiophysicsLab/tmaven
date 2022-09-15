@@ -99,7 +99,7 @@ def dwell_inversion(gui):
 	qmw.canvas.setSizePolicy(QSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding))
 	toolbar.setSizePolicy(QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed))
 	fig.set_dpi(dpi)
-	qmw.canvas.sizeHint = lambda : QSize(5*dpi, 6*dpi)
+	qmw.canvas.sizeHint = lambda : QSize(int(5*dpi), int(6*dpi))
 
 	qw = QWidget()
 	vbox = QVBoxLayout()

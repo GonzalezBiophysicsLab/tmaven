@@ -129,7 +129,7 @@ class nd_canvas(FigureCanvas):
 		return default_prefs
 
 	def sizeHint(self):
-		qs = QSize(self.gui.maven.prefs['plot.fig_width']*self.dpi, self.gui.maven.prefs['plot.fig_height']*self.dpi)
+		qs = QSize(int(self.gui.maven.prefs['plot.fig_width']*self.dpi), int(self.gui.maven.prefs['plot.fig_height']*self.dpi))
 		return qs
 
 	def build_menu(self):

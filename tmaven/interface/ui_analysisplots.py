@@ -71,7 +71,7 @@ class popplot_container(QMainWindow):
 		self.plot()
 
 	def canvas_size_hint(self):
-		return QSize(self.maven_plot.prefs['fig_width']*self.dpi,self.maven_plot.prefs['fig_height']*self.dpi)
+		return QSize(int(self.maven_plot.prefs['fig_width']*self.dpi),int(self.maven_plot.prefs['fig_height']*self.dpi))
 
 	def resize_figure(self):
 		## OKAY -- call this when the mainwindow that houses the traj_plot_container is resized, because this widget never resizes otherwise
