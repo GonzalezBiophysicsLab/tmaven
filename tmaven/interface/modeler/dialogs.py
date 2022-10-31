@@ -216,6 +216,38 @@ def dialog_vbgmm_vbhmm(gui,fxn,title,model_selection=False):
 	gui.model_dialog = model_dialog
 	gui.model_dialog.run.clicked.connect(fxn)
 
+def dialog_threshold_vbhmm(gui, fxn):
+	model_dialog = _model_dialog(gui)
+
+	groupbox1 = QGroupBox("VB HMM algorithm parameters")
+	grid1 = QGridLayout()
+	model_dialog.add_spin_box("CPUs:", grid1, [0,0], pref='ncpu')
+	model_dialog.add_spin_box("Restarts:", grid1, [1,0], pref='modeler.nrestarts')
+	model_dialog.add_spin_box("Max iterations:", grid1, [2,0], pref='modeler.maxiters')
+	model_dialog.add_line_edit("Convergence:", grid1, [3,0], pref='modeler.converge', validate = "double")
+	groupbox1.setLayout(grid1)
+	model_dialog.grid.addWidget(groupbox1, 1, 0)
+
+	groupbox2 = QGroupBox("VB HMM model parameters")
+	grid2 = QGridLayout()
+	model_dialog.nstates = model_dialog.add_spin_box("Number of states:", grid2, [0,0])
+	model_dialog.add_line_edit("Prior beta:", grid2, [1,0], pref='modeler.vbhmm.prior.beta', validate = 'double')
+	model_dialog.add_line_edit("Prior a:", grid2, [2,0], pref='modeler.vbhmm.prior.a', validate = 'double')
+	model_dialog.add_line_edit("Prior b:", grid2, [3,0], pref='modeler.vbhmm.prior.b', validate = 'double')
+	model_dialog.add_line_edit("Prior pi:", grid2, [4,0], pref='modeler.vbhmm.prior.pi', validate = 'double')
+	model_dialog.add_line_edit("Prior alpha:", grid2, [5,0], pref='modeler.vbhmm.prior.alpha', validate = 'double')
+	groupbox2.setLayout(grid2)
+	model_dialog.grid.addWidget(groupbox2, 0, 0)
+
+	groupbox3 = QGroupBox("Threshold model parameters")
+	grid3 = QGridLayout()
+	model_dialog.threshold = model_dialog.add_line_edit("Threshold:", grid3, [1,0],validate = 'double', range= [0,1, 4])
+	groupbox3.setLayout(grid3)
+	model_dialog.grid.addWidget(groupbox3, 2, 0)
+
+	gui.model_dialog = model_dialog
+	gui.model_dialog.run.clicked.connect(fxn)
+
 def dialog_vbconhmm(gui,fxn,model_selection=False):
 	model_dialog = _model_dialog(gui)
 

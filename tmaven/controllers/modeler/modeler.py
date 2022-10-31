@@ -1042,6 +1042,68 @@ class controller_modeler(object):
 				self.make_report(results_ens[i])
 		self.maven.emit_data_update()
 
+
+	def run_fret_threshold_vbhmm(self,nstates,threshold):
+		success, keep, y = self.get_fret_traces()
+		if not success:
+			return
+
+		maxiters = self.maven.prefs['modeler.maxiters']
+		converge = self.maven.prefs['modeler.converge']
+		nrestarts = self.maven.prefs['modeler.nrestarts']
+		ncpu = self.maven.prefs['ncpu']
+
+		from .fxns.hmm import viterbi
+		from .model_container import trace_model_container
+
+		data = self.maven.calc_fret()[:,:,1]
+		idealized = np.zeros_like(data) + np.nan
+		ran = np.nonzero(keep)[0].tolist()
+
+		trace_level = {}
+
+		y_flat = np.concatenate(y)
+
+		for i in range(len(y)):
+			yi = y[i].astype('double')
+			results = []
+			for k in range(1,nstates+1):
+				mu_prior = np.percentile(y_flat,np.linspace(0,100,k+2))[1:-1]
+				beta_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.beta']
+				a_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.a']
+				b_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.b']
+				pi_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.pi']
+				tm_prior = np.ones((k,k))*self.maven.prefs['modeler.vbhmm.prior.alpha']
+
+				priors = [mu_prior, beta_prior, a_prior, b_prior, pi_prior, tm_prior]
+				results.append(self.cached_vbhmm(yi,priors,k,maxiters,converge,nrestarts,ncpu))
+
+			elbos = np.array([ri.likelihood[-1,0] for ri in results])
+			modelmax = np.argmax(elbos)
+			r = results[modelmax]
+			ii = ran[i]
+			pre = self.maven.data.pre_list[ii]
+			post = self.maven.data.post_list[ii]
+
+			vit = r.mean[viterbi(yi,r.mean,r.var,r.tmatrix,r.frac).astype('int')]
+			idealized[ii,pre:post] = vit
+			trace_level_inst = trace_model_container(r, ii)
+			trace_level_inst.idealized = idealized[ii]
+			trace_level[str(ii)] = trace_level_inst
+
+		vits = np.concatenate(idealized)
+		vits = vits[np.isfinite(vits)]
+		result = self.cached_threshold(vits,threshold)
+		result.trace_level = trace_level
+		result.type = "threshold + vb HMM"
+		result.ran = ran
+		result.idealize = lambda : self.idealize_fret_threshold_viterbi(result,idealized)
+		result.idealize()
+		self.model = result
+		self.make_report(result)
+		self.maven.emit_data_update()
+
+
 	def run_fret_ebhmm(self,nstates):
 		success,keep,y = self.get_fret_traces()
 		if not success:
@@ -1273,23 +1335,20 @@ class controller_modeler(object):
 
 	def idealize_fret_threshold(self,result):
 		data = self.maven.calc_fret()[:,:,1]
-
-		# f2 = result.var[0]/result.var.sum()
-		# threshold = result.mu[0] + (result.mu[1]-result.mu[0])*f2
 		threshold = result.threshold
-
-		result.idealized = np.zeros_like(data)
+		result.idealized = np.zeros_like(data) + np.nan
 		result.chain = np.zeros_like(result.idealized).astype('int')
-		for i in range(data.shape[0]):
-			idealpath = (data[i] > threshold).astype('int')
-			result.chain[i] = idealpath.copy()
-			result.idealized[i] = result.mean[idealpath]
+		for ii in result.ran:
+			pre = self.maven.data.pre_list[ii]
+			post = self.maven.data.post_list[ii]
+			idealpath = (data[ii,pre:post] > threshold).astype('int')
+			result.chain[ii,pre:post] = idealpath.copy()
+			result.idealized[ii,pre:post] = result.mean[idealpath]
 
 	def idealize_fret_kmeans_viterbi(self,result,vit):
 		result.idealized = np.zeros_like(vit) + np.nan
 		result.chain = np.zeros_like(result.idealized).astype('int')
 		for ii in result.ran:
-			#ii = result.ran[i]
 			pre = self.maven.data.pre_list[ii]
 			post = self.maven.data.post_list[ii]
 			idealpath = np.abs(vit[ii,pre:post,None] - result.mean[None,:]).argmin(1).astype('int64')
@@ -1309,6 +1368,18 @@ class controller_modeler(object):
 			idealpath = np.argmax(prob,axis=2).astype('int64')
 			result.chain[ii,pre:post] = idealpath.copy()
 			result.idealized[ii, pre:post] = result.mean[idealpath]
+
+	def idealize_fret_threshold_viterbi(self,result,vit):
+		result.idealized = np.zeros_like(vit) + np.nan
+		result.chain = np.zeros_like(result.idealized).astype('int')
+		threshold = result.threshold
+
+		for ii in result.ran:
+			pre = self.maven.data.pre_list[ii]
+			post = self.maven.data.post_list[ii]
+			idealpath = (vit[ii,pre:post] > threshold).astype('int')
+			result.chain[ii,pre:post] = idealpath.copy()
+			result.idealized[ii,pre:post] = result.mean[idealpath]
 
 	def idealize_fret_hmm(self,result):
 		from .fxns.hmm import viterbi
