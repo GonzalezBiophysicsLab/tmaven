@@ -62,8 +62,8 @@ def survival(dist):
 def single_exp_surv(tau, k, A):
     return A*np.exp(-k*tau)
 
-def double_exp_surv(tau, k1, k2, B, A):
-    return A*(B*np.exp(-k1*tau) + (1-B)*np.exp(-k2*tau))
+def double_exp_surv(tau, k1, k2,A,B):
+    return A*np.exp(-k1*tau) + B*np.exp(-k2*tau)
 
 def triple_exp_surv(tau, k1, k2, k3, B, C, A):
     return A*(B*np.exp(-k1*tau) + C*np.exp(-k2*tau) + (1-B-C)*np.exp(-k3*tau))
@@ -74,8 +74,8 @@ def stretched_exp_surv(tau, k, beta, A):
 def single_exp_hist(tau, k, A):
     return A*k*np.exp(-k*tau)
 
-def double_exp_hist(tau, k1, k2, B, A):
-    return A*(B*k1*np.exp(-k1*tau) + (1-B)*k2*np.exp(-k2*tau))
+def double_exp_hist(tau, k1, k2, A, B):
+    return A*k1*np.exp(-k1*tau) + B*k2*np.exp(-k2*tau)
 
 def triple_exp_hist(tau, k1, k2, k3, B, C, A):
     return A*(B*k1*np.exp(-k1*tau) + C*k2*np.exp(-k2*tau) + (1-B-C)*k3*np.exp(-k3*tau))
@@ -96,17 +96,17 @@ def optimize_single_surv(tau, surv, fix_A = False):
 
 def optimize_double_surv(tau, surv, fix_A = False):
     if fix_A:
-        A = 1.
-        popt, pcov = sopt.curve_fit(lambda tau, k1,k2,B: double_exp_surv(tau,k1,k2,B,A), tau, surv, bounds = ([0.,0.,0.],[np.inf,np.inf,1.]))
+        popt, pcov = sopt.curve_fit(lambda tau, k1,k2,B: double_exp_surv(tau,k1,k2,1-B,B), tau, surv, bounds = ([0.,0.,0.],[np.inf,np.inf,1.]))
         k1,k2,B = popt
+		A = 1 - B
     else:
-        popt, pcov = sopt.curve_fit(double_exp_surv, tau, surv, bounds = ([0.,0.,0.,0.],[np.inf,np.inf,1.,np.inf]))
-        k1,k2,B,A = popt
+        popt, pcov = sopt.curve_fit(double_exp_surv, tau, surv, bounds = ([0.,0.,0.,0.],[np.inf,np.inf,1.,1.]))
+        k1,k2,A,B = popt
 
     ks = np.array([k1,k2])
     x = np.argsort(ks)
     ks = ks[x]
-    As = np.array([A*B,A*(1-B)])
+    As = np.array([A,B])
     As = As[x]
     return ks,As
 
