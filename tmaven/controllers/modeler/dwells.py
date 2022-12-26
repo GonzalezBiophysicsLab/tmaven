@@ -95,20 +95,21 @@ def optimize_single_surv(tau, surv, fix_A = False):
     return np.array([k]),np.array([A])
 
 def optimize_double_surv(tau, surv, fix_A = False):
-    if fix_A:
-        popt, pcov = sopt.curve_fit(lambda tau, k1,k2,B: double_exp_surv(tau,k1,k2,1-B,B), tau, surv, bounds = ([0.,0.,0.],[np.inf,np.inf,1.]))
-        k1,k2,B = popt
+	if fix_A:
+		popt, pcov = sopt.curve_fit(lambda tau, k1,k2,B: double_exp_surv(tau,k1,k2,1-B,B), tau, surv, bounds = ([0.,0.,0.],[np.inf,np.inf,1.]))
+		k1,k2,B = popt
 		A = 1 - B
-    else:
-        popt, pcov = sopt.curve_fit(double_exp_surv, tau, surv, bounds = ([0.,0.,0.,0.],[np.inf,np.inf,1.,1.]))
-        k1,k2,A,B = popt
+	else:
+		popt, pcov = sopt.curve_fit(double_exp_surv, tau, surv, bounds = ([0.,0.,0.,0.],[np.inf,np.inf,1.,1.]))
+		k1,k2,A,B = popt
 
-    ks = np.array([k1,k2])
-    x = np.argsort(ks)
-    ks = ks[x]
-    As = np.array([A,B])
-    As = As[x]
-    return ks,As
+	ks = np.array([k1,k2])
+	x = np.argsort(ks)
+	ks = ks[x]
+	As = np.array([A,B])
+	As = As[x]
+	print(As)
+	return ks,As
 
 def optimize_triple_surv(tau, surv, fix_A = False):
     if fix_A:

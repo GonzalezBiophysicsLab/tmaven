@@ -32,7 +32,7 @@ class controller_survival_dwell(controller_base_analysisplot):
 			'dwell_min': 0.,
 			'dwell_max': 100,
 
-	        'hist_on':True,
+			'hist_on':True,
 			'hist_type':'bar',
 			'hist_color':'tab:red',
 			'hist_edgecolor':'tab:black',
@@ -52,13 +52,13 @@ class controller_survival_dwell(controller_base_analysisplot):
 			'model_color': 'tab:black',
 			'model_ls': '--',
 
-	        'textbox_x':0.965,
-	        'textbox_y':0.9,
+			'textbox_x':0.965,
+			'textbox_y':0.9,
 			'textbox_offset':0.175,
-	        'textbox_fontsize':7.0,
-	        'textbox_nmol':True,
-	        'xlabel_text':r'Dwells (s)',
-	        'ylabel_text':r'Probability'})
+			'textbox_fontsize':7.0,
+			'textbox_nmol':True,
+			'xlabel_text':r'Dwells (s)',
+			'ylabel_text':r'Probability'})
 
 	def plot(self,fig,ax):
 		## Decide if we should be plotting at all
@@ -119,7 +119,7 @@ class controller_survival_dwell(controller_base_analysisplot):
 							decay = single_exp_surv(tau, self.k, self.a)
 						elif len(self.k) == 2:
 							self.beta = None
-							decay = double_exp_surv(tau, self.k[0], self.k[1], self.a[0]/self.a.sum(), self.a.sum())
+							decay = double_exp_surv(tau, self.k[0], self.k[1], self.a[0], self.a[1])
 						elif len(self.k) == 3:
 							self.beta = None
 							decay = triple_exp_surv(tau, self.k[0], self.k[1], self.k[1],self.a[0]/self.a.sum(), self.a[1]/self.a.sum(),self.a.sum())
