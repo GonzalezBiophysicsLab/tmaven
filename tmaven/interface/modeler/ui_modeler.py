@@ -50,6 +50,7 @@ def build_menu(gui):
 	ens.addAction('vbHMM -> Threshold', lambda: launchers.launch_fret_threshold_vbhmm(gui))
 	ens.addAction('vbConsensus', lambda: launchers.launch_fret_vbconhmm(gui))
 	ens.addAction('vbConsensus + Model selection', lambda: launchers.launch_fret_vbconhmm_modelselection(gui))
+	ens.addAction('vbConsensus -> Threshold', lambda: launchers.launch_fret_threshold_vbconhmm(gui))
 	ens.addAction('ebHMM', lambda: launchers.launch_fret_ebhmm(gui))
 	ens.addAction('ebHMM + Model selection', lambda: launchers.launch_fret_ebhmm_modelselection(gui))
 

@@ -98,7 +98,13 @@ def launch_fret_vbgmm_vbhmm_modelselection(gui):
 
 def launch_fret_threshold_vbhmm(gui):
 	logger.info('Launching FRET VB HMM -> Threshold')
-	dialogs.dialog_threshold_vbhmm(gui,lambda: fxn_fret_threshold_vbhmm(gui))
+	dialogs.dialog_vbhmm(gui,lambda: fxn_fret_threshold_vbhmm(gui),'VB HMM->Threshold',threshold=True)
+	gui.model_dialog.threshold.setText("0.5")
+	gui.model_dialog.start()
+
+def launch_fret_threshold_vbconhmm(gui):
+	logger.info('Launching FRET VB HMM -> Threshold')
+	dialogs.dialog_vbconhmm(gui,lambda: fxn_fret_threshold_vbconhmm(gui),threshold=True)
 	gui.model_dialog.threshold.setText("0.5")
 	gui.model_dialog.start()
 
@@ -187,6 +193,14 @@ def fxn_fret_vbconhmm_modelselection(gui):
 	gui.maven.modeler.run_fret_vbconhmm_modelselection(nstates_min,nstates_max)
 	logger.info('Finished FRET VB Consensus HMM + Model Selection')
 
+def fxn_fret_threshold_vbconhmm(gui):
+	logger.info('Executing FRET VB Consensus HMM -> threshold')
+	threshold = float(gui.model_dialog.threshold.text())
+	nstates = gui.model_dialog.nstates.value()
+	close_dialog(gui)
+	gui.maven.modeler.run_fret_threshold_vbconhmm(nstates,threshold)
+	logger.info('Finished FRET VB Consensus HMM->threshold')
+
 def fxn_fret_vbhmm(gui):
 	logger.info('Executing FRET VB HMM')
 	nstates = gui.model_dialog.nstates.value()
@@ -233,7 +247,7 @@ def fxn_fret_threshold_vbhmm(gui):
 	nstates = gui.model_dialog.nstates.value()
 	close_dialog(gui)
 	gui.maven.modeler.run_fret_threshold_vbhmm(nstates,threshold)
-	logger.info('Finished FRET threshold')
+	logger.info('Finished FRET VB HMM->threshold')
 
 def fxn_fret_vbhmm_one(gui):
 	logger.info('Executing FRET VB HMM (One)')

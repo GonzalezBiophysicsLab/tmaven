@@ -725,6 +725,48 @@ class controller_modeler(object):
 				self.make_report(results[i])
 		self.maven.emit_data_update()
 
+	def run_fret_threshold_vbconhmm(self,nstates, threshold):
+		success,keep,y = self.get_fret_traces()
+		if not success:
+			logger.info('failed to get traces')
+			return
+
+		maxiters = self.maven.prefs['modeler.maxiters']
+		converge = self.maven.prefs['modeler.converge']
+		nrestarts = self.maven.prefs['modeler.nrestarts']
+		ncpu = self.maven.prefs['ncpu']
+
+		mu_prior = np.percentile(np.concatenate(y),np.linspace(0,100,nstates+2))[1:-1]
+		beta_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbconhmm.prior.beta']
+		a_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbconhmm.prior.a']
+		b_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbconhmm.prior.b']
+		pi_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbconhmm.prior.pi']
+		tm_prior = np.ones((nstates,nstates))*self.maven.prefs['modeler.vbconhmm.prior.alpha']
+
+		priors = [mu_prior, beta_prior, a_prior, b_prior, pi_prior, tm_prior]
+
+		result = self.cached_vbconhmm(y,priors,nstates,maxiters,converge,nrestarts,ncpu)
+
+		result.ran = np.nonzero(keep)[0].tolist()
+		result.idealize = lambda : self.idealize_fret_hmm(result)
+		result.idealize()
+		self.recast_rs(result)
+
+		con_result = result
+		idealized = result.idealized.copy()
+		vits = np.concatenate(idealized)
+		vits = vits[np.isfinite(vits)]
+		result = self.cached_threshold(vits,threshold)
+		result.consensusmodel = con_result
+		result.type = "threshold + vbConsensus"
+		result.ran = np.nonzero(keep)[0].tolist()
+		result.idealize = lambda : self.idealize_fret_threshold_viterbi(result,idealized)
+		result.idealize()
+		self.model = result
+		self.make_report(result)
+		self.maven.emit_data_update()
+
+
 	def run_fret_vbhmm(self,nstates):
 		success,keep,y = self.get_fret_traces()
 		if not success:
