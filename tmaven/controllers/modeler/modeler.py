@@ -248,6 +248,7 @@ class controller_modeler(object):
 	def get_fret_traces(self):
 		keep = self.get_traces()
 		if keep.sum() == 0:
+			logger.info('Failed to get traces')
 			return False,keep,[]
 		pre,post = self.get_prepost()
 		notshort = post-pre > 2
@@ -622,6 +623,7 @@ class controller_modeler(object):
 		success,keep,y = self.get_fret_traces()
 		if not success:
 			return
+			
 		if keep.sum() != 1:
 			#Warning "Error: Run all, Apply all","You have more than one molecule turned on")
 			return
@@ -639,7 +641,9 @@ class controller_modeler(object):
 
 	def run_fret_threshold(self,threshold):
 		success,keep,y = self.get_fret_traces()
-
+		if not success:
+			return
+			
 		result = self.cached_threshold(np.concatenate(y),threshold)
 		result.ran = np.nonzero(keep)[0].tolist()
 		result.idealize = lambda : self.idealize_fret_threshold(result)
@@ -651,7 +655,6 @@ class controller_modeler(object):
 	def run_fret_vbconhmm(self,nstates):
 		success,keep,y = self.get_fret_traces()
 		if not success:
-			logger.info('failed to get traces')
 			return
 
 		maxiters = self.maven.prefs['modeler.maxiters']
@@ -686,7 +689,6 @@ class controller_modeler(object):
 
 		success,keep,y = self.get_fret_traces()
 		if not success:
-			logger.info('failed to get traces')
 			return
 
 		maxiters = self.maven.prefs['modeler.maxiters']
@@ -728,7 +730,6 @@ class controller_modeler(object):
 	def run_fret_threshold_vbconhmm(self,nstates, threshold):
 		success,keep,y = self.get_fret_traces()
 		if not success:
-			logger.info('failed to get traces')
 			return
 
 		maxiters = self.maven.prefs['modeler.maxiters']
@@ -1149,7 +1150,6 @@ class controller_modeler(object):
 	def run_fret_ebhmm(self,nstates):
 		success,keep,y = self.get_fret_traces()
 		if not success:
-			logger.info('failed to get traces')
 			return
 
 		maxiters = self.maven.prefs['modeler.maxiters']
@@ -1212,7 +1212,6 @@ class controller_modeler(object):
 
 		success,keep,y = self.get_fret_traces()
 		if not success:
-			logger.info('failed to get traces')
 			return
 
 		maxiters = self.maven.prefs['modeler.maxiters']
