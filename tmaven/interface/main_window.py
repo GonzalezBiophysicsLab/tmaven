@@ -255,6 +255,10 @@ class main_window(QMainWindow):
 		self.slider_select.blockSignals(False)
 
 	def proc_data_update(self):
+		###
+		if self.index >= self.maven.data.nmol:
+			self.index = 0
+		###
 		if not self.plot_mode is None:
 			self.plot_container.plot.update_data(self.index)
 		self.update_mol_label()
