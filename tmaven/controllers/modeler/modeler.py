@@ -362,7 +362,7 @@ class controller_modeler(object):
 			self.cached_functions['ML GMM'] = ml_em_gmm_parallel
 
 		# ## has outlier class -- remove last point
-		result = self.cached_functions['ML GMM'](y,nstates+1,maxiters=maxiters,threshold=converge,nrestarts=nrestarts,ncpu=ncpu)
+		result = self.cached_functions['ML GMM'](y,nstates,maxiters=maxiters,threshold=converge,nrestarts=nrestarts,ncpu=ncpu)
 		# result.r = result.r[:,:-1]
 		# result.mu = result.mu[:-1]
 		# result.var = result.var[:-1]
