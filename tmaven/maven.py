@@ -80,9 +80,28 @@ class maven_class(object):
 		self.plots = controller_analysisplots(self)
 
 	def calc_fret(self,index=None):
+		if self.data.ncolors == 1:
+			if not index is None:
+				maxim = self.data.corrected[index].max()
+				minim = self.data.corrected[index].min()
+				return (self.data.corrected[index] - minim)/(maxim - minim + 1e-300)
+
+			norm = np.zeros((self.data.nmol,self.data.ntime,1))
+			for i in range(self.data.nmol):
+				maxim = self.data.corrected[i].max()
+				minim = self.data.corrected[i].min()
+				norm[i] = (self.data.corrected[i] - minim)/(maxim - minim + 1e-300)
+			return norm[:,:,0]
+		
+
 		if not index is None:
-			return self.data.corrected[index]/(self.data.corrected[index].sum(-1) + 1e-300)[:,None]
-		return self.data.corrected / (self.data.corrected.sum(2) + 1e-300)[:,:,None]
+			rel = self.data.corrected[index]/(self.data.corrected[index].sum(-1) + 1e-300)[:,None]
+			return rel[:,1]
+		
+		rel = self.data.corrected / (self.data.corrected.sum(2) + 1e-300)[:,:,None]
+		return rel[:,:,1]
+
+
 
 	def emit_data_update(self):
 		# print('>>>maven.data_update')

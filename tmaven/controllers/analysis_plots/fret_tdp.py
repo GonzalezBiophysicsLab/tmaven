@@ -195,7 +195,7 @@ class controller_fret_tdp(controller_base_analysisplot):
 
 		'''
 		try:
-			fpb = self.get_plot_fret()[:,:,1]
+			fpb = self.get_plot_fret()[:,:]
 			N = fpb.shape[0]
 			nskip = self.prefs['nskip']
 			d = np.array([[fpb[i,:-nskip],fpb[i,nskip:]] for i in range(fpb.shape[0])])

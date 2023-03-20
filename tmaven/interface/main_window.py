@@ -140,7 +140,7 @@ class main_window(QMainWindow):
 
 		self.menu_file.addMenu(self.menu_load)
 		self.menu_file.addMenu(self.menu_save)
-		self.menu_file.addAction('Clear Data',self.clear_data)
+		self.menu_file.addAction('Clear Data',self.clear_data,'Ctrl+Shift+C')
 		self.menu_file.addMenu(self.menu_prefs)
 		self.menu_prefs.addAction('Load Preferences',self.preferences_viewer.load)
 		self.menu_prefs.addAction('Save Preferences',self.preferences_viewer.save)

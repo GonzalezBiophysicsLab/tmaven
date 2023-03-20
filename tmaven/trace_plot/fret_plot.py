@@ -145,7 +145,7 @@ class fret_canvas(FigureCanvas):
 		return qs
 
 	def build_menu(self):
-		self.menu_trajplot = QMenu('Plot',gui)
+		self.menu_trajplot = QMenu('Plot',self.gui)
 
 		action_redraw = QAction('Refresh', self.gui)
 		action_redraw.triggered.connect(lambda event: self.redrawplot())
@@ -194,16 +194,16 @@ class fret_canvas(FigureCanvas):
 		for i in range(self.gui.maven.data.ncolors):
 			for ls in [':','-',':']:
 				self.ax[0,0].plot(np.random.rand(self.gui.maven.data.ntime), ls=ls)
-				if i > 0:
+				if self.gui.maven.data.ncolors == 1 or i > 0:
 					self.ax[1,0].plot(np.random.rand(self.gui.maven.data.ntime), ls=ls)
 
 		for i in range(self.gui.maven.data.ncolors): ## Idealized Relatives.... e.g., for vbFRET idealized
-			if i > 0:
+			if self.gui.maven.data.ncolors == 1 or i > 0:
 				self.ax[1,0].plot(np.zeros(self.gui.maven.data.ntime)+np.nan)
 
 		for i in range(self.gui.maven.data.ncolors):
 			self.ax[0,1].plot(np.random.rand(100))
-			if i > 0:
+			if self.gui.maven.data.ncolors == 1 or i > 0:
 				self.ax[1,1].plot(np.random.rand(100))
 
 		self.set_linestyles()
@@ -489,6 +489,12 @@ class fret_canvas(FigureCanvas):
 			for j,alpha in zip(list(range(3)),alphas):
 				self.set_linestyle(self.ax[1][0].lines[3*i+j], color, alpha, lw)
 			self.set_linestyle(self.ax[1][1].lines[i], color, p['plot.line_alpha'], hw)
+		
+		if self.gui.maven.data.ncolors==1:
+			color = self.gui.maven.prefs['plot.fret_color']
+			for j,alpha in zip(list(range(3)),alphas):
+				self.set_linestyle(self.ax[1][0].lines[j], color, alpha, lw)
+			self.set_linestyle(self.ax[1][1].lines[0], color, p['plot.line_alpha'], hw)
 
 		if len(self.ax[1,0].lines)%4==0:
 			for i in range(self.gui.maven.data.ncolors-1):
@@ -496,6 +502,12 @@ class fret_canvas(FigureCanvas):
 				alpha = p['plot.idealized_alpha']
 				lw = p['plot.idealized_linewidth']
 				self.set_linestyle(self.ax[1,0].lines[-(1+i)], color, alpha, lw)
+			
+			if self.gui.maven.data.ncolors == 1:
+				color = p['plot.idealized_color']
+				alpha = p['plot.idealized_alpha']
+				lw = p['plot.idealized_linewidth']
+				self.set_linestyle(self.ax[1,0].lines[-1], color, alpha, lw)
 
 	def update_data(self,index):
 		''' Replot only the lines on the plot for one trace
@@ -638,15 +650,18 @@ class fret_canvas(FigureCanvas):
 					self.gui.maven.data.pre_list[self.gui.index] = int(np.round(event.xdata/self.gui.maven.prefs['plot.time_dt']))
 
 				## Middle click - reset pre and post points to calculated values
+				## might not work
+				'''
 				if event.button == 2 and self.toolbar.mode == "":
 					if self.gui.maven.data.ncolors == 2:
-						from ...photobleaching.photobleaching import get_point_pbtime
+						from ..controllers.photobleaching.photobleaching import get_point_pbtime
 						self.gui.maven.data.pre_list[self.gui.index] = 0
 						if self.gui.maven.prefs['photobleaching_flag'] is True:
 							qq = self.gui.maven.data.corrected[self.gui.index].sum(-1)
 						else:
 							qq = self.gui.maven.data.corrected[self.gui.index,:,-1]
 						self.gui.maven.data.post_list[self.gui.index] = get_point_pbtime(qq,1.,1.,1.,1000.) + 1
+				'''
 				self.update_plots(self.gui.index)
 				try:
 					self.gui.molecules_viewer.viewer.model.layoutChanged.emit()
@@ -682,6 +697,10 @@ class fret_canvas(FigureCanvas):
 		for i in range(1,self.gui.maven.data.ncolors):
 			self.ax[1,0].lines[-i].set_data(t[pretime:pbtime],idealized[pretime:pbtime])
 			self.ax[1,0].lines[-i].set_visible(True)
+		
+		if self.gui.maven.data.ncolors == 1:
+			self.ax[1,0].lines[-1].set_data(t[pretime:pbtime],idealized[pretime:pbtime])
+			self.ax[1,0].lines[-1].set_visible(True)
 
 	def draw_traj(self,t,intensities,rel,pretime,pbtime):
 		''' draw intensity lines and rel. intensity lines '''
@@ -698,6 +717,14 @@ class fret_canvas(FigureCanvas):
 			else:
 				self.ax[1,0].lines[3*i+2].set_data(t[pbtime:],np.zeros_like(rel[pbtime:,i]))
 
+		if self.gui.maven.data.ncolors == 1:
+			self.ax[1,0].lines[0].set_data(t[:pretime],rel[:pretime,0])
+			self.ax[1,0].lines[1].set_data(t[pretime:pbtime],rel[pretime:pbtime,0])
+			if not self.gui.maven.prefs['plot.fret_pbzero']:
+				self.ax[1,0].lines[2].set_data(t[pbtime:],rel[pbtime:,0])
+			else:
+				self.ax[1,0].lines[2].set_data(t[pbtime:],np.zeros_like(rel[pbtime:,0]))
+
 	def calc_trajectory(self,index):
 		''' get data for current trajectory '''
 		intensities = self.gui.maven.data.corrected[index].copy()
@@ -706,7 +733,8 @@ class fret_canvas(FigureCanvas):
 		pbtime = int(self.gui.maven.data.post_list[index])
 		pretime = int(self.gui.maven.data.pre_list[index])
 
-		rel = self.gui.maven.calc_fret(index)[:,1:].copy()
+		rel = self.gui.maven.calc_fret(index).copy().reshape((self.gui.maven.data.nt, 1)) #[:,1:]
+
 		return t,intensities,rel,pretime,pbtime
 
 	def calc_histograms(self,intensities,rel,pretime,pbtime):
@@ -737,6 +765,18 @@ class fret_canvas(FigureCanvas):
 			hx = np.append(np.append(hx[0],.5*(hx[1:]+hx[:-1])),hx[-1])
 			hymaxes.append(hy.max())
 			fret_hists.append([hx,hy])
+		
+		if self.gui.maven.data.ncolors == 1:
+			if pretime < pbtime:
+				hy,hx = np.histogram(rel[pretime:pbtime,0],range=(self.gui.maven.prefs['plot.fret_min'],self.gui.maven.prefs['plot.fret_max']),bins=int(np.sqrt(pbtime-pretime)))
+			else:
+				hy = np.zeros(100)
+				hx = np.linspace(self.gui.maven.prefs['plot.intensity_min'],self.gui.maven.prefs['plot.intensity_max'],101)
+			hy = np.append(np.append(0.,hy),0.)
+			hx = np.append(np.append(hx[0],.5*(hx[1:]+hx[:-1])),hx[-1])
+			hymaxes.append(hy.max())
+			fret_hists.append([hx,hy])
+
 
 		hymax = np.max(hymaxes)
 		for i in range(len(intensity_hists)):

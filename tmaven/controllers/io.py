@@ -7,6 +7,7 @@ logger = logging.getLogger(__name__)
 # from ..maven import check_mavengui_present
 
 default_prefs = {
+	'io.datadims':2,
 	'io.skiprows':0,
 	'io.delimiter':r'\t',
 	'io.axis_order':[0,1,2],
@@ -209,6 +210,7 @@ class controller_io(object):
 		self.maven.emit_data_update()
 
 	def convert_to_smd(self,d,dname):
+		#datadims = self.maven.prefs['io.datadims']
 		order = self.maven.prefs['io.axis_order']
 		missing = self.maven.prefs['io.missing_axis']
 		decollate = self.maven.prefs['io.decollate']

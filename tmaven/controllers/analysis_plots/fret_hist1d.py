@@ -97,7 +97,7 @@ class controller_fret_hist1d(controller_base_analysisplot):
 				self.fpb = np.array(())
 		else:
 			try:
-				self.fpb = self.get_plot_fret()[:,:,1].copy()
+				self.fpb = self.get_plot_fret()[:,:].copy()
 			except:
 				self.fpb = np.array(())
 		fpb = self.fpb[np.isfinite(self.fpb)].flatten()

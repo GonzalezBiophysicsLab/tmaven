@@ -154,7 +154,7 @@ class controller_fret_hist2d(controller_base_analysisplot):
 
 		'''
 		try:
-			fpb = self.get_plot_fret()[:,:,1].copy()
+			fpb = self.get_plot_fret()[:,:].copy()
 			flag = False
 
 			if (not self.maven.modeler.model is None) and self.prefs['sync_postsync']:

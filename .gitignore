@@ -11,3 +11,4 @@ env
 *.hdf5
 *.dat
 *.traces
+.vscode

@@ -247,13 +247,14 @@ class controller_modeler(object):
 
 	def get_fret_traces(self):
 		keep = self.get_traces()
+		#keep = self.maven.selection.get_toggled_mask()
 		if keep.sum() == 0:
 			logger.info('Failed to get traces')
 			return False,keep,[]
 		pre,post = self.get_prepost()
 		notshort = post-pre > 2
 		keep = keep[notshort]
-		y = [self.maven.calc_fret(i)[pre[i]:post[i],1].astype('double').flatten() for i in range(keep.size) if keep[i]]
+		y = [self.maven.calc_fret(i)[pre[i]:post[i]].astype('double').flatten() for i in range(keep.size) if keep[i]]
 		y = self.clip_traces(y,-1,2)
 		return True,keep,y
 
@@ -332,7 +333,7 @@ class controller_modeler(object):
 		return y
 
 	def recast_rs(self,result):
-		data = self.maven.calc_fret()[:,:,1]
+		data = self.maven.calc_fret() #[:,:,1]
 		N,T = data.shape
 		rs = result.r
 		result.r = np.zeros((N,T,result.nstates)) + np.nan
@@ -554,7 +555,7 @@ class controller_modeler(object):
 		var = mu.copy()
 		frac = mu.copy()
 		result = self.model_container(type='ml HMM',nstates=nstates,mean=mu,var =var,frac=frac)
-		data = self.maven.calc_fret()[:,:,1]
+		data = self.maven.calc_fret() #[:,:,1]
 		result.idealized = np.zeros_like(data) + np.nan
 		trace_level = {}
 		result.ran = np.nonzero(keep)[0].tolist()
@@ -588,7 +589,7 @@ class controller_modeler(object):
 		from .fxns.hmm import viterbi
 		from .model_container import trace_model_container
 
-		data = self.maven.calc_fret()[:,:,1]
+		data = self.maven.calc_fret() #[:,:,1]
 		idealized = np.zeros_like(data) + np.nan
 		ran = np.nonzero(keep)[0].tolist()
 
@@ -696,7 +697,7 @@ class controller_modeler(object):
 		nrestarts = self.maven.prefs['modeler.nrestarts']
 		ncpu = self.maven.prefs['ncpu']
 
-		data = self.maven.calc_fret()[:,:,1]
+		data = self.maven.calc_fret() #[:,:,1]
 		results = []
 		for nstates in range(nstates_min,nstates_max+1):
 			mu_prior = np.percentile(np.concatenate(y),np.linspace(0,100,nstates+2))[1:-1]
@@ -795,7 +796,7 @@ class controller_modeler(object):
 		frac = mu.copy()
 		result = self.model_container(type='vb HMM',nstates=nstates,mean=mu,var =var,frac=frac)
 
-		data = self.maven.calc_fret()[:,:,1]
+		data = self.maven.calc_fret() #[:,:,1]
 		result.idealized = np.zeros_like(data) + np.nan
 		trace_level = {}
 		result.ran = np.nonzero(keep)[0].tolist()
@@ -839,7 +840,7 @@ class controller_modeler(object):
 		frac = mu.copy()
 		result = self.model_container(type='vb HMM_model selection',nstates=nstates_max,mean=mu,var =var,frac=frac)
 
-		data = self.maven.calc_fret()[:,:,1]
+		data = self.maven.calc_fret() #[:,:,1]
 		result.idealized = np.zeros_like(data) + np.nan
 		trace_level = {}
 		result.ran = np.nonzero(keep)[0].tolist()
@@ -889,7 +890,7 @@ class controller_modeler(object):
 		from .fxns.hmm import viterbi
 		from .model_container import trace_model_container
 
-		data = self.maven.calc_fret()[:,:,1]
+		data = self.maven.calc_fret() #[:,:,1]
 		idealized = np.zeros_like(data) + np.nan
 		ran = np.nonzero(keep)[0].tolist()
 
@@ -950,7 +951,7 @@ class controller_modeler(object):
 		from .fxns.hmm import viterbi
 		from .model_container import trace_model_container
 
-		data = self.maven.calc_fret()[:,:,1]
+		data = self.maven.calc_fret() #[:,:,1]
 		idealized = np.zeros_like(data) + np.nan
 		ran = np.nonzero(keep)[0].tolist()
 
@@ -1025,7 +1026,7 @@ class controller_modeler(object):
 		from .fxns.hmm import viterbi
 		from .model_container import trace_model_container
 
-		data = self.maven.calc_fret()[:,:,1]
+		data = self.maven.calc_fret() #[:,:,1]
 		idealized = np.zeros_like(data) + np.nan
 		ran = np.nonzero(keep)[0].tolist()
 		results_ens = []
@@ -1099,7 +1100,7 @@ class controller_modeler(object):
 		from .fxns.hmm import viterbi
 		from .model_container import trace_model_container
 
-		data = self.maven.calc_fret()[:,:,1]
+		data = self.maven.calc_fret() #[:,:,1]
 		idealized = np.zeros_like(data) + np.nan
 		ran = np.nonzero(keep)[0].tolist()
 
@@ -1169,7 +1170,7 @@ class controller_modeler(object):
 		result, vbs = self.cached_ebhmm(y,priors,nstates,maxiters,converge,nrestarts,ncpu)
 		result.ran = np.nonzero(keep)[0].tolist()
 
-		data = self.maven.calc_fret()[:,:,1]
+		data = self.maven.calc_fret() #[:,:,1]
 		idealized = np.zeros_like(data) + np.nan
 		chain = np.zeros_like(idealized).astype('int')
 
@@ -1219,7 +1220,7 @@ class controller_modeler(object):
 		nrestarts = self.maven.prefs['modeler.nrestarts']
 		ncpu = self.maven.prefs['ncpu']
 
-		data = self.maven.calc_fret()[:,:,1]
+		#data = self.maven.calc_fret() #[:,:,1]
 		results = []
 
 		from .fxns.hmm import viterbi
@@ -1238,7 +1239,7 @@ class controller_modeler(object):
 			result, vbs = self.cached_ebhmm(y,priors,nstates,maxiters,converge,nrestarts,ncpu)
 			result.ran = np.nonzero(keep)[0].tolist()
 
-			data = self.maven.calc_fret()[:,:,1]
+			data = self.maven.calc_fret() #[:,:,1]
 			idealized = np.zeros_like(data) + np.nan
 			chain = np.zeros_like(idealized).astype('int')
 
@@ -1347,7 +1348,7 @@ class controller_modeler(object):
 
 
 	def idealize_fret_gmm(self,result):
-		data = self.maven.calc_fret()[:,:,1]
+		data = self.maven.calc_fret() #[:,:,1]
 		result.idealized = np.zeros_like(data) + np.nan
 		result.chain = np.zeros_like(result.idealized).astype('int')
 
@@ -1362,7 +1363,8 @@ class controller_modeler(object):
 			result.idealized[ii, pre:post] = result.mean[idealpath]
 
 	def idealize_fret_kmeans(self,result):
-		data = self.maven.calc_fret()[:,:,1]
+		data = self.maven.calc_fret() #[:,:,1]
+		print(data.shape)
 		result.idealized = np.zeros_like(data) + np.nan
 		result.chain = np.zeros_like(result.idealized).astype('int')
 
@@ -1375,7 +1377,8 @@ class controller_modeler(object):
 			result.idealized[ii, pre:post] = result.mean[idealpath]
 
 	def idealize_fret_threshold(self,result):
-		data = self.maven.calc_fret()[:,:,1]
+		data = self.maven.calc_fret() #[:,:,1]
+		#success,keep,data =  self.get_fret_traces()
 		threshold = result.threshold
 		result.idealized = np.zeros_like(data) + np.nan
 		result.chain = np.zeros_like(result.idealized).astype('int')
@@ -1424,7 +1427,7 @@ class controller_modeler(object):
 
 	def idealize_fret_hmm(self,result):
 		from .fxns.hmm import viterbi
-		data = self.maven.calc_fret()[:,:,1].astype('double')
+		data = self.maven.calc_fret().astype('double') #[:,:,1]
 		result.idealized = np.zeros_like(data) + np.nan
 		result.chain = np.zeros_like(result.idealized).astype('int')
 		pre = self.maven.data.pre_list
