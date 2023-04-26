@@ -60,7 +60,6 @@ def outer_loop(x,mu,var,ppi,maxiters,threshold):
 		iteration += 1
 	return mu,var,r,ppi,ll1,iteration
 
-
 def ml_em_gmm(x,nstates,maxiters=1000,threshold=1e-6,init_kmeans=True):
 	'''
 	Data convention is NxK
