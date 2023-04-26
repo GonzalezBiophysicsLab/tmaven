@@ -1,0 +1,9 @@
+---
+title: "Example: load SMD"
+---
+
+Here's a code example
+
+``` python
+maven.io.load_smdtmaven_hdf5('./docs/examples/example_smd.hdf5','L1-tRNA')
+```
