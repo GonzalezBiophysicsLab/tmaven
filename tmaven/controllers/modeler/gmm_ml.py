@@ -58,8 +58,13 @@ def outer_loop(x,mu,var,ppi,maxiters,threshold):
 		ppi = nk/np.sum(nk)
 
 		iteration += 1
+	
+	mu = mu[:-1]
+	var = var[:-1]
+	r = r[:,:-1]
+	ppi = ppi[:-1]
+	ppi /= ppi.sum()
 	return mu,var,r,ppi,ll1,iteration
-
 
 def ml_em_gmm(x,nstates,maxiters=1000,threshold=1e-6,init_kmeans=True):
 	'''
@@ -74,6 +79,10 @@ def ml_em_gmm(x,nstates,maxiters=1000,threshold=1e-6,init_kmeans=True):
 		raise Exception("Input data isn't 1D")
 
 	mu,var,ppi = initialize_gmm(x,nstates,init_kmeans)
+	mu = np.append(mu,np.mean(mu)+.001)
+	var = np.append(var,np.mean(var))
+	ppi = np.append(ppi,.05)
+	ppi /= ppi.sum()
 
 	#### run calculations
 	mu,var,r,ppi,likelihood,iteration = outer_loop(x,mu,var,ppi,maxiters,threshold)

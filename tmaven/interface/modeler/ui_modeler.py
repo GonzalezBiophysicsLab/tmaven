@@ -26,18 +26,24 @@ def build_menu(gui):
 	menu_modeler.addAction('Load Active',gui.load_model)
 	menu_modeler.addAction('Update Idealized',gui.update_idealization)
 
+
+	# ind = menu_modeler.addMenu('Individual (FRET)')
+# 	indall = ind.addMenu('Run all')
+# 	indall.addAction('mlHMM',lambda : launchers.launch_fret_mlhmm(gui))
+# 	indall.addAction('vbHMM',lambda : launchers.launch_fret_vbhmm(gui))
+# 	indall.addAction('vbHMM + Model selection',lambda : launchers.launch_fret_vbhmm_modelselection(gui))
+# 	indone = ind.addMenu('Run one, Apply all (FRET)')
+# 	indone.addAction('mlHMM',lambda : launchers.launch_fret_mlhmm_one(gui))
+# 	indone.addAction('vbHMM', lambda: launchers.launch_fret_vbhmm_one(gui))
+
+	menu_modeler.addSeparator()
+	#menu_modeler.addAction('Calculate Dwell Times', lambda: analyze_dwells(gui))
+	menu_modeler.addAction('Analyze Dwell Times', lambda: launch_fret_dwell_analysis(gui))
+
 	menu_modeler.addSeparator()
 
-	ind = menu_modeler.addMenu('Individual (FRET)')
-	indall = ind.addMenu('Run all')
-	indall.addAction('mlHMM',lambda : launchers.launch_fret_mlhmm(gui))
-	indall.addAction('vbHMM',lambda : launchers.launch_fret_vbhmm(gui))
-	indall.addAction('vbHMM + Model selection',lambda : launchers.launch_fret_vbhmm_modelselection(gui))
-	indone = ind.addMenu('Run one, Apply all (FRET)')
-	indone.addAction('mlHMM',lambda : launchers.launch_fret_mlhmm_one(gui))
-	indone.addAction('vbHMM', lambda: launchers.launch_fret_vbhmm_one(gui))
 
-	ens = menu_modeler.addMenu("Ensemble (FRET)")
+	ens = menu_modeler.addMenu("FRET Modeling")
 	ens.addAction('Threshold',lambda : launchers.launch_fret_threshold(gui))
 	ens.addAction('K-means',lambda : launchers.launch_fret_kmeans(gui))
 	ens.addAction('vbGMM',lambda : launchers.launch_fret_vbgmm(gui))
@@ -54,9 +60,6 @@ def build_menu(gui):
 	ens.addAction('ebHMM', lambda: launchers.launch_fret_ebhmm(gui))
 	ens.addAction('ebHMM + Model selection', lambda: launchers.launch_fret_ebhmm_modelselection(gui))
 
-	menu_modeler.addSeparator()
-	#menu_modeler.addAction('Calculate Dwell Times', lambda: analyze_dwells(gui))
-	menu_modeler.addAction('Analyze Dwell Times', lambda: launch_fret_dwell_analysis(gui))
 
 	return menu_modeler
 

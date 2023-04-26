@@ -1,0 +1,51 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Welcome to tMAVEN",
+    "section": "",
+    "text": "Here is some documentation cookbook examples about how to use tMAVEN."
+  },
+  {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About tMAVEN",
+    "section": "",
+    "text": "Intro\ntMAVEN is a development that came out of the Gonzalez Biophysics Lab from the Gonzalez lab at Columbia University from ~2015-now"
+  },
+  {
+    "objectID": "install.html",
+    "href": "install.html",
+    "title": "Installing tMAVEN",
+    "section": "",
+    "text": "New Python Environment\nconda stuff\n\n\nInstall package\npip install -e ./"
+  },
+  {
+    "objectID": "somestuff.html",
+    "href": "somestuff.html",
+    "title": "Some Stuff",
+    "section": "",
+    "text": "placeholder"
+  },
+  {
+    "objectID": "example1.html",
+    "href": "example1.html",
+    "title": "Example: Script",
+    "section": "",
+    "text": "Here’s a code example\ndo stuff here"
+  },
+  {
+    "objectID": "info_molecule.html",
+    "href": "info_molecule.html",
+    "title": "Information 1",
+    "section": "",
+    "text": "Here is some documentation/cookbook examples about how to"
+  },
+  {
+    "objectID": "info_priors.html",
+    "href": "info_priors.html",
+    "title": "Information on priors",
+    "section": "",
+    "text": "Here’s some info on priors"
+  }
+]
