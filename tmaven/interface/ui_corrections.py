@@ -21,7 +21,7 @@ def build_menu(gui):
 	## Qt
 	from PyQt5.QtWidgets import QMenu
 	menu = QMenu('Corrections',gui)
-	menu_filter = QMenu('Filter',gui)
+	menu_filter = QMenu('Signal Filters',gui)
 
 	### Corrections
 	menu.addMenu(menu_filter)
