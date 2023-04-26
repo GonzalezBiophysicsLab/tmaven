@@ -1,9 +1,0 @@
----
-title: "Example: Script"
----
-
-Here's a code example
-
-``` python
-do stuff here 
-```

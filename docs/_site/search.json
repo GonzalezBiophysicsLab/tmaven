@@ -47,5 +47,33 @@
     "title": "Information on priors",
     "section": "",
     "text": "Here’s some info on priors"
+  },
+  {
+    "objectID": "examples/example_smdload.html",
+    "href": "examples/example_smdload.html",
+    "title": "Example: load SMD",
+    "section": "",
+    "text": "Here’s a code example\nmaven.io.load_smdtmaven_hdf5('./docs/examples/example_smd.hdf5','L1-tRNA')"
+  },
+  {
+    "objectID": "develop.html",
+    "href": "develop.html",
+    "title": "Develop",
+    "section": "",
+    "text": "Make a new virtual environment and activate it, then setup\ngit clone [tmaven URL here]\ncd tMAVEN\npython -m venv env --clear\nWhen you are ready to develop,\nsource env/bin/activate\nIf you want to install,\npip install -e ./ --use-feature=2020-resolver\nthen you can run the app with\ntmaven"
+  },
+  {
+    "objectID": "develop.html#the-.maven",
+    "href": "develop.html#the-.maven",
+    "title": "Develop",
+    "section": "The .maven",
+    "text": "The .maven\nThe class for the .maven lives in /tmaven/maven.py, and many of the objects within .maven that hold different functionalities are located in the files in /tmaven/controllers.\nWhenever you modify anything (specifically data) in .maven, you will probably want to tell the .gui, but technically the .maven doesn’t know about the .gui. The solution is to execute the .maven.emit_data_update() function after any such operation. By default, that function does nothing. However, when a .gui is hooked up to a .maven, the .gui overrides this function with one of its own. This is all automatically handled by the .gui, so all you have to do is call the .maven fxn where your update is complete.\n\n.maven.prefs\nThis is basically a special python dictionary. The big difference is that it maintains the original type of the value for each key. All .maven functions with any user adjustable options should be stored in here.\n\n\n.maven.io\nThis handles all of the loading, saving functions that ultimately go into .maven.smd and .maven.data\n\n\n.maven.smd\nThis object holds all of the ‘raw’ smd format data loaded into .maven. The .maven can only hold one of these. The format is explained a little more in /tmaven/pysmd/readme.md. Largely, after loading data into the smd, you shouldn’t be touching it. Instead you should be using things in .maven.data.\n\n\n.maven.data\nThis object has a maven.data.corrected, which is the main source of data you will be interacting with; it is reset to the .maven.smd.raw. Also, .classes lives in here, and .flag_ons is bool for whether a molecule should be included in an analysis step or not (accessed via .maven.selection.get_toggled_mask)\n\n\n.maven.corrections\nMostly just some helper functions\n\n\n.maven.cull\nMostly just some helper functions\n\n\n.maven.modeler\nThis object holds/manages all the models of the data. It also provides the functionality to make new models and holds onto cached versions of numba JITd functions for later.\nFunctions with the prefix cached_ are generally just models, with no interaction with the .maven. They are called by functions prefixed with run_, which might, for instance, gather the proper traces and collect the EFRET values to model.\nModels are stored in a model_container. These are largely undefined, but have a few requirements to make it worthwhile to switch between them. Basically, they’ll have a .type (identifying string to distinguish the type of model), and them an .idealize function that will be able to idealize the data in .maven.data.corrected. [wait, is this broken?]\n\n\n.maven.scripts\nExecute python scripts. You have a local variable called maven which is the .maven object, so you can operate on anything there.\n\n\n.maven.selection\nMostly just some helper functions. Also, .maven.selection.get_toggled_mask is useful.\n\n\n.maven.trace_filter\nSort of like a stand-alone program that operates by itself\n\n\n.maven.photobleaching\nSort of like a stand-alone program that operates by itself\n\n\n.maven.plots\nThis holds the analysis plots that live in /tmaven/controllers/analysis_plots. These functions take a mpl figure and axis, and work on them to plot the data."
+  },
+  {
+    "objectID": "develop.html#the-.gui",
+    "href": "develop.html#the-.gui",
+    "title": "Develop",
+    "section": "The .gui",
+    "text": "The .gui\nThe .gui object is located in /tmaven/interface/main_window.py. It contains maybe objects that hold different things (to keep them organized), that are also found in the /tmaven/interface folder. Generally, the files with a ui_ prefix contain wrapping functions over their .maven counterparts, while the viewer_ prefix files contain unique functionality. For instance, the molecule table in /tmaven/interface/viewer_molecules.py allows you to see a lot of the information in the .maven.data object in a table form, but it’s not operating any (read: much) .maven functionality. Simiarily, the preference viewer in /tmaven/interface/viewer_prefs.py allows you to see the preferences in .maven.prefs (and allows you to change them …). These are in contrast to, say, the functions in ui_cull, which mostly just gather and execute the functions in .maven.cull.\n.gui has access to .maven, because it stores a pointer in .gui.maven\nIt automatically remembers you last mode (ND or smFRET), window size and location, and light or dark mode.\nThere is a trick played to speed up scrolling (using a timer). If you want to change the trace (.gui.index) using the .gui.change_index function to play nice with this trick.\n\n.gui.plot_container\n.gui.plot_container.plot is the mpl canvas for the trace plot the .gui.plot_container controls which canvas is shown (e.g., ND or smFRET) swapping modes in the menu_view also changes some preferences\n\n\n.gui.index\ndenotes the current trace displayed/acted upon\n\n\nmolecule table (command/ctrl + T)\nyou can select things and then use some of the menu items to change things about those traces. the selection menu items will change the selection on this table. For instance, you can select all, and then change the class of the selected.\n\n\npreferences (command/ctrl + P)\nsearch box at the top to narrow it down double click the second column to edit the preference value. After doing so, the .maven should emit a .maven.prefs.emit_changed signal that tells the .gui to update stuff like the plots. This is done automatically and you probably don’t need to worry about it.\n\n\ngui keys\n\n[: descrease post point by one\n]: increase post point by one\nr: reset photobleach of this trace\ng: toggle grid\np: auto photobleach this trace (when sum drops to zero)\nright arrow/down arrow: increase .gui.index\nleft arrow/up arrow: decrease .gui.index\nnumber keys: assigns class to .gui.index trace"
   }
 ]

@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.335">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>tMAVEN Documentation - Develop</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="nav-sidebar floating">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+    <div class="container-fluid d-flex justify-content-between">
+      <h1 class="quarto-secondary-nav-title">Develop</h1>
+      <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header sidebar-header-stacked">
+      <a href="./index.html" class="sidebar-logo-link">
+      <img src="./images/logo.png" alt="" class="sidebar-logo py-0 d-lg-inline d-none">
+      </a>
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">(t)ime series (M)odeling, (A)nalysis, and (V)isualization (EN)vironment</a> 
+        <div class="sidebar-tools-main tools-wide">
+    <a href="https://www.biorxiv.org" title="tMAVEN paper" class="sidebar-tool px-1"><i class="bi bi-file-earmark-text"></i></a>
+    <a href="https://github.com/GonzalezBiophysicsLab/tmaven" title="tMAVEN repo" class="sidebar-tool px-1"><i class="bi bi-github"></i></a>
+    <a href="https://GonzalezBiophysicsLab.github.io/tmaven" title="tMAVEN website" class="sidebar-tool px-1"><i class="bi bi-hexagon"></i></a>
+</div>
+    </div>
+      </div>
+      <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">Home</a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./about.html" class="sidebar-item-text sidebar-link">About tMAVEN</a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">Get Started</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./install.html" class="sidebar-item-text sidebar-link">Installing tMAVEN</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./develop.html" class="sidebar-item-text sidebar-link active">Develop</a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <span class="sidebar-item-text sidebar-link text-start">Guide</span>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="false">Examples</a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="false">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./examples/example_smdload.html" class="sidebar-item-text sidebar-link">Example: load SMD</a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="false">Information</a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="false">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./info_priors.html" class="sidebar-item-text sidebar-link">Information on priors</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./info_molecule.html" class="sidebar-item-text sidebar-link">Information 1</a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#how-to-develop" id="toc-how-to-develop" class="nav-link active" data-scroll-target="#how-to-develop">How to develop</a></li>
+  <li><a href="#how-to-use-pup" id="toc-how-to-use-pup" class="nav-link" data-scroll-target="#how-to-use-pup">How to use pup</a></li>
+  <li><a href="#tmaven-organization" id="toc-tmaven-organization" class="nav-link" data-scroll-target="#tmaven-organization">tMAVEN Organization</a>
+  <ul class="collapse">
+  <li><a href="#the-.maven" id="toc-the-.maven" class="nav-link" data-scroll-target="#the-.maven">The .maven</a>
+  <ul class="collapse">
+  <li><a href="#maven.prefs" id="toc-maven.prefs" class="nav-link" data-scroll-target="#maven.prefs">.maven.prefs</a></li>
+  <li><a href="#maven.io" id="toc-maven.io" class="nav-link" data-scroll-target="#maven.io">.maven.io</a></li>
+  <li><a href="#maven.smd" id="toc-maven.smd" class="nav-link" data-scroll-target="#maven.smd">.maven.smd</a></li>
+  <li><a href="#maven.data" id="toc-maven.data" class="nav-link" data-scroll-target="#maven.data">.maven.data</a></li>
+  <li><a href="#maven.corrections" id="toc-maven.corrections" class="nav-link" data-scroll-target="#maven.corrections">.maven.corrections</a></li>
+  <li><a href="#maven.cull" id="toc-maven.cull" class="nav-link" data-scroll-target="#maven.cull">.maven.cull</a></li>
+  <li><a href="#maven.modeler" id="toc-maven.modeler" class="nav-link" data-scroll-target="#maven.modeler">.maven.modeler</a></li>
+  <li><a href="#maven.scripts" id="toc-maven.scripts" class="nav-link" data-scroll-target="#maven.scripts">.maven.scripts</a></li>
+  <li><a href="#maven.selection" id="toc-maven.selection" class="nav-link" data-scroll-target="#maven.selection">.maven.selection</a></li>
+  <li><a href="#maven.trace_filter" id="toc-maven.trace_filter" class="nav-link" data-scroll-target="#maven.trace_filter">.maven.trace_filter</a></li>
+  <li><a href="#maven.photobleaching" id="toc-maven.photobleaching" class="nav-link" data-scroll-target="#maven.photobleaching">.maven.photobleaching</a></li>
+  <li><a href="#maven.plots" id="toc-maven.plots" class="nav-link" data-scroll-target="#maven.plots">.maven.plots</a></li>
+  </ul></li>
+  <li><a href="#the-.gui" id="toc-the-.gui" class="nav-link" data-scroll-target="#the-.gui">The .gui</a>
+  <ul class="collapse">
+  <li><a href="#gui.plot_container" id="toc-gui.plot_container" class="nav-link" data-scroll-target="#gui.plot_container">.gui.plot_container</a></li>
+  <li><a href="#gui.index" id="toc-gui.index" class="nav-link" data-scroll-target="#gui.index">.gui.index</a></li>
+  <li><a href="#molecule-table-commandctrl-t" id="toc-molecule-table-commandctrl-t" class="nav-link" data-scroll-target="#molecule-table-commandctrl-t">molecule table (command/ctrl + T)</a></li>
+  <li><a href="#preferences-commandctrl-p" id="toc-preferences-commandctrl-p" class="nav-link" data-scroll-target="#preferences-commandctrl-p">preferences (command/ctrl + P)</a></li>
+  <li><a href="#gui-keys" id="toc-gui-keys" class="nav-link" data-scroll-target="#gui-keys">gui keys</a></li>
+  </ul></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title d-none d-lg-block">Develop</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<section id="how-to-develop" class="level1">
+<h1>How to develop</h1>
+<p>Make a new virtual environment and activate it, then setup</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone [tmaven URL here]</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> tMAVEN</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">-m</span> venv env <span class="at">--clear</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>When you are ready to develop,</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">source</span> env/bin/activate</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>If you want to install,</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install <span class="at">-e</span> ./ <span class="at">--use-feature</span><span class="op">=</span>2020-resolver</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>then you can run the app with</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">tmaven</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="how-to-use-pup" class="level1">
+<h1>How to use pup</h1>
+<p>might have had issues with underscores in the module name. Removed them for now… actually they were fine.. i put them back in and it works fine.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">-m</span> venv env</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="bu">source</span> env/bin/activate</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install pup</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install ./</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="ex">pup</span> package ./ <span class="at">--icon-path</span> ./tmaven/interface/resources/logo.png <span class="at">--nice-name</span> tMAVEN <span class="at">--license-path</span> ./LICENSE   </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="tmaven-organization" class="level1">
+<h1>tMAVEN Organization</h1>
+<p>There are two main parts of tMAVEN: 1. the MAVEN (.maven) 2. the GUI (.gui)</p>
+<p>By design, everything you want to do (with one exception: making trace plots) can be done with the .maven</p>
+<p>The .gui object operates upon .maven and allows you to do those things with your mouse and keyboard. You can also work on the .maven programatically</p>
+<p>If you are programming in new functionality, it should be completely done onto the .maven object, and then add the action/access through the .gui</p>
+<section id="the-.maven" class="level2">
+<h2 class="anchored" data-anchor-id="the-.maven">The .maven</h2>
+<p>The class for the .maven lives in <code>/tmaven/maven.py</code>, and many of the objects within .maven that hold different functionalities are located in the files in <code>/tmaven/controllers</code>.</p>
+<p>Whenever you modify anything (specifically data) in .maven, you will probably want to tell the .gui, but technically the .maven doesn’t know about the .gui. The solution is to execute the .maven.emit_data_update() function after any such operation. By default, that function does nothing. However, when a .gui is hooked up to a .maven, the .gui overrides this function with one of its own. This is all automatically handled by the .gui, so all you have to do is call the .maven fxn where your update is complete.</p>
+<section id="maven.prefs" class="level3">
+<h3 class="anchored" data-anchor-id="maven.prefs">.maven.prefs</h3>
+<p>This is basically a special python dictionary. The big difference is that it maintains the original type of the value for each key. All .maven functions with any user adjustable options should be stored in here.</p>
+</section>
+<section id="maven.io" class="level3">
+<h3 class="anchored" data-anchor-id="maven.io">.maven.io</h3>
+<p>This handles all of the loading, saving functions that ultimately go into .maven.smd and .maven.data</p>
+</section>
+<section id="maven.smd" class="level3">
+<h3 class="anchored" data-anchor-id="maven.smd">.maven.smd</h3>
+<p>This object holds all of the ‘raw’ smd format data loaded into .maven. The .maven can only hold one of these. The format is explained a little more in <code>/tmaven/pysmd/readme.md</code>. Largely, after loading data into the smd, you shouldn’t be touching it. Instead you should be using things in .maven.data.</p>
+</section>
+<section id="maven.data" class="level3">
+<h3 class="anchored" data-anchor-id="maven.data">.maven.data</h3>
+<p>This object has a maven.data.corrected, which is the main source of data you will be interacting with; it is reset to the .maven.smd.raw. Also, .classes lives in here, and .flag_ons is bool for whether a molecule should be included in an analysis step or not (accessed via .maven.selection.get_toggled_mask)</p>
+</section>
+<section id="maven.corrections" class="level3">
+<h3 class="anchored" data-anchor-id="maven.corrections">.maven.corrections</h3>
+<p>Mostly just some helper functions</p>
+</section>
+<section id="maven.cull" class="level3">
+<h3 class="anchored" data-anchor-id="maven.cull">.maven.cull</h3>
+<p>Mostly just some helper functions</p>
+</section>
+<section id="maven.modeler" class="level3">
+<h3 class="anchored" data-anchor-id="maven.modeler">.maven.modeler</h3>
+<p>This object holds/manages all the models of the data. It also provides the functionality to make new models and holds onto cached versions of numba JITd functions for later.</p>
+<p>Functions with the prefix <em>cached_</em> are generally just models, with no interaction with the .maven. They are called by functions prefixed with <em>run_</em>, which might, for instance, gather the proper traces and collect the EFRET values to model.</p>
+<p>Models are stored in a model_container. These are largely undefined, but have a few requirements to make it worthwhile to switch between them. Basically, they’ll have a .type (identifying string to distinguish the type of model), and them an .idealize function that will be able to idealize the data in .maven.data.corrected. [wait, is this broken?]</p>
+</section>
+<section id="maven.scripts" class="level3">
+<h3 class="anchored" data-anchor-id="maven.scripts">.maven.scripts</h3>
+<p>Execute python scripts. You have a local variable called <code>maven</code> which is the .maven object, so you can operate on anything there.</p>
+</section>
+<section id="maven.selection" class="level3">
+<h3 class="anchored" data-anchor-id="maven.selection">.maven.selection</h3>
+<p>Mostly just some helper functions. Also, .maven.selection.get_toggled_mask is useful.</p>
+</section>
+<section id="maven.trace_filter" class="level3">
+<h3 class="anchored" data-anchor-id="maven.trace_filter">.maven.trace_filter</h3>
+<p>Sort of like a stand-alone program that operates by itself</p>
+</section>
+<section id="maven.photobleaching" class="level3">
+<h3 class="anchored" data-anchor-id="maven.photobleaching">.maven.photobleaching</h3>
+<p>Sort of like a stand-alone program that operates by itself</p>
+</section>
+<section id="maven.plots" class="level3">
+<h3 class="anchored" data-anchor-id="maven.plots">.maven.plots</h3>
+<p>This holds the analysis plots that live in <code>/tmaven/controllers/analysis_plots</code>. These functions take a mpl figure and axis, and work on them to plot the data.</p>
+</section>
+</section>
+<section id="the-.gui" class="level2">
+<h2 class="anchored" data-anchor-id="the-.gui">The .gui</h2>
+<p>The .gui object is located in <code>/tmaven/interface/main_window.py</code>. It contains maybe objects that hold different things (to keep them organized), that are also found in the <code>/tmaven/interface</code> folder. Generally, the files with a <em>ui_</em> prefix contain wrapping functions over their .maven counterparts, while the <em>viewer_</em> prefix files contain unique functionality. For instance, the molecule table in <code>/tmaven/interface/viewer_molecules.py</code> allows you to see a lot of the information in the .maven.data object in a table form, but it’s not operating any (read: much) .maven functionality. Simiarily, the preference viewer in <code>/tmaven/interface/viewer_prefs.py</code> allows you to see the preferences in .maven.prefs (and allows you to change them …). These are in contrast to, say, the functions in ui_cull, which mostly just gather and execute the functions in .maven.cull.</p>
+<p>.gui has access to .maven, because it stores a pointer in .gui.maven</p>
+<p>It automatically remembers you last mode (ND or smFRET), window size and location, and light or dark mode.</p>
+<p>There is a trick played to speed up scrolling (using a timer). If you want to change the trace (.gui.index) using the .gui.change_index function to play nice with this trick.</p>
+<section id="gui.plot_container" class="level3">
+<h3 class="anchored" data-anchor-id="gui.plot_container">.gui.plot_container</h3>
+<p>.gui.plot_container.plot is the mpl canvas for the trace plot the .gui.plot_container controls which canvas is shown (e.g., ND or smFRET) swapping modes in the menu_view also changes some preferences</p>
+</section>
+<section id="gui.index" class="level3">
+<h3 class="anchored" data-anchor-id="gui.index">.gui.index</h3>
+<p>denotes the current trace displayed/acted upon</p>
+</section>
+<section id="molecule-table-commandctrl-t" class="level3">
+<h3 class="anchored" data-anchor-id="molecule-table-commandctrl-t">molecule table (command/ctrl + T)</h3>
+<p>you can select things and then use some of the menu items to change things about those traces. the selection menu items will change the selection on this table. For instance, you can select all, and then change the class of the selected.</p>
+</section>
+<section id="preferences-commandctrl-p" class="level3">
+<h3 class="anchored" data-anchor-id="preferences-commandctrl-p">preferences (command/ctrl + P)</h3>
+<p>search box at the top to narrow it down double click the second column to edit the preference value. After doing so, the .maven should emit a .maven.prefs.emit_changed signal that tells the .gui to update stuff like the plots. This is done automatically and you probably don’t need to worry about it.</p>
+</section>
+<section id="gui-keys" class="level3">
+<h3 class="anchored" data-anchor-id="gui-keys">gui keys</h3>
+<ul>
+<li>[: descrease post point by one</li>
+<li>]: increase post point by one</li>
+<li>r: reset photobleach of this trace</li>
+<li>g: toggle grid</li>
+<li>p: auto photobleach this trace (when sum drops to zero)</li>
+<li>right arrow/down arrow: increase .gui.index</li>
+<li>left arrow/up arrow: decrease .gui.index</li>
+<li>number keys: assigns class to .gui.index trace</li>
+</ul>
+
+
+</section>
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

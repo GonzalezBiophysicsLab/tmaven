@@ -42,11 +42,13 @@ website:
       - section: "Get Started"
         contents:
           - install.qmd
-          - somestuff.qmd
-
+          - develop.qmd
+          
       - section: "Guide"
+
+      - section: "Examples"
         contents:
-          - example1.qmd
+          - "examples/example_smdload.qmd"
 
       - section: "Information"
         contents:
