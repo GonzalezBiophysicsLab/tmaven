@@ -1,0 +1,11 @@
+---
+title: "Installing tMAVEN"
+---
+
+# New Python Environment
+conda stuff
+
+# Install package
+``` bash
+pip install -e ./
+```

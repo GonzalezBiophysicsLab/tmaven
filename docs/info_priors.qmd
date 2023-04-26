@@ -1,0 +1,5 @@
+---
+title: "Information on priors"
+---
+
+Here's some info on priors

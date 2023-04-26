@@ -1,0 +1,68 @@
+project:
+  type: website
+  output-dir: _site
+
+website:
+  title: "tMAVEN Documentation"
+
+  page-navigation: false
+  site-url: https://GonzalezBiophysicsLab.github.io/tmaven
+  repo-url: https://github.com/GonzalezBiophysicsLab/tmaven
+  # repo-actions: [edit, source]
+
+  # page-footer:
+  #   left: "something 2023"
+
+  sidebar:
+    title: "(t)ime series (M)odeling, (A)nalysis, and (V)isualization (EN)vironment"
+    logo: images/logo.png
+    pinned: true
+    tools:
+
+      - icon: file-earmark-text
+        href: https://www.biorxiv.org
+        text: "tMAVEN paper"
+      - icon: github
+        href: https://github.com/GonzalezBiophysicsLab/tmaven
+        text: "tMAVEN repo"
+      - icon: hexagon
+        href: https://GonzalezBiophysicsLab.github.io/tmaven
+        text: "tMAVEN website"
+
+
+    style: "floating"
+    search: true
+    collapse-level: 1
+
+    contents:
+      - href: index.qmd
+        text: Home
+      - about.qmd
+
+      - section: "Get Started"
+        contents:
+          - install.qmd
+          - somestuff.qmd
+
+      - section: "Guide"
+        contents:
+          - example1.qmd
+
+      - section: "Information"
+        contents:
+          - info_priors.qmd
+          - info_molecule.qmd
+
+# exectue:
+#   freeze: true
+
+format:
+  html:
+    theme: cosmo
+    code-background: true
+    code-copy: true
+    css: styles.css
+    toc: true
+
+
+
