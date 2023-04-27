@@ -1,17 +1,17 @@
 [
   {
+    "objectID": "info_priors.html",
+    "href": "info_priors.html",
+    "title": "Information on priors",
+    "section": "",
+    "text": "Here’s some info on priors"
+  },
+  {
     "objectID": "index.html",
     "href": "index.html",
     "title": "Welcome to tMAVEN",
     "section": "",
     "text": "Here is some documentation cookbook examples about how to use tMAVEN."
-  },
-  {
-    "objectID": "about.html",
-    "href": "about.html",
-    "title": "About tMAVEN",
-    "section": "",
-    "text": "Intro\ntMAVEN is a development that came out of the Gonzalez Biophysics Lab from the Gonzalez lab at Columbia University from ~2015-now"
   },
   {
     "objectID": "install.html",
@@ -21,32 +21,18 @@
     "text": "New Python Environment\nconda stuff\n\n\nInstall package\npip install -e ./"
   },
   {
-    "objectID": "somestuff.html",
-    "href": "somestuff.html",
-    "title": "Some Stuff",
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About tMAVEN",
     "section": "",
-    "text": "placeholder"
+    "text": "Intro\ntMAVEN is a development that came out of the Gonzalez Biophysics Lab from the Gonzalez lab at Columbia University from ~2015-now"
   },
   {
-    "objectID": "example1.html",
-    "href": "example1.html",
-    "title": "Example: Script",
+    "objectID": "extra_hmms.html",
+    "href": "extra_hmms.html",
+    "title": "Two-state HMMs",
     "section": "",
-    "text": "Here’s a code example\ndo stuff here"
-  },
-  {
-    "objectID": "info_molecule.html",
-    "href": "info_molecule.html",
-    "title": "Information 1",
-    "section": "",
-    "text": "Here is some documentation/cookbook examples about how to"
-  },
-  {
-    "objectID": "info_priors.html",
-    "href": "info_priors.html",
-    "title": "Information on priors",
-    "section": "",
-    "text": "Here’s some info on priors"
+    "text": "Two-state Markov chain\nConsider this two-state Markov chain\n\n\n\n\n\n\n\nD\n\n  \n\n0\n\n 0   \n\n0->0\n\n  P_00   \n\n1\n\n 1   \n\n0->1\n\n  P_01   \n\n1->0\n\n  P_10   \n\n1->1\n\n  P_11  \n\n\n\n\n\nHere, the only two parameters are \\(P_{01}\\) and \\(P_{10}\\), where \\(P_{ij}\\) is the transition from state \\(i\\) to \\(j\\). The self transitions for states 0 and 1 are \\(P_{00}=P_{01}\\) and \\(P_{11}=1-P_{10}\\). Also the steady state probabilities for states 0 and 1 are \\(P^{ss}_0 = \\frac{P_{10}}{P_{01}+P_{10}}\\) and \\(P^{ss}_1 = \\frac{P_{01}}{P_{01}+P_{10}}\\), respectively (we’ll show this below if you don’t believe).\nThe transition matrix, \\(\\mathcal{A}\\) is then: \\[ \\mathcal{A} = \\begin{bmatrix}P_{00} & P_{01}\\\\P_{10} & P_{11}\\end{bmatrix},\\] where you begin in row \\(i\\) and end up in column \\(j\\) for each transition.\n\n\nTransitions\nBeginning in a particular state \\(P^{t=0} = \\begin{bmatrix} P^{t=0}_0 \\\\ P^{t=0}_1 \\end{bmatrix}\\), the probability after one time step is then \\(P^{t=1} = \\mathcal{A}^T P^{t=0}\\), where \\(T\\) is the transpose. After two time steps it is \\(P^{t=2} = \\mathcal{A}^T\\mathcal{A}^T P^{t=0} = \\left(\\mathcal{A}^T\\right)^2 P^{t=0}\\), etc.\n\n\nEigenvalues and Eigenvectors of \\(\\mathcal{A}\\)\nTo find the eigenvalues of \\(\\mathcal{A}\\), solve the eigenvalue equation $ v=v (-)v = 0 $. The equation has solutions only if \\(\\vert (\\mathcal{A}-\\mathcal{I}\\lambda)v \\vert = 0\\). Which is that\n\\[ \\lvert \\begin{bmatrix}P_{00}-\\lambda & P_{01}\\\\P_{10} & P_{11}-\\lambda\\end{bmatrix}\\rvert = ( P_{00}-\\lambda )( P_{00}-\\lambda ) - P_{01}P_{10} = 0\\]\nUse the quadratic formula to solve for the two eigenvectors \\(\\lambda_+ = 1\\) and \\(\\lambda_- = 1-P_{01}-P_{10}\\). Plug each eigenvector back in to the eigenvalue equation and solve to get the following relationships between \\(v_0\\) and \\(v_1\\) from \\(v=\\begin{bmatrix} v_0 \\\\ v_1 \\end{bmatrix}\\): \\(v_{1+} = \\frac{P_{01}}{P_{10}}v_{0+}\\) and \\(v_{0-} = - v_{1-}\\).\nTo obtain eigenvectors from these constraints impose an additional constraint that the mangnitude of an eigenvector must be 1 (i.e., \\(\\vert v \\vert = 1\\)). Since \\(\\vert v \\vert = \\sqrt(v_0^2+v_1^2)\\), this yields that the eigenvectors for \\(\\mathcal{A}\\) are \\(v_+ = \\begin{bmatrix} \\frac{P_{10}}{\\sqrt{P_{01}^2 + P_{10}^2}} \\\\ \\frac{P_{01}}{\\sqrt{P_{01}^2 + P_{10}^2}} \\end{bmatrix}\\) and \\(v_-\\begin{bmatrix} \\frac{-1}{\\sqrt{2}} \\\\ \\frac{1}{\\sqrt{2}} \\end{bmatrix}\\).\n\n\nPropagation of an arbitrary number of steps\nTo propagate the system an arbitrary number of steps, \\(k\\), we need to calculate \\(\\left(\\mathcal{A}^T\\right)^k P^{0}\\), however the exponential is tricky. To do this, make use the the identity \\(\\mathcal{A}^k = \\mathcal{P}\\mathcal{D}^k\\mathcal{P}^{-1}\\), where \\(\\mathcal{P} = \\begin{bmatrix} v_{0+} & v_{0-} \\\\ v_{1+} & v_{1-} \\end{bmatrix}\\) and \\(\\mathcal{D}^k = \\begin{bmatrix} \\lambda_+^k & 0 \\\\ 0 & \\lambda_-^k\\end{bmatrix}\\)\nDoing this matrix multiplication out by hand, we find that \\[ P^{t=k} = \\mathcal{A}^k P^{t=0} = \\begin{bmatrix} P_0^{ss} + (P_0^{t=0}-P_0^{ss})(1-P_{01}-P_{10})^k \\\\ P_1^{ss} + (P_1^{t=0}-P_1^{ss})(1-P_{01}-P_{10})^k \\end{bmatrix} \\]\n\n\nAutocorrelation function\nThe un-normalized autocorrelation (ACF) for an HMM with signal value \\(y(t)\\) is \\(ACF(k) = \\mathbb{E}[(y(0)-\\langle y \\rangle )( y(k)-\\langle y \\rangle]\\), which is\n\\[ ACF(k) = \\sum_i \\left( \\sum_j (\\mu_i - \\langle \\mu \\rangle)(\\mu_j - \\langle \\mu \\rangle) \\left( \\left(\\mathcal{A}^T\\right)^k \\delta_i \\right)_j \\right) P_i^{ss} \\] where \\(\\delta_i\\) is a vector with one in the \\(i^{th}\\) position and zero everywhere else, and \\(\\langle \\mu \\rangle = \\sum_i \\mu_i P_i^{ss}\\).\nFor this two-state system, if \\(\\mu_0 = 0\\) and \\(\\mu_1 = 1\\), then this reduces to \\[ACF(k) = P_0^{ss}P_1^{ss}(P_0^{ss}+P_1^{ss})^2(1-P_{01}-P_{10})^k\\] and the normalized version is \\[G(k) = \\frac{ACF(k)}{ACF(0)} = (1-P_{01}-P_{10})^k\\]"
   },
   {
     "objectID": "examples/example_smdload.html",
@@ -54,6 +40,13 @@
     "title": "Example: load SMD",
     "section": "",
     "text": "Here’s a code example\nmaven.io.load_smdtmaven_hdf5('./docs/examples/example_smd.hdf5','L1-tRNA')"
+  },
+  {
+    "objectID": "info_molecule.html",
+    "href": "info_molecule.html",
+    "title": "Information 1",
+    "section": "",
+    "text": "Here is some documentation/cookbook examples about how to"
   },
   {
     "objectID": "develop.html",

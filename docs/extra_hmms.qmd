@@ -1,0 +1,63 @@
+---
+title: "Two-state HMMs"
+description: "Some HMM Math"
+author: "Colin Kinz-Thompson"
+date: "4/26/2023"
+date-modified: "4/26/2023"
+---
+
+
+
+
+# Two-state Markov chain
+Consider this two-state Markov chain
+
+```{dot}
+digraph D{
+  rankdir=LR;
+  node [shape = circle];
+  0 -> 1 [label = "P_01"];
+  1 -> 0 [label = "P_10"];
+  1 -> 1 [label = "P_11"];
+  0 -> 0 [label = "P_00"];
+}
+````
+
+Here, the only two parameters are $P_{01}$ and  $P_{10}$, where  $P_{ij}$ is the transition from state $i$ to $j$. The self transitions for states 0 and 1 are $P_{00}=P_{01}$ and $P_{11}=1-P_{10}$. Also the steady state probabilities for states 0 and 1 are $P^{ss}_0 = \frac{P_{10}}{P_{01}+P_{10}}$ and $P^{ss}_1 = \frac{P_{01}}{P_{01}+P_{10}}$, respectively (we'll show this below if you don't believe).
+
+The transition matrix, $\mathcal{A}$ is then:
+$$ \mathcal{A} = \begin{bmatrix}P_{00} & P_{01}\\P_{10} & P_{11}\end{bmatrix},$$ where you begin in row $i$ and end up in column $j$ for each transition.
+
+
+# Transitions 
+Beginning in a particular state $P^{t=0} =  \begin{bmatrix} P^{t=0}_0 \\ P^{t=0}_1 \end{bmatrix}$, the probability after one time step is then $P^{t=1} =  \mathcal{A}^T P^{t=0}$, where $T$ is the transpose. After two time steps it is $P^{t=2} =  \mathcal{A}^T\mathcal{A}^T P^{t=0} = \left(\mathcal{A}^T\right)^2 P^{t=0}$, etc.
+
+
+# Eigenvalues and Eigenvectors of $\mathcal{A}$
+To find the eigenvalues of $\mathcal{A}$, solve the eigenvalue equation $\mathcal{A} v=\lambda v \rightarrow (\mathcal{A}-\mathcal{I}\lambda)v = 0 $. The equation has solutions only if $\vert (\mathcal{A}-\mathcal{I}\lambda)v \vert = 0$. Which is that 
+
+$$ \lvert \begin{bmatrix}P_{00}-\lambda & P_{01}\\P_{10} & P_{11}-\lambda\end{bmatrix}\rvert = ( P_{00}-\lambda )( P_{00}-\lambda ) - P_{01}P_{10} = 0$$
+
+
+Use the quadratic formula to solve for the two eigenvectors $\lambda_+ = 1$ and $\lambda_- = 1-P_{01}-P_{10}$. Plug each eigenvector back in to the eigenvalue equation and solve to get the following relationships between $v_0$ and $v_1$ from $v=\begin{bmatrix} v_0 \\ v_1 \end{bmatrix}$: $v_{1+} = \frac{P_{01}}{P_{10}}v_{0+}$ and $v_{0-} = - v_{1-}$.
+
+To obtain eigenvectors from these constraints impose an additional constraint that the mangnitude of an eigenvector must be 1 (i.e., $\vert v \vert = 1$). Since $\vert v \vert = \sqrt(v_0^2+v_1^2)$, this yields that the eigenvectors for $\mathcal{A}$ are $v_+ = \begin{bmatrix} \frac{P_{10}}{\sqrt{P_{01}^2 + P_{10}^2}} \\ \frac{P_{01}}{\sqrt{P_{01}^2 + P_{10}^2}} \end{bmatrix}$ and $v_-\begin{bmatrix} \frac{-1}{\sqrt{2}} \\ \frac{1}{\sqrt{2}} \end{bmatrix}$.
+
+# Propagation of an arbitrary number of steps
+To propagate the system an arbitrary number of steps, $k$, we need to calculate $\left(\mathcal{A}^T\right)^k P^{0}$, however the exponential is tricky. To do this, make use the the identity $\mathcal{A}^k = \mathcal{P}\mathcal{D}^k\mathcal{P}^{-1}$, where $\mathcal{P} = \begin{bmatrix} v_{0+} & v_{0-} \\ v_{1+} & v_{1-} \end{bmatrix}$ and $\mathcal{D}^k = \begin{bmatrix} \lambda_+^k & 0 \\ 0 & \lambda_-^k\end{bmatrix}$
+
+Doing this matrix multiplication out by hand, we find that $$ P^{t=k} = \mathcal{A}^k P^{t=0} = \begin{bmatrix} P_0^{ss} + (P_0^{t=0}-P_0^{ss})(1-P_{01}-P_{10})^k \\ P_1^{ss} + (P_1^{t=0}-P_1^{ss})(1-P_{01}-P_{10})^k \end{bmatrix} $$
+
+
+# Autocorrelation function
+The un-normalized autocorrelation (ACF) for an HMM with signal value $y(t)$ is $ACF(k) = \mathbb{E}[(y(0)-\langle y \rangle )( y(k)-\langle y \rangle]$, which is 
+
+$$ ACF(k) = \sum_i \left( \sum_j (\mu_i - \langle \mu \rangle)(\mu_j - \langle \mu \rangle) \left( \left(\mathcal{A}^T\right)^k \delta_i \right)_j \right) P_i^{ss} $$
+where $\delta_i$ is a vector with one in the $i^{th}$ position and zero everywhere else, and $\langle \mu \rangle = \sum_i \mu_i P_i^{ss}$.
+
+
+For this two-state system, if $\mu_0 = 0$ and $\mu_1 = 1$, then this reduces to 
+$$ACF(k) = P_0^{ss}P_1^{ss}(P_0^{ss}+P_1^{ss})^2(1-P_{01}-P_{10})^k$$
+and the normalized version is
+$$G(k) = \frac{ACF(k)}{ACF(0)} = (1-P_{01}-P_{10})^k$$
+

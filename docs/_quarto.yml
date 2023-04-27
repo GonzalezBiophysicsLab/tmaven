@@ -54,6 +54,7 @@ website:
         contents:
           - info_priors.qmd
           - info_molecule.qmd
+          - extra_hmms.qmd
 
 # exectue:
 #   freeze: true

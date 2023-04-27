@@ -6,8 +6,11 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="author" content="Colin Kinz-Thompson">
+<meta name="dcterms.date" content="2023-04-26">
+<meta name="description" content="Some HMM Math">
 
-<title>tMAVEN Documentation - Welcome to tMAVEN</title>
+<title>tMAVEN Documentation - Two-state HMMs</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -58,6 +61,7 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
 <link rel="stylesheet" href="styles.css">
 </head>
@@ -68,7 +72,7 @@ ul.task-list li input[type="checkbox"] {
   <header id="quarto-header" class="headroom fixed-top">
   <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
     <div class="container-fluid d-flex justify-content-between">
-      <h1 class="quarto-secondary-nav-title">Welcome to tMAVEN</h1>
+      <h1 class="quarto-secondary-nav-title">Two-state HMMs</h1>
       <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
         <i class="bi bi-chevron-right"></i>
       </button>
@@ -101,7 +105,7 @@ ul.task-list li input[type="checkbox"] {
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./index.html" class="sidebar-item-text sidebar-link active">Home</a>
+  <a href="./index.html" class="sidebar-item-text sidebar-link">Home</a>
   </div>
 </li>
         <li class="sidebar-item">
@@ -149,12 +153,12 @@ ul.task-list li input[type="checkbox"] {
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="false">Information</a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="false">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="true">Information</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="true">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 ">  
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./info_priors.html" class="sidebar-item-text sidebar-link">Information on priors</a>
@@ -167,7 +171,7 @@ ul.task-list li input[type="checkbox"] {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./extra_hmms.html" class="sidebar-item-text sidebar-link">Two-state HMMs</a>
+  <a href="./extra_hmms.html" class="sidebar-item-text sidebar-link active">Two-state HMMs</a>
   </div>
 </li>
       </ul>
@@ -177,32 +181,130 @@ ul.task-list li input[type="checkbox"] {
 </nav>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#two-state-markov-chain" id="toc-two-state-markov-chain" class="nav-link active" data-scroll-target="#two-state-markov-chain">Two-state Markov chain</a></li>
+  <li><a href="#transitions" id="toc-transitions" class="nav-link" data-scroll-target="#transitions">Transitions</a></li>
+  <li><a href="#eigenvalues-and-eigenvectors-of-mathcala" id="toc-eigenvalues-and-eigenvectors-of-mathcala" class="nav-link" data-scroll-target="#eigenvalues-and-eigenvectors-of-mathcala">Eigenvalues and Eigenvectors of <span class="math inline">\(\mathcal{A}\)</span></a></li>
+  <li><a href="#propagation-of-an-arbitrary-number-of-steps" id="toc-propagation-of-an-arbitrary-number-of-steps" class="nav-link" data-scroll-target="#propagation-of-an-arbitrary-number-of-steps">Propagation of an arbitrary number of steps</a></li>
+  <li><a href="#autocorrelation-function" id="toc-autocorrelation-function" class="nav-link" data-scroll-target="#autocorrelation-function">Autocorrelation function</a></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title d-none d-lg-block">Welcome to tMAVEN</h1>
+<h1 class="title d-none d-lg-block">Two-state HMMs</h1>
 </div>
 
+<div>
+  <div class="description">
+    Some HMM Math
+  </div>
+</div>
 
 
 <div class="quarto-title-meta">
 
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Colin Kinz-Thompson </p>
+          </div>
+  </div>
     
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">April 26, 2023</p>
+    </div>
+  </div>
   
+    <div>
+    <div class="quarto-title-meta-heading">Modified</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date-modified">April 26, 2023</p>
+    </div>
+  </div>
     
   </div>
   
 
 </header>
 
-<p>Here is some documentation cookbook examples about how to use tMAVEN.</p>
-<!-- ![](images/logo.png) -->
+<section id="two-state-markov-chain" class="level1">
+<h1>Two-state Markov chain</h1>
+<p>Consider this two-state Markov chain</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<p>
+<svg width="672" height="480" viewbox="0.00 0.00 144.79 84.14" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 80.14)">
+<title>
+D
+</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-80.14 140.79,-80.14 140.79,4 -4,4"></polygon> <!-- 0 --> <g id="node1" class="node">
+<title>
+0
+</title>
+<ellipse fill="none" stroke="black" cx="18" cy="-23.34" rx="18" ry="18"></ellipse> <text text-anchor="middle" x="18" y="-19.14" font-family="Times,serif" font-size="14.00">0</text> </g> <!-- 0&#45;&gt;0 --> <g id="edge4" class="edge">
+<title>
+0-&gt;0
+</title>
+<path fill="none" stroke="black" d="M9.37,-39.26C7.11,-49.49 9.99,-59.34 18,-59.34 23.26,-59.34 26.3,-55.1 27.14,-49.29"></path> <polygon fill="black" stroke="black" points="30.63,-49.07 26.63,-39.26 23.64,-49.42 30.63,-49.07"></polygon> <text text-anchor="middle" x="18" y="-63.54" font-family="Times,serif" font-size="14.00">P_00</text> </g> <!-- 1 --> <g id="node2" class="node">
+<title>
+1
+</title>
+<ellipse fill="none" stroke="black" cx="118.79" cy="-23.34" rx="18" ry="18"></ellipse> <text text-anchor="middle" x="118.79" y="-19.14" font-family="Times,serif" font-size="14.00">1</text> </g> <!-- 0&#45;&gt;1 --> <g id="edge1" class="edge">
+<title>
+0-&gt;1
+</title>
+<path fill="none" stroke="black" d="M36.21,-23.34C51.22,-23.34 73.27,-23.34 90.66,-23.34"></path> <polygon fill="black" stroke="black" points="90.78,-26.84 100.78,-23.34 90.78,-19.84 90.78,-26.84"></polygon> <text text-anchor="middle" x="68.39" y="-27.54" font-family="Times,serif" font-size="14.00">P_01</text> </g> <!-- 1&#45;&gt;0 --> <g id="edge2" class="edge">
+<title>
+1-&gt;0
+</title>
+<path fill="none" stroke="black" d="M103.93,-12.77C97.8,-8.73 90.28,-4.6 82.79,-2.54 70.45,0.85 66.34,0.85 54,-2.54 49.78,-3.7 45.56,-5.51 41.58,-7.6"></path> <polygon fill="black" stroke="black" points="39.67,-4.66 32.85,-12.77 43.24,-10.68 39.67,-4.66"></polygon> <text text-anchor="middle" x="68.39" y="-6.54" font-family="Times,serif" font-size="14.00">P_10</text> </g> <!-- 1&#45;&gt;1 --> <g id="edge3" class="edge">
+<title>
+1-&gt;1
+</title>
+<path fill="none" stroke="black" d="M110.15,-39.26C107.9,-49.49 110.78,-59.34 118.79,-59.34 124.04,-59.34 127.09,-55.1 127.92,-49.29"></path> <polygon fill="black" stroke="black" points="131.42,-49.07 127.42,-39.26 124.43,-49.42 131.42,-49.07"></polygon> <text text-anchor="middle" x="118.79" y="-63.54" font-family="Times,serif" font-size="14.00">P_11</text> </g> </g>
+</svg>
+</p>
+</div>
+</div>
+</div>
+<p>Here, the only two parameters are <span class="math inline">\(P_{01}\)</span> and <span class="math inline">\(P_{10}\)</span>, where <span class="math inline">\(P_{ij}\)</span> is the transition from state <span class="math inline">\(i\)</span> to <span class="math inline">\(j\)</span>. The self transitions for states 0 and 1 are <span class="math inline">\(P_{00}=P_{01}\)</span> and <span class="math inline">\(P_{11}=1-P_{10}\)</span>. Also the steady state probabilities for states 0 and 1 are <span class="math inline">\(P^{ss}_0 = \frac{P_{10}}{P_{01}+P_{10}}\)</span> and <span class="math inline">\(P^{ss}_1 = \frac{P_{01}}{P_{01}+P_{10}}\)</span>, respectively (we’ll show this below if you don’t believe).</p>
+<p>The transition matrix, <span class="math inline">\(\mathcal{A}\)</span> is then: <span class="math display">\[ \mathcal{A} = \begin{bmatrix}P_{00} &amp; P_{01}\\P_{10} &amp; P_{11}\end{bmatrix},\]</span> where you begin in row <span class="math inline">\(i\)</span> and end up in column <span class="math inline">\(j\)</span> for each transition.</p>
+</section>
+<section id="transitions" class="level1">
+<h1>Transitions</h1>
+<p>Beginning in a particular state <span class="math inline">\(P^{t=0} = \begin{bmatrix} P^{t=0}_0 \\ P^{t=0}_1 \end{bmatrix}\)</span>, the probability after one time step is then <span class="math inline">\(P^{t=1} = \mathcal{A}^T P^{t=0}\)</span>, where <span class="math inline">\(T\)</span> is the transpose. After two time steps it is <span class="math inline">\(P^{t=2} = \mathcal{A}^T\mathcal{A}^T P^{t=0} = \left(\mathcal{A}^T\right)^2 P^{t=0}\)</span>, etc.</p>
+</section>
+<section id="eigenvalues-and-eigenvectors-of-mathcala" class="level1">
+<h1>Eigenvalues and Eigenvectors of <span class="math inline">\(\mathcal{A}\)</span></h1>
+<p>To find the eigenvalues of <span class="math inline">\(\mathcal{A}\)</span>, solve the eigenvalue equation $ v=v (-)v = 0 $. The equation has solutions only if <span class="math inline">\(\vert (\mathcal{A}-\mathcal{I}\lambda)v \vert = 0\)</span>. Which is that</p>
+<p><span class="math display">\[ \lvert \begin{bmatrix}P_{00}-\lambda &amp; P_{01}\\P_{10} &amp; P_{11}-\lambda\end{bmatrix}\rvert = ( P_{00}-\lambda )( P_{00}-\lambda ) - P_{01}P_{10} = 0\]</span></p>
+<p>Use the quadratic formula to solve for the two eigenvectors <span class="math inline">\(\lambda_+ = 1\)</span> and <span class="math inline">\(\lambda_- = 1-P_{01}-P_{10}\)</span>. Plug each eigenvector back in to the eigenvalue equation and solve to get the following relationships between <span class="math inline">\(v_0\)</span> and <span class="math inline">\(v_1\)</span> from <span class="math inline">\(v=\begin{bmatrix} v_0 \\ v_1 \end{bmatrix}\)</span>: <span class="math inline">\(v_{1+} = \frac{P_{01}}{P_{10}}v_{0+}\)</span> and <span class="math inline">\(v_{0-} = - v_{1-}\)</span>.</p>
+<p>To obtain eigenvectors from these constraints impose an additional constraint that the mangnitude of an eigenvector must be 1 (i.e., <span class="math inline">\(\vert v \vert = 1\)</span>). Since <span class="math inline">\(\vert v \vert = \sqrt(v_0^2+v_1^2)\)</span>, this yields that the eigenvectors for <span class="math inline">\(\mathcal{A}\)</span> are <span class="math inline">\(v_+ = \begin{bmatrix} \frac{P_{10}}{\sqrt{P_{01}^2 + P_{10}^2}} \\ \frac{P_{01}}{\sqrt{P_{01}^2 + P_{10}^2}} \end{bmatrix}\)</span> and <span class="math inline">\(v_-\begin{bmatrix} \frac{-1}{\sqrt{2}} \\ \frac{1}{\sqrt{2}} \end{bmatrix}\)</span>.</p>
+</section>
+<section id="propagation-of-an-arbitrary-number-of-steps" class="level1">
+<h1>Propagation of an arbitrary number of steps</h1>
+<p>To propagate the system an arbitrary number of steps, <span class="math inline">\(k\)</span>, we need to calculate <span class="math inline">\(\left(\mathcal{A}^T\right)^k P^{0}\)</span>, however the exponential is tricky. To do this, make use the the identity <span class="math inline">\(\mathcal{A}^k = \mathcal{P}\mathcal{D}^k\mathcal{P}^{-1}\)</span>, where <span class="math inline">\(\mathcal{P} = \begin{bmatrix} v_{0+} &amp; v_{0-} \\ v_{1+} &amp; v_{1-} \end{bmatrix}\)</span> and <span class="math inline">\(\mathcal{D}^k = \begin{bmatrix} \lambda_+^k &amp; 0 \\ 0 &amp; \lambda_-^k\end{bmatrix}\)</span></p>
+<p>Doing this matrix multiplication out by hand, we find that <span class="math display">\[ P^{t=k} = \mathcal{A}^k P^{t=0} = \begin{bmatrix} P_0^{ss} + (P_0^{t=0}-P_0^{ss})(1-P_{01}-P_{10})^k \\ P_1^{ss} + (P_1^{t=0}-P_1^{ss})(1-P_{01}-P_{10})^k \end{bmatrix} \]</span></p>
+</section>
+<section id="autocorrelation-function" class="level1">
+<h1>Autocorrelation function</h1>
+<p>The un-normalized autocorrelation (ACF) for an HMM with signal value <span class="math inline">\(y(t)\)</span> is <span class="math inline">\(ACF(k) = \mathbb{E}[(y(0)-\langle y \rangle )( y(k)-\langle y \rangle]\)</span>, which is</p>
+<p><span class="math display">\[ ACF(k) = \sum_i \left( \sum_j (\mu_i - \langle \mu \rangle)(\mu_j - \langle \mu \rangle) \left( \left(\mathcal{A}^T\right)^k \delta_i \right)_j \right) P_i^{ss} \]</span> where <span class="math inline">\(\delta_i\)</span> is a vector with one in the <span class="math inline">\(i^{th}\)</span> position and zero everywhere else, and <span class="math inline">\(\langle \mu \rangle = \sum_i \mu_i P_i^{ss}\)</span>.</p>
+<p>For this two-state system, if <span class="math inline">\(\mu_0 = 0\)</span> and <span class="math inline">\(\mu_1 = 1\)</span>, then this reduces to <span class="math display">\[ACF(k) = P_0^{ss}P_1^{ss}(P_0^{ss}+P_1^{ss})^2(1-P_{01}-P_{10})^k\]</span> and the normalized version is <span class="math display">\[G(k) = \frac{ACF(k)}{ACF(0)} = (1-P_{01}-P_{10})^k\]</span></p>
 
 
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
