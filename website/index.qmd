@@ -2,6 +2,6 @@
 title: 'Welcome to tMAVEN'
 ---
 
-Here is some documentation cookbook examples about how to use tMAVEN.
+Learn how use the tMAVEN modeling, analysis, and visualization environment 
 
-<!-- ![](images/logo.png) -->
+![](images/tmaven_screenshot.png)

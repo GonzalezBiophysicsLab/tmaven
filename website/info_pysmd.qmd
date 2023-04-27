@@ -1,5 +1,5 @@
 ---
-title: "Info: SMD (.HDF5) data format"
+title: "SMD (.HDF5) data format"
 ---
 # Python module to handle the SDM2 version of the (S)ingle-(M)olecule (D)ataset (SMD) file format
 We say that data from a single-molecule experiment is stored in an `SMD`. These exist in files (HDF5 format) or in memory as an object. This format is slighty different than originally described in: Greenfeld, M., van de Meent, JW., Pavlichin, D.S. et al. Single-molecule dataset (SMD): a generalized storage format for raw and processed single-molecule data. BMC Bioinformatics 16, 3 (2015). https://doi.org/10.1186/s12859-014-0429-4.

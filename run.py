@@ -8,4 +8,4 @@
 #
 # # run_app([])
 #
-maven.io.load_smdtmaven_hdf5('../website/examples/example_smd.hdf5','L1-tRNA')
+maven.io.load_smdtmaven_hdf5('./website/examples/example_smd.hdf5','L1-tRNA')
