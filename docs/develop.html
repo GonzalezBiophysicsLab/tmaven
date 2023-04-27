@@ -220,6 +220,11 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
       <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="./info_pysmd.html" class="sidebar-item-text sidebar-link">Info: SMD (.HDF5) data format</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="./info_priors.html" class="sidebar-item-text sidebar-link">Information on priors</a>
   </div>
 </li>
@@ -271,6 +276,10 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   <li><a href="#preferences-commandctrl-p" id="toc-preferences-commandctrl-p" class="nav-link" data-scroll-target="#preferences-commandctrl-p">preferences (command/ctrl + P)</a></li>
   <li><a href="#gui-keys" id="toc-gui-keys" class="nav-link" data-scroll-target="#gui-keys">gui keys</a></li>
   </ul></li>
+  </ul></li>
+  <li><a href="#this-website" id="toc-this-website" class="nav-link" data-scroll-target="#this-website">This Website</a>
+  <ul class="collapse">
+  <li><a href="#publish-changes." id="toc-publish-changes." class="nav-link" data-scroll-target="#publish-changes.">Publish changes.</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -412,9 +421,23 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li>left arrow/up arrow: decrease .gui.index</li>
 <li>number keys: assigns class to .gui.index trace</li>
 </ul>
-
-
 </section>
+</section>
+</section>
+<section id="this-website" class="level1">
+<h1>This Website</h1>
+<p>This site is made using quarto. The quarto source code is in <code>docs_src</code>, and this is rendered into <code>docs</code> which github pages will serve as the website. To edit it, modify/write new .qmd files (it’s a modified version of markdown. To add files to the sidebar or update the website look, modify the _quarto.yml file You can preview everything with</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">quarto</span> preview docs_src</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="publish-changes." class="level2">
+<h2 class="anchored" data-anchor-id="publish-changes.">Publish changes.</h2>
+<ul>
+<li>Make your changes. Use the quarto preview to make sure they’re good.</li>
+<li>Render the site using <code>quarto render docs_src</code>.</li>
+<li>Use git to add and commit the changes (including the .html files etc that get generated in the <code>docs</code> folder</li>
+<li>github actions will update and deploy the site in about one minute</li>
+</ul>
+
+
 </section>
 </section>
 
