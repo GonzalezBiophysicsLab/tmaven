@@ -1,0 +1,39 @@
+---
+title: "Scripted modeling - no GUI"
+---
+
+Process some data with a kinetic model and then plot it all without using the GUI
+
+``` python
+from tmaven.app import setup_maven
+
+#### Analyze some data
+## Make a new MAVEN instance
+maven  = setup_maven(['--log_stdout'])
+
+## Load data
+maven.io.load_smdtmaven_hdf5('./notes/example_smd.hdf5','L1-tRNA')
+
+## Turn on only the first 10 trajectorys
+maven.data.flag_ons*=False
+maven.data.flag_ons[:10]+=True
+
+## Run vbFRET model selection with 1 through 6 states
+maven.modeler.run_fret_vbhmm_modelselection(1,6)
+
+
+
+#### Make some plots
+import matplotlib.pyplot as plt
+fig,ax =plt.subplots(2)
+
+## Plot a 1D histogram in the first plots using the raw data instead of the Viterbi data
+maven.plots.fret_hist1d.prefs['idealized'] = False
+maven.plots.fret_hist1d.plot(fig,ax[0])
+
+## Plot a trajectory in the second plot
+ax[1].plot(maven.data.corrected[0,:,0],'g')
+ax[1].plot(maven.data.corrected[0,:,1],'r')
+
+plt.show()
+```

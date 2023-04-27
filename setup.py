@@ -87,8 +87,8 @@ if __name__ == "__main__":
 		install_requires=INSTALL_REQUIRES,
 		extras_require=EXTRAS_REQUIRE,
 		entry_points={
-			'console_scripts': [
-				'tmaven=tmaven.__main__:main',
-			],
+				'console_scripts': [
+					'tmaven=tmaven.bin.tmaven_gui:main',
+				],
 		},
 	)

@@ -1,5 +1,5 @@
 ---
-title: "Example: load SMD"
+title: "Load SMD"
 ---
 
 Here's a code example
