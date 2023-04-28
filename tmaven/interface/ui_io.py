@@ -21,8 +21,59 @@ def build_menu(gui):
 	menu_hdf5.addAction('Classes',lambda : load_tmaven_dataset_hdf5(gui, "class"))
 	menu_hdf5.addAction('Pre-Post Times',lambda : load_tmaven_dataset_hdf5(gui, "pre-post"))
 
-	menu_txt = menu_load.addMenu('ASCII Text files')
-	menu_txt.addAction('Raw',lambda : load_raw_text(gui))
+	menu_txt = menu_load.addMenu('Text files (ASCII/UTF)')
+	menu_raw = menu_txt.addMenu('Raw')
+	menu_raw.addAction('Raw',lambda : load_raw_text(gui))
+	menu_raw.addSeparator().setText('Presets')
+
+	menus_raw_presets = [menu_raw.addMenu(ordering) for ordering in ['N,T,C','N,C,T','T,N,C','T,C,N','C,T,N','C,N,T']]
+	menus_raw_presets[0].addAction('2 color; collated 0', lambda: raw_presets(gui,'N,T,C',2,0))
+	menus_raw_presets[0].addAction('2 color; collated 1', lambda: raw_presets(gui,'N,T,C',2,1))
+	menus_raw_presets[0].addAction('3 color; collated 0', lambda: raw_presets(gui,'N,T,C',3,0))
+	menus_raw_presets[0].addAction('3 color; collated 1', lambda: raw_presets(gui,'N,T,C',3,1))
+	menus_raw_presets[0].addAction('4 color; collated 0', lambda: raw_presets(gui,'N,T,C',4,0))
+	menus_raw_presets[0].addAction('4 color; collated 1', lambda: raw_presets(gui,'N,T,C',4,1))
+	menus_raw_presets[1].addAction('2 color; collated 0', lambda: raw_presets(gui,'N,C,T',2,0))
+	menus_raw_presets[1].addAction('2 color; collated 1', lambda: raw_presets(gui,'N,C,T',2,1))
+	menus_raw_presets[1].addAction('3 color; collated 0', lambda: raw_presets(gui,'N,C,T',3,0))
+	menus_raw_presets[1].addAction('3 color; collated 1', lambda: raw_presets(gui,'N,C,T',3,1))
+	menus_raw_presets[1].addAction('4 color; collated 0', lambda: raw_presets(gui,'N,C,T',4,0))
+	menus_raw_presets[1].addAction('4 color; collated 1', lambda: raw_presets(gui,'N,C,T',4,1))
+	menus_raw_presets[2].addAction('2 color; collated 0', lambda: raw_presets(gui,'T,N,C',2,0))
+	menus_raw_presets[2].addAction('2 color; collated 1', lambda: raw_presets(gui,'T,N,C',2,1))
+	menus_raw_presets[2].addAction('3 color; collated 0', lambda: raw_presets(gui,'T,N,C',3,0))
+	menus_raw_presets[2].addAction('3 color; collated 1', lambda: raw_presets(gui,'T,N,C',3,1))
+	menus_raw_presets[2].addAction('4 color; collated 0', lambda: raw_presets(gui,'T,N,C',4,0))
+	menus_raw_presets[2].addAction('4 color; collated 1', lambda: raw_presets(gui,'T,N,C',4,1))
+	menus_raw_presets[3].addAction('2 color; collated 0', lambda: raw_presets(gui,'T,C,N',2,0))
+	menus_raw_presets[3].addAction('2 color; collated 1', lambda: raw_presets(gui,'T,C,N',2,1))
+	menus_raw_presets[3].addAction('3 color; collated 0', lambda: raw_presets(gui,'T,C,N',3,0))
+	menus_raw_presets[3].addAction('3 color; collated 1', lambda: raw_presets(gui,'T,C,N',3,1))
+	menus_raw_presets[3].addAction('4 color; collated 0', lambda: raw_presets(gui,'T,C,N',4,0))
+	menus_raw_presets[3].addAction('4 color; collated 1', lambda: raw_presets(gui,'T,C,N',4,1))
+	menus_raw_presets[4].addAction('2 color; collated 0', lambda: raw_presets(gui,'C,T,N',2,0))
+	menus_raw_presets[4].addAction('2 color; collated 1', lambda: raw_presets(gui,'C,T,N',2,1))
+	menus_raw_presets[4].addAction('3 color; collated 0', lambda: raw_presets(gui,'C,T,N',3,0))
+	menus_raw_presets[4].addAction('3 color; collated 1', lambda: raw_presets(gui,'C,T,N',3,1))
+	menus_raw_presets[4].addAction('4 color; collated 0', lambda: raw_presets(gui,'C,T,N',4,0))
+	menus_raw_presets[4].addAction('4 color; collated 1', lambda: raw_presets(gui,'C,T,N',4,1))
+	menus_raw_presets[5].addAction('2 color; collated 0', lambda: raw_presets(gui,'C,N,T',2,0))
+	menus_raw_presets[5].addAction('2 color; collated 1', lambda: raw_presets(gui,'C,N,T',2,1))
+	menus_raw_presets[5].addAction('3 color; collated 0', lambda: raw_presets(gui,'C,N,T',3,0))
+	menus_raw_presets[5].addAction('3 color; collated 1', lambda: raw_presets(gui,'C,N,T',3,1))
+	menus_raw_presets[5].addAction('4 color; collated 0', lambda: raw_presets(gui,'C,N,T',4,0))
+	menus_raw_presets[5].addAction('4 color; collated 1', lambda: raw_presets(gui,'C,N,T',4,1))
+	
+	# menus_raw_presets = [[ordering, menu_raw.addMenu(ordering)] for ordering in ['N,T,C','N,C,T','T,N,C','T,C,N','C,T,N','C,N,T']]
+	# for ordering, menu_raw_presets in menus_raw_presets:
+	# 	for colori in [2,3,4]:
+	# 		for collatei in [0,1]:
+	# 			def fxn(ordering=ordering,colori=colori,collatei=collatei): ## don't use lambdas.... it'll blow up
+	# 				## https://stackoverflow.com/questions/3431676/creating-functions-or-lambdas-in-a-loop-or-comprehension
+	# 				## don't fix gui...
+	# 				return raw_presets(gui,ordering,colori,collatei)
+	# 			menu_raw_presets.addAction('%d color; collated %d'%(colori,collatei), fxn)
+
 	menu_txt.addAction('All tMAVEN',lambda : load_tmaven_dataset_txt(gui, "all"))
 	menu_txt.addAction('Classes',lambda : load_tmaven_dataset_txt(gui, "class"))
 	menu_txt.addAction('Pre-Post Times',lambda : load_tmaven_dataset_txt(gui, "pre-post"))
@@ -195,15 +246,40 @@ def load_raw_text(gui):
 		logger.info('No file to load')
 		return
 
-	try:
-		logger.info('Trying to load %s'%(fname))
-		skiprows = gui.maven.prefs['io.skiprows']
-		delimiter = str(gui.maven.prefs['io.delimiter'])
-		gui.maven.io.load_raw_txt(fname,skiprows,delimiter)
+	logger.info('Trying to load %s'%(fname))
+	skiprows = gui.maven.prefs['io.skiprows']
+	delimiter = str(gui.maven.prefs['io.delimiter'])
+	success = gui.maven.io.load_raw_txt(fname,skiprows,delimiter)
+	
+	if not success:
+		from PyQt5.QtWidgets import QMessageBox
+		message_box = QMessageBox(parent=gui)
+		message_box.setText("Error loading %s\nThis probably means you have used the wrong format"%(fname))
+		message_box.setWindowTitle("tMAVEN Error")
+		message_box.setStandardButtons(message_box.Ok)
+		result = message_box.exec()
+	return
+		
+def raw_presets(gui,ordering,ncolors,collated_axis):
+	if ordering == 'N,T,C':
+		orderi = [0,1,2]
+	elif ordering == 'N,C,T':
+		orderi = [0,2,1]
+	elif ordering == 'T,C,N':
+		orderi = [1,2,0]
+	elif ordering == 'T,N,C':
+		orderi = [1,0,2]
+	elif ordering == 'C,N,T':
+		orderi = [2,0,1]
+	elif ordering == 'C,T,N':
+		orderi = [2,1,0]
+		
+	gui.maven.prefs.__setitem__('io.axis_order',orderi,quiet=True)
+	gui.maven.prefs.__setitem__('io.decollate',ncolors,quiet=True)
+	gui.maven.prefs.__setitem__('io.decollate_axis',collated_axis,quiet=True)
+	
+	load_raw_text(gui)	
 
-	except Exception as e:
-		logging.error('failed to load %s\n%s'%(fname,str(e)))
-		return
 
 def load_raw_numpy(gui):
 	from PyQt5.QtWidgets import QFileDialog

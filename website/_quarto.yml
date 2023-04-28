@@ -48,6 +48,7 @@ website:
 
       - section: "Examples"
         contents:
+          - "examples/example_default_prefs.qmd"
           - "examples/example_smdload.qmd"
           - "examples/example_script1.qmd"
 

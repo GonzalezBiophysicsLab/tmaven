@@ -505,21 +505,21 @@ class main_window(QMainWindow):
 				event.ignore()
 			return
 
-		# session = {
-		# 	"window": {
-		# 		"x": self.x(),
-		# 		"y": self.y(),
-		# 		"w": self.width(),
-		# 		"h": self.height(),
-		# 	},
-		# 	"plot_mode": self.plot_mode,
-		# 	"lightdark_mode" : self.lightdark_mode,
-		# }
-		# self.save_session(session)
+		session = {
+			"window": {
+				"x": self.x(),
+				"y": self.y(),
+				"w": self.width(),
+				"h": self.height(),
+			},
+			"plot_mode": self.plot_mode,
+			"lightdark_mode" : self.lightdark_mode,
+		}
+		self.save_session(session)
 
 		logger.info("Quitting...")
 		# del self
 		# import sys
 		# sys.exit(0)
-		return QMainWindow.closeEvent(self,event)
-		# return super(type(self),self).closeEvent(event)
+		# return QMainWindow.closeEvent(self,event)
+		return super(type(self),self).closeEvent(event)

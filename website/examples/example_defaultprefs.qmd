@@ -1,0 +1,15 @@
+---
+title: "Lab Default Preferences"
+---
+
+If you want to have the same, reproducible figures for publication, you should make a script to change the preferences to your default values.
+The script will just be a python script that only needs to contain lines like:
+
+``` python
+maven.prefs['plot.fig_width'] = 6.0
+maven.prefs['plot.fig_height'] = 3.0
+maven.prefs['plot.intensity_max' ] =500.0
+maven.prefs['plot.intensity_min'] = -50.0
+```
+
+It doesn't even need any imports! To run this, you can use the `Scripts` >> `Run Scripts` menu option. Alternatively, you can use the `--script` command line option if running from a terminal.

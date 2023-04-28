@@ -8,7 +8,8 @@ logger = logging.getLogger(__name__)
 
 default_prefs = {
 	'io.skiprows':0,
-	'io.delimiter':r'\t',
+	# 'io.delimiter':r'\t',
+	'io.delimiter':r'None',
 	'io.axis_order':[0,1,2],
 	'io.missing_axis':2,
 	'io.decollate':1,
@@ -64,8 +65,8 @@ class controller_io(object):
 		self.process_data_change()
 
 	def process_data_change(self):
-		self.maven.data.update_tmaven_params()
-		self.maven.emit_data_update()
+			self.maven.data.update_tmaven_params()
+			self.maven.emit_data_update()
 
 	def clear_data(self):
 		self.maven.smd = smd_container()
@@ -129,16 +130,22 @@ class controller_io(object):
 
 	def load_raw_txt(self,fname,skiprows,delimiter):
 		try:
-			if delimiter == r'\t':
+			if delimiter == r'None':
+				delimiter = None
+			elif delimiter == r'\t':
 				delimiter = '\t'
 			d = np.loadtxt(fname,skiprows=skiprows,delimiter=delimiter)
 			logger.info('loaded txt {}. skiprows {}, delimiter {}'.format(fname, skiprows, delimiter))
 			smd = self.convert_to_smd(d,fname)
 			smd.source_names[0] = '{}'.format(fname)
+			if smd.ncolors > 10:
+				raise Exception('too many colors....')
 			self.add_data(smd, None)
 			self.maven.emit_data_update()
+			return True
 		except Exception as e:
 			logger.error('txt load failed {}\n{}'.format(fname,str(e)))
+			return False
 
 	def load_raw_numpy(self,fname):
 		try:
@@ -274,9 +281,15 @@ class controller_io(object):
 			return d,True
 		elif n > 1:
 			if axis == 0:
-				return np.array([d[i::n] for i in range(n)]),True
+				dd = [d[i::n] for i in range(n)]
 			elif axis == 1:
-				return np.array([d[:,i::n] for i in range(n)]),True
+				dd = [d[:,i::n] for i in range(n)]
+				# return np.array([d[:,i::n] for i in range(n)]),True
+			if not np.all([np.array(dd[0].shape) == np.array(dd[i].shape) for i in range(len(dd))]):
+				logger.error('Decollation failed: data shapes do not match')
+				raise Exception('Decollation Error')
+			else:
+				return np.array(dd),True
 		return d,False
 
 	def export_tmaven_hdf5(self,oname,gname):

@@ -56,6 +56,13 @@
     "text": "Here’s a code example\nmaven.io.load_smdtmaven_hdf5('./docs/examples/example_smd.hdf5','L1-tRNA')"
   },
   {
+    "objectID": "examples/example_defaultprefs.html",
+    "href": "examples/example_defaultprefs.html",
+    "title": "Lab Default Preferences",
+    "section": "",
+    "text": "If you want to have the same, reproducible figures for publication, you should make a script to change the preferences to your default values. The script will just be a python script that only needs to contain lines like:\nmaven.prefs['plot.fig_width'] = 6.0\nmaven.prefs['plot.fig_height'] = 3.0\nmaven.prefs['plot.intensity_max' ] =500.0\nmaven.prefs['plot.intensity_min'] = -50.0\nIt doesn’t even need any imports! To run this, you can use the Scripts >> Run Scripts menu option. Alternatively, you can use the --script command line option if running from a terminal."
+  },
+  {
     "objectID": "develop.html",
     "href": "develop.html",
     "title": "Develop",
