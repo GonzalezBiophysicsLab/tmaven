@@ -129,33 +129,34 @@ def selection_off(gui):
 def build_menu(gui):
 	from PyQt5.QtWidgets import QMenu
 	menu_selection = QMenu('Selection',gui)
-	menu_on = QMenu('Turn On',gui)
-	menu_off = QMenu('Turn Off',gui)
+	menu_classes = QMenu('Classes',gui)
 	menu_order = QMenu('Order by',gui)
 
-	menu_on.addAction('All',lambda : all_on(gui))
-	menu_on.addAction('Selection',lambda : selection_on(gui))
-	menu_on.addAction('Class',lambda : class_on(gui))
-	menu_off.addAction('All',lambda : all_off(gui))
-	menu_off.addAction('Selection',lambda : selection_off(gui))
-	menu_off.addAction('Class',lambda : class_off(gui))
-	menu_selection.addAction('Select All',lambda : select_all(gui))
-	menu_selection.addAction('Select None',lambda : select_none(gui))
-	menu_selection.addAction('Select Class',lambda : select_class(gui))
-	menu_selection.addAction('Toggle Selection',lambda : toggle_selection(gui))
+
+	menu_selection.addAction('Select all',lambda : select_all(gui))
+	menu_selection.addAction('Select none',lambda : select_none(gui))
+	menu_selection.addAction('Select class',lambda : select_class(gui))
+	menu_selection.addAction('Toggle selection',lambda : toggle_selection(gui))
 	menu_selection.addSeparator()
-	menu_selection.addAction('Display Class Counts',lambda : show_counts(gui))
-	menu_selection.addAction('Set Class',lambda : set_class_from_selection(gui))
+	menu_selection.addAction('Turn on selection',lambda : selection_on(gui))
+	menu_selection.addAction('Turn off selection',lambda : selection_off(gui))
+	# menu_off.addAction('All',lambda : all_off(gui))
+	
 	menu_order.addAction('Original',gui.maven.selection.order_original)
 	menu_order.addAction('Cross-Correlation',gui.maven.selection.order_fret_cross_corr)
 	menu_order.addAction('Classes',gui.maven.selection.order_classes)
-	menu_selection.addMenu(menu_order)
+	# menu_selection.addMenu(menu_order)
 
-	menu_selection.addMenu(menu_on)
-	menu_selection.addMenu(menu_off)
 
+	menu_classes.addAction('Display class counts',lambda : show_counts(gui))
+	menu_classes.addAction('Set Class',lambda : set_class_from_selection(gui))
+	menu_classes.addAction('Turn on class',lambda : class_on(gui))
+	menu_classes.addAction('Turn off class',lambda : class_off(gui))
+
+	# menu_selection.addMenu(menu_on)
+	# menu_selection.addMenu(menu_off)
 	# from .stylesheet import ss_qmenu
 	# for m in [menu_selection,menu_on,menu_off]:
 		# m.setStyleSheet(ss_qmenu)
 
-	return menu_selection,menu_on,menu_off
+	return menu_selection,menu_order,menu_classes

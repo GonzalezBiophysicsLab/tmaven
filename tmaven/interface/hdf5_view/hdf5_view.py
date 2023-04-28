@@ -112,7 +112,7 @@ class hdf5_view(hdf5_view_primative):
 
 class hdf5_view_container(QObject):
 	def __init__(self,gui):
-		super(hdf5_view_container,self).__init__(gui)
+		super(hdf5_view_container,self).__init__(parent=gui)
 		self.gui = gui
 
 		self.action = QAction('HDF5 Viewer',self.gui)

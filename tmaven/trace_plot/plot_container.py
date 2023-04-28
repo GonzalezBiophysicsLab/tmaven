@@ -5,7 +5,7 @@ logger = logging.getLogger(__name__)
 
 class plot_container(QWidget):
 	def __init__(self,gui):
-		super().__init__()
+		super().__init__(parent=gui)
 		self.gui = gui
 		self.gui.plot_mode = None
 

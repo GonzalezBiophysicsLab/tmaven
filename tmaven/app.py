@@ -19,7 +19,6 @@ def setup_gui(maven,args=[]):
 
 	# Images (such as toolbar icons) aren't scaled nicely on retina/4k displays
 	# unless this flag is set
-
 	os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
 	if hasattr(Qt, "AA_EnableHighDpiScaling"):
 		QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
@@ -31,7 +30,11 @@ def setup_gui(maven,args=[]):
 	# See issue Mu-editor#1147 for more information
 	os.environ["QT_MAC_WANTS_LAYER"] = "1"
 
-	app = QApplication([])
+	# app = QApplication([])
+	app = QApplication.instance()
+	if app is None:
+		app = QApplication([])
+	
 	app.setApplicationName("tMAVEN")
 	app.setDesktopFileName("t.MAVEN")
 

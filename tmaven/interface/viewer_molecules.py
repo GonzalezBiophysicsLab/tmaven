@@ -9,7 +9,7 @@ class_keys = {Qt.Key_1:1,Qt.Key_2:2,Qt.Key_3:3,Qt.Key_4:4,Qt.Key_5:5,Qt.Key_6:6,
 
 class molecules_viewer(QObject):
 	def __init__(self,gui):
-		super().__init__()
+		super().__init__(parent=gui)
 		self.gui = gui
 		self.viewer = molecules_widget(self.gui)
 		self.gui.data_update.connect(self.viewer.model.layoutChanged.emit)

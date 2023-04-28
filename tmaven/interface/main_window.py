@@ -19,7 +19,7 @@ class main_window(QMainWindow):
 	pref_edited = pyqtSignal()
 
 	def __init__(self,maven,app):
-		super().__init__()
+		super().__init__(parent=None)
 		self.app = app
 		self.maven = maven
 		self.index = 0
@@ -70,6 +70,7 @@ class main_window(QMainWindow):
 		#### preferences
 		from .viewer_prefs import preferences_viewer
 		self.preferences_viewer = preferences_viewer(self)
+		
 
 		# #### smd info
 		# from .viewer_smd_info import smd_info_viewer
@@ -106,7 +107,7 @@ class main_window(QMainWindow):
 
 		# self.preferences_viewer.toggle()
 		# self.molecules_viewer.toggle()
-		# self.tabifyDockWidget(self.preferences_viewer.dock,self.molecules_viewer.dock)
+		self.tabifyDockWidget(self.preferences_viewer.dock,self.molecules_viewer.dock)
 
 		## connections
 		self.maven.emit_data_update = lambda : self.data_update.emit()
@@ -122,18 +123,18 @@ class main_window(QMainWindow):
 		self.menubar.clear()
 		self.menu_file  = QMenu('File',self)
 		self.menu_tools = QMenu('Tools',self)
-		self.menu_other = QMenu('Other',self)
+		# self.menu_other = QMenu('Other',self)
 		self.menu_view = QMenu('View',self)
-		self.menu_prefs = QMenu('Preferences',self)
+		# self.menu_prefs = QMenu('Preferences',self)
 		self.menu_plots = QMenu('Plots',self)
 
 		self.menu_load,self.menu_save = ui_io.build_menu(self)
-		self.menu_scripts = self.menu_other.addMenu('Script Runner')
-		self.menu_experimental = self.menu_other.addMenu('Experimental')
+		self.menu_scripts = QMenu('Scripts',self)
+		# self.menu_experimental = self.menu_other.addMenu('Experimental')
 		self.trace_filter = ui_trace_filter.container_trace_filter(self)
 		self.menu_cull = ui_cull.build_menu(self)
 		self.menu_corrections,self.menu_correction_filters = ui_corrections.build_menu(self)
-		self.menu_selection,self.menu_on,self.menu_off = ui_selection.build_menu(self)
+		self.menu_selection, self.menu_order, self.menu_classes = ui_selection.build_menu(self)
 		self.menu_photobleaching = ui_photobleaching.build_menu(self)
 		self.menu_modeler = ui_modeler.build_menu(self)
 
@@ -141,9 +142,9 @@ class main_window(QMainWindow):
 		self.menu_file.addMenu(self.menu_load)
 		self.menu_file.addMenu(self.menu_save)
 		self.menu_file.addAction('Clear Data',self.clear_data)
-		self.menu_file.addMenu(self.menu_prefs)
-		self.menu_prefs.addAction('Load Preferences',self.preferences_viewer.load)
-		self.menu_prefs.addAction('Save Preferences',self.preferences_viewer.save)
+		# self.menu_file.addMenu(self.menu_prefs)
+		# self.menu_prefs.addAction('Load Preferences',self.preferences_viewer.load)
+		# self.menu_prefs.addAction('Save Preferences',self.preferences_viewer.save)
 		self.menu_file.addAction('Exit',self.quit,'Ctrl+Q')
 
 		self.menu_view.addAction('Reset GUI',self.default_session)
@@ -156,15 +157,18 @@ class main_window(QMainWindow):
 		self.menu_theme.addAction('Dark',self.change_theme_dark)
 		# self.menu_view.addAction('SMD Info',self.smd_info_viewer.toggle)
 		self.menu_view.addAction('Show Log',self.show_log)
+		self.menu_view.addAction(self.hdf5_viewer.action)
 		self.menu_view.addAction('Molecule Table',self.molecules_viewer.toggle,'Ctrl+T')
 		self.menu_view.addAction('Preferences',self.preferences_viewer.toggle,'Ctrl+P')
 
-		self.menu_other.addAction(self.hdf5_viewer.action)
+
 		self.menu_scripts.addAction('Run Script',lambda:ui_scripts.run(self),'Ctrl+R')
 		self.menu_scripts.addAction('Run Input',lambda:ui_scripts.input_run(self))
-		self.menu_experimental.addAction('Dwell Inversion',lambda:ui_experimental.dwell_inversion(self))
+		# self.menu_experimental.addAction('Dwell Inversion',lambda:ui_experimental.dwell_inversion(self))
 
 		self.menu_tools.addMenu(self.menu_selection)
+		self.menu_tools.addMenu(self.menu_classes)
+		self.menu_tools.addMenu(self.menu_order)
 		self.menu_tools.addMenu(self.menu_cull)
 		self.menu_tools.addMenu(self.menu_corrections)
 		self.menu_corrections.addMenu(self.menu_correction_filters)
@@ -182,11 +186,14 @@ class main_window(QMainWindow):
 			# menu.setStyleSheet(stylesheet.ss_qmenu)
 
 		self.menubar.addMenu(self.menu_file)
-		self.menubar.addMenu(self.menu_view)
+
 		self.menubar.addMenu(self.menu_tools)
 		self.menubar.addMenu(self.menu_modeler)
 		self.menubar.addMenu(self.menu_plots)
-		self.menubar.addMenu(self.menu_other)
+		# self.menubar.addMenu(self.menu_other)
+		self.menubar.addMenu(self.menu_scripts)
+		self.menubar.addMenu(self.menu_view)
+
 
 	def clear_data(self):
 		from PyQt5.QtWidgets import QMessageBox
@@ -471,7 +478,7 @@ class main_window(QMainWindow):
 				te.setPlainText(lt)
 				te.verticalScrollBar().setValue(te.verticalScrollBar().maximum())
 		timer = QTimer(parent=w)
-		timer.setInterval(1000) ## 25 FPS = 40 msec
+		timer.setInterval(1000) ## 25 FPS = 40 msec/
 		timer.timeout.connect(_updatelog)
 		timer.start()
 		w.setCentralWidget(te)
@@ -484,7 +491,7 @@ class main_window(QMainWindow):
 		Exit the application.
 		"""
 		from PyQt5.QtWidgets import QMessageBox
-		message_box = QMessageBox(self)
+		message_box = QMessageBox(parent=self)
 		message_box.setText("Are you sure you want to quit?")
 		message_box.setWindowTitle("tMAVEN")
 		message_box.setStandardButtons(message_box.Cancel | message_box.Ok)
@@ -498,17 +505,21 @@ class main_window(QMainWindow):
 				event.ignore()
 			return
 
-		session = {
-			"window": {
-				"x": self.x(),
-				"y": self.y(),
-				"w": self.width(),
-				"h": self.height(),
-			},
-			"plot_mode": self.plot_mode,
-			"lightdark_mode" : self.lightdark_mode,
-		}
-		self.save_session(session)
+		# session = {
+		# 	"window": {
+		# 		"x": self.x(),
+		# 		"y": self.y(),
+		# 		"w": self.width(),
+		# 		"h": self.height(),
+		# 	},
+		# 	"plot_mode": self.plot_mode,
+		# 	"lightdark_mode" : self.lightdark_mode,
+		# }
+		# self.save_session(session)
 
 		logger.info("Quitting...")
-		return super(type(self),self).closeEvent(event)
+		# del self
+		# import sys
+		# sys.exit(0)
+		return QMainWindow.closeEvent(self,event)
+		# return super(type(self),self).closeEvent(event)

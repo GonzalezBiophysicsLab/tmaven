@@ -6,7 +6,7 @@ array = np.array
 
 class preferences_viewer(QObject):
 	def __init__(self,gui):
-		super().__init__()
+		super().__init__(parent=gui)
 		self.gui = gui
 		self.viewer = prefs_widget(parent=self.gui)
 		self.prefs_model = pref_model(self.gui.maven)
