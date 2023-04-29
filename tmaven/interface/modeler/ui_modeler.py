@@ -141,7 +141,7 @@ def get_fret_traces(gui):
 
 def update_idealization(gui):
 	try:
-		gui.maven.modeler.model.idealize()
+		gui.maven.modeler.update_idealization(flag_force=gui.maven.prefs['modeler.force_idealize'])
 		logger.info('Updated idealization for active model')
 	except Exception as e:
 		logger.info('Failed to update idealization for active model\n{}'.format(e))

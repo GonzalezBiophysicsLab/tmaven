@@ -6,6 +6,7 @@ import h5py as h
 from .model_container import model_container
 
 default_prefs = {
+	'modeler.force_idealize':False,
 	'modeler.nrestarts':4,
 	'modeler.converge':1e-10,
 	'modeler.maxiters':1000,
@@ -233,12 +234,21 @@ class controller_modeler(object):
 
 		return success,result
 
-	def update_idealization(self):
-		try:
-			self.model.idealize(self.maven)
+	def update_idealization(self, flag_force=False):
+		#try:
+		if 1:
+			if not flag_force:
+				self.model.idealize()
+			else:
+				success,keep,_ = self.get_fret_traces()
+				if not success:
+					return
+				self.model.ran = np.nonzero(keep)[0].tolist()
+				self.model.idealize()
+
 			logger.info('Updated idealization for active model')
-		except Exception as e:
-			logger.info('Failed to update idealization for active model\n{}'.format(e))
+		#except Exception as e:
+			#logger.info('Failed to update idealization for active model\n{}'.format(e))
 		self.maven.emit_data_update()
 
 	def get_traces(self):
