@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>tMAVEN Documentation – references</title>
+<title>tMAVEN Documentation - 5. Plotting</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -19,25 +19,6 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1.6em;
   vertical-align: middle;
-}
-div.csl-bib-body { }
-div.csl-entry {
-  clear: both;
-}
-.hanging div.csl-entry {
-  margin-left:2em;
-  text-indent:-2em;
-}
-div.csl-left-margin {
-  min-width:2em;
-  float:left;
-}
-div.csl-right-inline {
-  margin-left:2em;
-  padding-left:1em;
-}
-div.csl-indent {
-  margin-left: 2em;
 }
 </style>
 
@@ -77,6 +58,7 @@ div.csl-indent {
   }
 }</script>
 
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
 <link rel="stylesheet" href="../styles.css">
 </head>
@@ -87,7 +69,7 @@ div.csl-indent {
   <header id="quarto-header" class="headroom fixed-top">
   <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
     <div class="container-fluid d-flex justify-content-between">
-      <h1 class="quarto-secondary-nav-title">(t)ime series (M)odeling, (A)nalysis, and (V)isualization (EN)vironment</h1>
+      <h1 class="quarto-secondary-nav-title">5. Plotting</h1>
       <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
         <i class="bi bi-chevron-right"></i>
       </button>
@@ -150,40 +132,40 @@ div.csl-indent {
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="false">tMANUAL</a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="false">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">tMANUAL</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 ">  
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../tMANUAL/web_intro.html" class="sidebar-item-text sidebar-link">0. Introduction</a>
+  <a href="../tmanual/web_intro.html" class="sidebar-item-text sidebar-link">0. Introduction</a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../tMANUAL/installing.html" class="sidebar-item-text sidebar-link">1. Installing</a>
+  <a href="../tmanual/installing.html" class="sidebar-item-text sidebar-link">1. Installing</a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../tMANUAL/navigating.html" class="sidebar-item-text sidebar-link">2. Navigating</a>
+  <a href="../tmanual/navigating.html" class="sidebar-item-text sidebar-link">2. Navigating</a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../tMANUAL/preprocessing.html" class="sidebar-item-text sidebar-link">3. Preprocessing</a>
+  <a href="../tmanual/preprocessing.html" class="sidebar-item-text sidebar-link">3. Preprocessing</a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../tMANUAL/modelling.html" class="sidebar-item-text sidebar-link">4. Modelling</a>
+  <a href="../tmanual/modelling.html" class="sidebar-item-text sidebar-link">4. Modelling</a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../tMANUAL/plotting.html" class="sidebar-item-text sidebar-link">5. Plotting</a>
+  <a href="../tmanual/plotting.html" class="sidebar-item-text sidebar-link active">5. Plotting</a>
   </div>
 </li>
       </ul>
@@ -247,19 +229,80 @@ div.csl-indent {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#references" id="toc-references" class="nav-link active" data-scroll-target="#references">References</a></li>
+  <li><a href="#one-dimensional-histograms" id="toc-one-dimensional-histograms" class="nav-link active" data-scroll-target="#one-dimensional-histograms">One-Dimensional Histograms</a></li>
+  <li><a href="#two-dimensional-histograms" id="toc-two-dimensional-histograms" class="nav-link" data-scroll-target="#two-dimensional-histograms">Two-Dimensional Histograms</a></li>
   </ul>
 </nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title d-none d-lg-block">5. Plotting</h1>
+</div>
 
 
-<section id="references" class="level1 unnumbered">
-<h1 class="unnumbered">References</h1>
-<div id="refs" role="doc-bibliography">
 
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<section id="one-dimensional-histograms" class="level1">
+<h1>One-Dimensional Histograms</h1>
+<p>The histogram feature of tMAVEN is primarily useful for visualization of data and not diagnostics. Navigate to Plots/<strong>FRET hist 1D</strong> to generate a one-dimensional histogram of all E<span class="math inline">\(_{fret}\)</span> emission data, the peaks represent states and should look like <em>K</em> gaussians.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/1D Histofigure.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">A typical one dimensional histogram. Note the number of traces used N in the top right. If a model has been calculated, a population-weighted set of emission distributions is plotted as the solid black with the dotted lines as the individual populations. These lines are not a Gaussian fit of the data, but come directly from the models. Theoretically, better models/processing will result in a better fit of the histogram.</figcaption><p></p>
+</figure>
+</div>
+<p>Notable preferences the user might want to change include:</p>
+<ul>
+<li><code>hist_force_y</code> to force the y axis value</li>
+<li><code>hist_log_y</code> puts the y-axis in log scale</li>
+<li><code>model_on</code> will toggle the model as described in Figure</li>
+<li><code>hist_false</code> toggles the histogram itself, blue in the figure</li>
+<li><code>hist_color</code> will change the color of the histogram</li>
+</ul>
+<p>The save icon below the graph can be used to export the figure.</p>
+</section>
+<section id="two-dimensional-histograms" class="level1">
+<h1>Two-Dimensional Histograms</h1>
+<p>The two-dimensional histograms in tMAVEN also have the axis of time. Generate by navigating Plots/<strong>FRET hist 2D</strong> The histogram is automatically smoothed by a median filter which setting can be changed (see below). One of the most useful capabilities is the choice of using post-synchronization. In this case, t=0 represents the time of transition from one specified state to another, see below. Note that post-synch can only operate once a model is run and transitions have been detected.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/2dHistoPostSyncFigure.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">A two dimensional histogram with post-sync on using the het color map.</figcaption><p></p>
+</figure>
+</div>
+<p>Useful preferences:</p>
+<ul>
+<li><code>color_ceiling</code> sets the ceiling for the color mapping</li>
+<li><code>color_dbl</code> enables two floors</li>
+<li><code>color_floor_color</code> is the lower floor</li>
+<li><code>color_cmap</code> determines the color map, all matplotlib maps are supported</li>
+<li><code>hist_smooth_med</code> toggles the use of a median filter on the graph and <code>hist_smoothx/y</code> determine the widths of this filter</li>
+<li><code>time_dt</code> changes the time ticks, set to acquisition time to yield the same axis as traces while <code>time_nbins</code> changes the length of time shown.</li>
+<li><code>hist_normalizeframe</code> will normalize the histogram to mitigate photobleaching or additional transition at different times, see Figure</li>
+</ul>
+<p>For post synchronization, tMAVEN will use the existing model which has identified transitions so users can essentially monitor all traces after a specific transition in a data set. Notice that N, number of traces used, will likely change since not all traces have all transitions. Small n represents the number of transitions measured not number of traces.</p>
+<ul>
+<li><code>sync_postsync</code> toggles post synchronization</li>
+<li><code>sync_singledwell</code> set to true shows only the dwell before and after transition. In other words, a false setting will also show future transitions.</li>
+<li><code>sync_hmmstate_1</code> shows the pretransition state while <code>sync_hmmstate_2</code> shows the post transition state, input “-1” for any other state</li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/NormalizedFigure.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">The same graph as figure 10 with normalization on.</figcaption><p></p>
+</figure>
 </div>
 
 

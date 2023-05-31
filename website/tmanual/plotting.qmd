@@ -1,0 +1,45 @@
+---
+title: "5. Plotting"
+---
+
+# One-Dimensional Histograms
+The histogram feature of tMAVEN is primarily useful for visualization of data and not diagnostics. Navigate to Plots/**FRET hist 1D** to generate a one-dimensional histogram of all E$_{fret}$ emission data, the peaks represent states and should look like *K* gaussians. 
+
+![A typical one dimensional histogram. Note the number of traces used N in the top right. If a model has been calculated, a population-weighted set of emission distributions is plotted as the solid black with the dotted lines as the individual populations. These lines are not a Gaussian fit of the data, but come directly from the models. Theoretically, better models/processing will result in a better fit of the histogram.](images/1D\ Histofigure.png)
+
+Notable preferences the user might want to change include:
+
+* `hist_force_y` to force the y axis value
+* `hist_log_y` puts the y-axis in log scale
+* `model_on` will toggle the model as described in Figure
+* `hist_false` toggles the histogram itself, blue in the figure
+* `hist_color` will change the color of the histogram
+
+The save icon below the graph can be used to export the figure. 
+
+# Two-Dimensional Histograms
+The two-dimensional histograms in tMAVEN also have the axis of time. Generate by navigating Plots/**FRET hist 2D** The histogram is automatically smoothed by a median  filter which setting can be changed (see below). One of the most useful capabilities is the choice of using post-synchronization. In this case, t=0 represents the time of transition from one specified state to another, see below. Note that post-synch can only operate once a model is run and transitions have been detected.
+
+
+![A two dimensional histogram with post-sync on using the het color map.](images/2dHistoPostSyncFigure.png)
+
+
+Useful preferences:
+
+
+* `color_ceiling` sets the ceiling for the color mapping
+* `color_dbl` enables two floors
+* `color_floor_color` is the lower floor 
+* `color_cmap` determines the color map, all matplotlib maps are supported
+* `hist_smooth_med` toggles the use of a median filter on the graph and `hist_smoothx/y` determine the widths of this filter
+* `time_dt` changes the time ticks, set to acquisition time to yield the same axis as traces while `time_nbins` changes the length of time shown. 
+* `hist_normalizeframe` will normalize the histogram to mitigate photobleaching or additional transition at different times, see Figure
+
+For post synchronization, tMAVEN will use the existing model which has identified transitions so users can essentially monitor all traces after a specific transition in a data set. Notice that N, number of traces used, will likely change since not all traces have all transitions. Small n represents the number of transitions measured not number of traces.
+
+* `sync_postsync` toggles post synchronization
+* `sync_singledwell` set to true shows only the dwell before and after transition. In other words, a false setting will also show future transitions. 
+* `sync_hmmstate_1` shows the pretransition state while `sync_hmmstate_2` shows the post transition state, input "-1" for any other state
+
+
+![The same graph as figure 10 with normalization on.](images/NormalizedFigure.png)
