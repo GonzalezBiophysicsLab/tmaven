@@ -11,5 +11,5 @@ There are several options. The gist is:
 
 # More information
 See the website: https://gonzalezbiophysicslab.github.io/tmaven/
-
+See the manual: https://gonzalezbiophysicslab.github.io/tmaven/tmanual/tMANUAL.pdf
  
