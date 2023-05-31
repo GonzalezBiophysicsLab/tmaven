@@ -46,12 +46,12 @@ website:
           
       - section: "tMANUAL"
         contents:
-          - "tmanual/web_intro.qmd"
-          - "tmanual/installing.qmd"
-          - "tmanual/navigating.qmd"
-          - "tmanual/preprocessing.qmd"
-          - "tmanual/modelling.qmd"
-          - "tmanual/plotting.qmd"
+          - "tMANUAL/web_intro.qmd"
+          - "tMANUAL/installing.qmd"
+          - "tMANUAL/navigating.qmd"
+          - "tMANUAL/preprocessing.qmd"
+          - "tMANUAL/modelling.qmd"
+          - "tMANUAL/plotting.qmd"
 
       - section: "Examples"
         contents:
