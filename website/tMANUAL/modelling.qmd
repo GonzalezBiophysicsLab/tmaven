@@ -1,0 +1,56 @@
+---
+title: "4. Modelling"
+bibliography: bibliography.bib
+---
+
+Possibly the most important feature of tMAVEN is its ability to generate models using various algorithms. Users can also use a variety of plots to assess the performance of those models. For more information on Bayesian inference and use of Hidden Markov Models (HMMs) to model single-molecule data [see @annurev-biophys]. A majority of tMAVEN's algorithms use HMMs which model a time series as transitioning between discrete states hidden by noise. 
+
+![After generating a model (see below) tMAVEN shows the idealized trajectory (black line) also called the Viterbi path in black, indicating the most likely state of a molecule at each time point](images/mlHMMex.png)
+
+
+# Navigating Between Models
+In running any of these algorithms, it may be useful to also check the log, by navigating to View/**Show Log**. The parameters of a model can be found here, for example: number of determined states, transition matrix, or state means. When generating a model, tMAVEN will only use "on" traces. Viewing the molecule table (1.2) and using the selection tool (2.1) makes toggling molecules on and off much easier. 
+
+Additionally, which model is displayed through idealized trajectories may be selected under Modeling/\textbf{Change Active}. An individual model can be removed with Modeling/**Clear Active** or all can be removed with Modeling/**Remove Models**. Models can be exported or imported as hdf5s with Modeling/**Export Active** and Modeling/**Load Active**. If users wish to update the idealized trajectories shown, either after changing pre/post times or including/excluding certain traces, they should click Modeling/**Update idealized**. Note that this will not update the existing model parameters.  
+
+#Generating Models
+There are many models to choose from under Modeling/**FRET Modeling**. One important aspect of these models is whether or not **Model Selection** is utilized. Without model selection, the user must know and input the number of states, however, if that number is unknown, some algorithms may determine it themselves (see Figure). These papers elaborate on that selection:
+For vbFRET [@bronson] and ebFRET [@van_de_Meent]
+
+
+![After selecting a model, tMAVEN prompts users to determine some parameters for the modelling algorithms that inform the prior. In most cases these settings need not be changed aside from number of states. The parameters asked for might change depending on the model type. The algorithms in tMAVEN use a Gaussian gamma function with: a as the shape parameter, b as the rate parameter of the gamma distribution parameters, beta as the Gaussian precision parameter, and alpha as the sole parameter of the Dirichlet distribution [@Bishop2006Pattern].](images/ModelingSettingsEx.jpg)
+
+When running any model, users also have to input some computational settings (see Figure). It is recommended to just leave the defaults. The number of restarts corresponds to the number of times the algorithm will restart with different initializations, in order to ensure this state does not affect the final result. The setting for the convergence determines at what relative change in cost function the algorithm will determine convergence has occurred. In case the convergence doesn't occur, the algorithm will cut off after the max iterations.
+
+
+
+# Generating a Threshold Model
+Under Modeling/FRET Modeling/**Threshold** is the simplest Model. the threshold model assigns every data point to one of two states dependent on whether it is greater than or less than a user-specified threshold. Threshold models calculate average emission values, means, variances, and fractions of the two states visible in the log.
+
+# Generating a Mixture model
+ 
+Under Modeling/FRET/**Mixtures** are various models that simply cluster the data from all traces either by **K-means** or by a Gaussian mixture model (GMM) with either a maximum likelihood (**mlGMM**) or a variational Bayesian (**vbGMM**) technique [@Bishop2006Pattern].  If the number of states is unknown, users can also choose to use model selection (see section 4.2) with variational Bayesian (**vbGMM + Model Selection**). Mixture models calculate average emission values, means, variances, and fractions of k states visible in the log.
+
+# Generating a Composite HMM Model
+Composite models under Modeling/FRET Modeling/**Composite HMMs** create a hidden Markov model (HMM) for each trace and then cluster them in various ways. This single  clustered model is then used for the idealized paths shown on each trace. 
+
+To generate the HMMs, users can choose either a maximum likelihood algorithm [**mlHMM**, @MCKINNEY20061941] or variational Bayesian algorithm [**vbHMM**, @bronson]. If the number of states is unknown, users can also choose to use model selection (see Section 4.2). 
+
+Once HMMs have been generated, they are clustered in various ways: K-means, vbGMM and Threshold which have been elaborated on in sections 4.3 and 4.4. The means, variances and fractions of the states from the clustered model can be found in the log.
+
+# Generating Global HMMs
+**vbConsensus** [variational Bayesian, @TMAVENPAPER] and **ebHMM** [empirical Bayesian, @van_de_Meent] are both consensus methods, in that they generate one HMM from the entire data set. In addition to means, variances, and fractions, the consensus methods yield a transition matrix, which may be found in the log or under **Analyze Dwell Times** as discussed in section 4.7.
+
+# Dwell Time Plots and Analysis
+Once a model is run and the number states and their means and transition matrices are calculated, tMAVEN can analyze a data set in terms of dwell times. Before analyzing, go to modeling/**Analyze Dwell Times**, select your model with **Change Active** and hit calculate (see Figure). 
+To look at a graph for the dwell of a specific state, choose the desired state under rate analysis and input whether it is expected to be a single, double, or triple exponential and hit **run**. Under results, the "Rate type" will read "Dwell Analysis", and rates and coefficients will be shown according to the form of the equation selected. For instance a double exponential will show two rates and two coefficients according to the equation $y=A_1e^{-r_1t}+A_2e^{-r_2t}$. 
+
+
+![Before hitting calculate, make sure the intended model is used by looking at "Model Type" in the top left.](images/Run\ Dwell\ AnalysisFigure.png)
+
+![A dwell time plot with the data in blue and theoretical dwell graph, from model selected as in figure 7, as a dotted black line. To change the log scale to linear, search on the left for hist$\_$log$\_$y. To toggle the model, search for model$\_$on. To change which state of the model is displayed, search for dwell$\_$state and set to the desired.](images/DwellTime\ Plot.png)
+
+ 
+Then, either navigate to plots/**Dwell Times** or simply hit **Plot** in the Dwell Times section of Run Dwell Analysis (see Figure). Now that the plot is made (see Figure), a histogram of the dwell time is displayed, an exponential decay function. The presets show the y axis on a log scale and the model, theoretical dwell, off. Alter these in the preferences on the left (see Figure). 
+
+If any series do not appear, or do not update when dwell$\_$state is changed, navigate back to modeling/analyze dwell times and hit calculate again, turn off and on the active model, or hit refresh in the top left corner of the dwell time plot (see Figure).

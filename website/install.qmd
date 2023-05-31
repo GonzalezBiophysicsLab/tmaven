@@ -6,12 +6,15 @@ title: "Installing tMAVEN"
 Consider making a separate conda enviroment for tMAVEN
 
 # Install package
-* Download from github
-* run:
+
+* Navigate to the tMAVEN repository at <https://github.com/GonzalezBiophysicsLab/tmaven>, and clone the repository.
+* Open terminal navigate to the tMAVEN folder
+* To install this package, run
 ``` bash
 pip install
 ```
-* run
+* To open tMAVEN, run
 ```bash
 tmaven
 ```
+

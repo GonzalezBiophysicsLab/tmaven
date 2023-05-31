@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>tMAVEN Documentation - Welcome to tMAVEN</title>
+<title>tMAVEN Documentation - 3. Preprocessing</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -20,24 +20,43 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1.6em;
   vertical-align: middle;
 }
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}
 </style>
 
 
-<script src="site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="site_libs/clipboard/clipboard.min.js"></script>
-<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="site_libs/quarto-search/fuse.min.js"></script>
-<script src="site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="./">
-<script src="site_libs/quarto-html/quarto.js"></script>
-<script src="site_libs/quarto-html/popper.min.js"></script>
-<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="site_libs/quarto-html/anchor.min.js"></script>
-<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -58,8 +77,9 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="../styles.css">
 </head>
 
 <body class="nav-sidebar floating">
@@ -68,7 +88,7 @@ ul.task-list li input[type="checkbox"] {
   <header id="quarto-header" class="headroom fixed-top">
   <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
     <div class="container-fluid d-flex justify-content-between">
-      <h1 class="quarto-secondary-nav-title">Welcome to tMAVEN</h1>
+      <h1 class="quarto-secondary-nav-title">3. Preprocessing</h1>
       <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
         <i class="bi bi-chevron-right"></i>
       </button>
@@ -80,11 +100,11 @@ ul.task-list li input[type="checkbox"] {
 <!-- sidebar -->
   <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation floating overflow-auto">
     <div class="pt-lg-2 mt-2 text-left sidebar-header sidebar-header-stacked">
-      <a href="./index.html" class="sidebar-logo-link">
-      <img src="./images/logo.png" alt="" class="sidebar-logo py-0 d-lg-inline d-none">
+      <a href="../index.html" class="sidebar-logo-link">
+      <img src="../images/logo.png" alt="" class="sidebar-logo py-0 d-lg-inline d-none">
       </a>
     <div class="sidebar-title mb-0 py-0">
-      <a href="./">(t)ime series (M)odeling, (A)nalysis, and (V)isualization (EN)vironment</a> 
+      <a href="../">(t)ime series (M)odeling, (A)nalysis, and (V)isualization (EN)vironment</a> 
         <div class="sidebar-tools-main tools-wide">
     <a href="https://www.biorxiv.org" title="tMAVEN paper" class="sidebar-tool px-1"><i class="bi bi-file-earmark-text"></i></a>
     <a href="https://github.com/GonzalezBiophysicsLab/tmaven" title="tMAVEN repo" class="sidebar-tool px-1"><i class="bi bi-github"></i></a>
@@ -101,12 +121,12 @@ ul.task-list li input[type="checkbox"] {
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./index.html" class="sidebar-item-text sidebar-link active">Home</a>
+  <a href="../index.html" class="sidebar-item-text sidebar-link">Home</a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./about.html" class="sidebar-item-text sidebar-link">About tMAVEN</a>
+  <a href="../about.html" class="sidebar-item-text sidebar-link">About tMAVEN</a>
   </div>
 </li>
         <li class="sidebar-item sidebar-item-section">
@@ -119,12 +139,12 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./install.html" class="sidebar-item-text sidebar-link">Installing tMAVEN</a>
+  <a href="../install.html" class="sidebar-item-text sidebar-link">Installing tMAVEN</a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./develop.html" class="sidebar-item-text sidebar-link">Develop</a>
+  <a href="../develop.html" class="sidebar-item-text sidebar-link">Develop</a>
   </div>
 </li>
       </ul>
@@ -139,32 +159,32 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./tmanual/web_intro.html" class="sidebar-item-text sidebar-link">0. Introduction</a>
+  <a href="../tmanual/web_intro.html" class="sidebar-item-text sidebar-link">0. Introduction</a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./tmanual/installing.html" class="sidebar-item-text sidebar-link">1. Installing</a>
+  <a href="../tmanual/installing.html" class="sidebar-item-text sidebar-link">1. Installing</a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./tmanual/navigating.html" class="sidebar-item-text sidebar-link">2. Navigating</a>
+  <a href="../tmanual/navigating.html" class="sidebar-item-text sidebar-link">2. Navigating</a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./tmanual/preprocessing.html" class="sidebar-item-text sidebar-link">3. Preprocessing</a>
+  <a href="../tmanual/preprocessing.html" class="sidebar-item-text sidebar-link">3. Preprocessing</a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./tmanual/modelling.html" class="sidebar-item-text sidebar-link">4. Modelling</a>
+  <a href="../tmanual/modelling.html" class="sidebar-item-text sidebar-link">4. Modelling</a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./tmanual/plotting.html" class="sidebar-item-text sidebar-link">5. Plotting</a>
+  <a href="../tmanual/plotting.html" class="sidebar-item-text sidebar-link">5. Plotting</a>
   </div>
 </li>
       </ul>
@@ -179,17 +199,17 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./examples/example_defaultprefs.html" class="sidebar-item-text sidebar-link">Lab Default Preferences</a>
+  <a href="../examples/example_defaultprefs.html" class="sidebar-item-text sidebar-link">Lab Default Preferences</a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./examples/example_smdload.html" class="sidebar-item-text sidebar-link">Load SMD</a>
+  <a href="../examples/example_smdload.html" class="sidebar-item-text sidebar-link">Load SMD</a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./examples/example_script1.html" class="sidebar-item-text sidebar-link">Scripted modeling - no GUI</a>
+  <a href="../examples/example_script1.html" class="sidebar-item-text sidebar-link">Scripted modeling - no GUI</a>
   </div>
 </li>
       </ul>
@@ -204,17 +224,17 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./info_pysmd.html" class="sidebar-item-text sidebar-link">SMD (.HDF5) data format</a>
+  <a href="../info_pysmd.html" class="sidebar-item-text sidebar-link">SMD (.HDF5) data format</a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./info_priors.html" class="sidebar-item-text sidebar-link">Information on priors</a>
+  <a href="../info_priors.html" class="sidebar-item-text sidebar-link">Information on priors</a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./extra_hmms.html" class="sidebar-item-text sidebar-link">Two-state HMMs</a>
+  <a href="../extra_hmms.html" class="sidebar-item-text sidebar-link">Two-state HMMs</a>
   </div>
 </li>
       </ul>
@@ -224,14 +244,25 @@ ul.task-list li input[type="checkbox"] {
 </nav>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#selection" id="toc-selection" class="nav-link active" data-scroll-target="#selection">Selection</a></li>
+  <li><a href="#filter-traces" id="toc-filter-traces" class="nav-link" data-scroll-target="#filter-traces">Filter Traces</a></li>
+  <li><a href="#cull" id="toc-cull" class="nav-link" data-scroll-target="#cull">Cull</a></li>
+  <li><a href="#corrections" id="toc-corrections" class="nav-link" data-scroll-target="#corrections">Corrections</a></li>
+  <li><a href="#signal-filters" id="toc-signal-filters" class="nav-link" data-scroll-target="#signal-filters">Signal Filters</a></li>
+  <li><a href="#photobleaching" id="toc-photobleaching" class="nav-link" data-scroll-target="#photobleaching">Photobleaching</a></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title d-none d-lg-block">Welcome to tMAVEN</h1>
+<h1 class="title d-none d-lg-block">3. Preprocessing</h1>
 </div>
 
 
@@ -246,12 +277,69 @@ ul.task-list li input[type="checkbox"] {
 
 </header>
 
-<p>Learn how use the tMAVEN modeling, analysis, and visualization environment</p>
-<p><img src="images/tmaven_screenshot.png" class="img-fluid"></p>
+<!-- %    The most basic part of trace picking is determining which traces are serviceable and which blocks of those traces are useful.  -->
+<p>The tMAVEN tools allow users to skip a lot of the painful preprocessing by culling bad traces, reordering traces by viability, and adjusting the presentation of those traces without altering the raw data, all of which makes data sets easier to process. These features can be found under “tools”, and all should be considered before trace picking to optimize the process.</p>
+<section id="selection" class="level1">
+<h1>Selection</h1>
+<p>Before going through traces users should navigate to tools/ selection/<strong>order by/cross-correlation</strong> to order traces by cross-correlation since good FRET data corresponds to cross correlated jumps of the donor and acceptor emissions. Notice also the options to <strong>order by</strong> and <strong>Turn on/off</strong> by class. One of the greatest strengths of tMAVEN is the ease of classifying and viewing traces with the molecule table (refer to section 1.2). The power to classify traces greatly enhances use of the algorithms discussed in section 4 by the ease with which one may experiment with inclusion of groups of traces. In this case the user is not forced to go through the whole data set repeatedly. <!-- %The reasons to classify traces are (xyz) --></p>
+</section>
+<section id="filter-traces" class="level1">
+<h1>Filter Traces</h1>
+<p>The <strong>Filter Traces</strong> command, found under tools, allows the user to filter traces by signal to background ratio (SBR). An algorithm that identifies photobleaching (see 3.6) is used to determine the parameters of background. Filter Traces then sorts traces by SBR and allows the user to classify or cull those groups.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/FilterTracesGraphic2.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">A graph like this is generated once calculate is hit. The actual culling/classifying is not completed until the user hits process (see figure 3). The graph enables the user a comprehensive view of their data set</figcaption><p></p>
+</figure>
+</div>
+<p>Culling in Filter Traces:</p>
+<p><img src="images/FilterTracesProcess.png" class="img-fluid"></p>
+<p>Once calculate is hit and the graph is made, the user can choose what to do with each type of trace (figure 3): ones with low SBR and bleaching, ones with high SBR and bleaching, ones with low SBR and no bleaching, ones with high SBR and no bleaching, and dead traces (traces that bleach before the “minimum frames dead”). Users can repeat the process of filtering and culling until satisfied.</p>
+</section>
+<section id="cull" class="level1">
+<h1>Cull</h1>
+<p>The <strong>Cull</strong> function under tools is relatively intuitive and allows users to discard traces according to class or a maximum/minimum data point value. The latter functions should be used only after photobleach detection (see section 3.6) lest good traces be culled. The data searched for this function includes only Emissions and not E<span class="math inline">\(_{FRET}\)</span> values.</p>
+</section>
+<section id="corrections" class="level1">
+<h1>Corrections</h1>
+<p>In this group there are many useful tools such as <strong>bleedthrough</strong>, <strong>gamma</strong>, and <strong>background correction</strong>. As discussed earlier, the actual data is not altered. The program stores a copy of the given data, and the copy is altered by corrections and displayed. For this reason, the corrections should be applied just once for each time a data set is loaded into tMAVEN.</p>
+<ul>
+<li>[Bleedthrough corrections] The default bleedthrough correction is set to 5% and can be adjusted in preferences under <code>correction.bleedthrough</code>.</li>
+<li>[Gamma Corrections] The default gamma correction is set to 1 and can be adjusted in preferences under <code>correction.gamma</code>.</li>
+<li>[Background] Background is determined for each trace by the last x frames, alterable in preferences under <code>correction.backgroundframes</code>, and subtracted from the red emission value.</li>
+</ul>
+<p>\end{description}</p>
+</section>
+<section id="signal-filters" class="level1">
+<h1>Signal Filters</h1>
+<p>Also found under tools/corrections are various signal filters that can make traces much easier to read. All smooth the graphs according to different methods, making the E<span class="math inline">\(_{FRET}\)</span> states easier to discern. The filters are found under Tools/Corrections/<strong>Signal Filters</strong>, and can be removed by resetting corrections under corrections/<strong>reset</strong>. Reset corrections before switching between signal filters. The width of the filter window’s can also be adjusted in preferences by <code>correction.filterwidth</code> which is automatically set to 2. See figure 4 for a look at these filters.</p>
+<ul>
+<li>Gaussian</li>
+<li>Wiener</li>
+<li>Median</li>
+<li>8-pole Bessel</li>
+<li>Chung–Kennedy <span class="citation" data-cites="chung">(<a href="#ref-chung" role="doc-biblioref">Chung and Kennedy 1991</a>)</span></li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/tMAVEN filters Diagram.jpg" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">The visual effect of the signal filters offered by tMAVEN on the same trace (top left). The benefits of different filters and level of smoothing can be seen here. The Chung-Kennedy filter best maintains the sharp transitions while also reducing noise well. In comparison the Gaussian filter is much more rounded, which makes determining transition times harder.</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="photobleaching" class="level1">
+<h1>Photobleaching</h1>
+<p>By navigating to tools/photobleach/<strong>photobleach detection</strong>, the user can run an algorithm that checks each trace for photobleaching and cuts the trace there. Alternatively, users can hit <strong>P</strong> and cut only the trace they are looking at as was discussed in 2.3. The algorithm essentially identifies transitions by maximizing the evidence of a Gaussian between sections of data and placing transitions between those. Photobleaches are then transitions to mean 0 states.</p>
 
 
 
-</main> <!-- /main -->
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="doc-bibliography">
+<div id="ref-chung" class="csl-entry" role="doc-biblioentry">
+Chung, S. H., and R. A. Kennedy. 1991. <span>“Forward-Backward Non-Linear Filtering Technique for Extracting Small Biological Signals from Noise.”</span> <em>Journal of Neuroscience Methods</em> 40 (1): 71–86. <a href="https://doi.org/10.1016/0165-0270(91)90118-j">https://doi.org/10.1016/0165-0270(91)90118-j</a>.
+</div>
+</div></section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {

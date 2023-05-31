@@ -2,42 +2,78 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://GonzalezBiophysicsLab.github.io/tmaven/info_pysmd.html</loc>
-    <lastmod>2023-05-01T19:01:42.254Z</lastmod>
+    <lastmod>2023-05-31T22:30:03.632Z</lastmod>
   </url>
   <url>
     <loc>https://GonzalezBiophysicsLab.github.io/tmaven/info_priors.html</loc>
-    <lastmod>2023-05-01T19:01:42.490Z</lastmod>
+    <lastmod>2023-05-31T22:30:03.884Z</lastmod>
   </url>
   <url>
     <loc>https://GonzalezBiophysicsLab.github.io/tmaven/index.html</loc>
-    <lastmod>2023-05-01T19:01:42.744Z</lastmod>
+    <lastmod>2023-05-31T22:30:04.131Z</lastmod>
   </url>
   <url>
     <loc>https://GonzalezBiophysicsLab.github.io/tmaven/install.html</loc>
-    <lastmod>2023-05-01T19:01:42.975Z</lastmod>
+    <lastmod>2023-05-31T22:30:04.372Z</lastmod>
   </url>
   <url>
     <loc>https://GonzalezBiophysicsLab.github.io/tmaven/about.html</loc>
-    <lastmod>2023-05-01T19:01:43.190Z</lastmod>
+    <lastmod>2023-05-31T22:30:04.621Z</lastmod>
   </url>
   <url>
     <loc>https://GonzalezBiophysicsLab.github.io/tmaven/extra_hmms.html</loc>
-    <lastmod>2023-05-01T19:01:43.718Z</lastmod>
+    <lastmod>2023-05-31T22:30:05.030Z</lastmod>
   </url>
   <url>
     <loc>https://GonzalezBiophysicsLab.github.io/tmaven/examples/example_script1.html</loc>
-    <lastmod>2023-05-01T19:01:43.992Z</lastmod>
+    <lastmod>2023-05-31T22:30:05.288Z</lastmod>
   </url>
   <url>
     <loc>https://GonzalezBiophysicsLab.github.io/tmaven/examples/example_smdload.html</loc>
-    <lastmod>2023-05-01T19:01:44.205Z</lastmod>
+    <lastmod>2023-05-31T22:30:05.531Z</lastmod>
   </url>
   <url>
     <loc>https://GonzalezBiophysicsLab.github.io/tmaven/examples/example_defaultprefs.html</loc>
-    <lastmod>2023-05-01T19:01:44.430Z</lastmod>
+    <lastmod>2023-05-31T22:30:05.785Z</lastmod>
+  </url>
+  <url>
+    <loc>https://GonzalezBiophysicsLab.github.io/tmaven/tMANUAL/modelling.html</loc>
+    <lastmod>2023-05-31T22:30:06.149Z</lastmod>
+  </url>
+  <url>
+    <loc>https://GonzalezBiophysicsLab.github.io/tmaven/tMANUAL/navigating.html</loc>
+    <lastmod>2023-05-31T22:30:06.427Z</lastmod>
+  </url>
+  <url>
+    <loc>https://GonzalezBiophysicsLab.github.io/tmaven/tMANUAL/web_intro.html</loc>
+    <lastmod>2023-05-31T22:30:06.682Z</lastmod>
+  </url>
+  <url>
+    <loc>https://GonzalezBiophysicsLab.github.io/tmaven/tMANUAL/installing.html</loc>
+    <lastmod>2023-05-31T22:30:06.935Z</lastmod>
+  </url>
+  <url>
+    <loc>https://GonzalezBiophysicsLab.github.io/tmaven/tMANUAL/index.html</loc>
+    <lastmod>2023-05-31T22:30:07.175Z</lastmod>
+  </url>
+  <url>
+    <loc>https://GonzalezBiophysicsLab.github.io/tmaven/tMANUAL/readme.html</loc>
+    <lastmod>2023-05-31T22:30:07.428Z</lastmod>
+  </url>
+  <url>
+    <loc>https://GonzalezBiophysicsLab.github.io/tmaven/tMANUAL/references.html</loc>
+    <lastmod>2023-05-31T22:30:07.674Z</lastmod>
+  </url>
+  <url>
+    <loc>https://GonzalezBiophysicsLab.github.io/tmaven/tMANUAL/preprocessing.html</loc>
+    <lastmod>2023-05-31T22:30:07.963Z</lastmod>
+  </url>
+  <url>
+    <loc>https://GonzalezBiophysicsLab.github.io/tmaven/tMANUAL/plotting.html</loc>
+    <lastmod>2023-05-31T22:30:08.231Z</lastmod>
   </url>
   <url>
     <loc>https://GonzalezBiophysicsLab.github.io/tmaven/develop.html</loc>
-    <lastmod>2023-05-01T19:01:44.730Z</lastmod>
+    <lastmod>2023-05-31T22:30:08.536Z</lastmod>
   </url>
 </urlset>
