@@ -42,4 +42,4 @@ For post synchronization, tMAVEN will use the existing model which has identifie
 * `sync_hmmstate_1` shows the pretransition state while `sync_hmmstate_2` shows the post transition state, input "-1" for any other state
 
 
-![The same graph as figure 10 with normalization on.](images/NormalizedFigure.png)
+![The same graph as previous figure with normalization on.](images/NormalizedFigure.png)
