@@ -281,24 +281,24 @@ div.csl-indent {
 <p>The tMAVEN tools allow users to skip a lot of the painful preprocessing by culling bad traces, reordering traces by viability, and adjusting the presentation of those traces without altering the raw data, all of which makes data sets easier to process. These features can be found under “tools”, and all should be considered before trace picking to optimize the process.</p>
 <section id="selection" class="level1">
 <h1>Selection</h1>
-<p>Before going through traces users should navigate to tools/ selection/<strong>order by/cross-correlation</strong> to order traces by cross-correlation since good FRET data corresponds to cross correlated jumps of the donor and acceptor emissions. Notice also the options to <strong>order by</strong> and <strong>Turn on/off</strong> by class. One of the greatest strengths of tMAVEN is the ease of classifying and viewing traces with the molecule table (refer to section 1.2). The power to classify traces greatly enhances use of the algorithms discussed in section 4 by the ease with which one may experiment with inclusion of groups of traces. In this case the user is not forced to go through the whole data set repeatedly. <!-- %The reasons to classify traces are (xyz) --></p>
+<p>Before going through traces users should navigate to tools/ selection/<strong>order by/cross-correlation</strong> to order traces by cross-correlation since good FRET data corresponds to cross correlated jumps of the donor and acceptor emissions. Notice also the options to <strong>order by</strong> and <strong>Turn on/off</strong> by class. One of the greatest strengths of tMAVEN is the ease of classifying and viewing traces with the molecule table (refer to section 2). The power to classify traces greatly enhances use of the algorithms discussed in section 4 by the ease with which one may experiment with inclusion of groups of traces. In this case the user is not forced to go through the whole data set repeatedly. <!-- %The reasons to classify traces are (xyz) --></p>
 </section>
 <section id="filter-traces" class="level1">
 <h1>Filter Traces</h1>
-<p>The <strong>Filter Traces</strong> command, found under tools, allows the user to filter traces by signal to background ratio (SBR). An algorithm that identifies photobleaching (see 3.6) is used to determine the parameters of background. Filter Traces then sorts traces by SBR and allows the user to classify or cull those groups.</p>
+<p>The <strong>Filter Traces</strong> command, found under tools, allows the user to filter traces by signal to background ratio (SBR). An algorithm that identifies photobleaching (see section 3: Photobleaching) is used to determine the parameters of background. Filter Traces then sorts traces by SBR and allows the user to classify or cull those groups.</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="images/FilterTracesGraphic2.png" class="img-fluid figure-img"></p>
-<p></p><figcaption class="figure-caption">A graph like this is generated once calculate is hit. The actual culling/classifying is not completed until the user hits process (see figure 3). The graph enables the user a comprehensive view of their data set</figcaption><p></p>
+<p></p><figcaption class="figure-caption">A graph like this is generated once calculate is hit. The actual culling/classifying is not completed until the user hits process (see next figure). The graph enables the user a comprehensive view of their data set</figcaption><p></p>
 </figure>
 </div>
 <p>Culling in Filter Traces:</p>
 <p><img src="images/FilterTracesProcess.png" class="img-fluid"></p>
-<p>Once calculate is hit and the graph is made, the user can choose what to do with each type of trace (figure 3): ones with low SBR and bleaching, ones with high SBR and bleaching, ones with low SBR and no bleaching, ones with high SBR and no bleaching, and dead traces (traces that bleach before the “minimum frames dead”). Users can repeat the process of filtering and culling until satisfied.</p>
+<p>Once calculate is hit and the graph is made, the user can choose what to do with each type of trace (previous figure): ones with low SBR and bleaching, ones with high SBR and bleaching, ones with low SBR and no bleaching, ones with high SBR and no bleaching, and dead traces (traces that bleach before the “minimum frames dead”). Users can repeat the process of filtering and culling until satisfied.</p>
 </section>
 <section id="cull" class="level1">
 <h1>Cull</h1>
-<p>The <strong>Cull</strong> function under tools is relatively intuitive and allows users to discard traces according to class or a maximum/minimum data point value. The latter functions should be used only after photobleach detection (see section 3.6) lest good traces be culled. The data searched for this function includes only Emissions and not E<span class="math inline">\(_{FRET}\)</span> values.</p>
+<p>The <strong>Cull</strong> function under tools is relatively intuitive and allows users to discard traces according to class or a maximum/minimum data point value. The latter functions should be used only after photobleach detection (see section 3: Photobleaching) lest good traces be culled. The data searched for this function includes only Emissions and not E<span class="math inline">\(_{FRET}\)</span> values.</p>
 </section>
 <section id="corrections" class="level1">
 <h1>Corrections</h1>
@@ -308,11 +308,10 @@ div.csl-indent {
 <li>[Gamma Corrections] The default gamma correction is set to 1 and can be adjusted in preferences under <code>correction.gamma</code>.</li>
 <li>[Background] Background is determined for each trace by the last x frames, alterable in preferences under <code>correction.backgroundframes</code>, and subtracted from the red emission value.</li>
 </ul>
-<p>\end{description}</p>
 </section>
 <section id="signal-filters" class="level1">
 <h1>Signal Filters</h1>
-<p>Also found under tools/corrections are various signal filters that can make traces much easier to read. All smooth the graphs according to different methods, making the E<span class="math inline">\(_{FRET}\)</span> states easier to discern. The filters are found under Tools/Corrections/<strong>Signal Filters</strong>, and can be removed by resetting corrections under corrections/<strong>reset</strong>. Reset corrections before switching between signal filters. The width of the filter window’s can also be adjusted in preferences by <code>correction.filterwidth</code> which is automatically set to 2. See figure 4 for a look at these filters.</p>
+<p>Also found under tools/corrections are various signal filters that can make traces much easier to read. All smooth the graphs according to different methods, making the E<span class="math inline">\(_{FRET}\)</span> states easier to discern. The filters are found under Tools/Corrections/<strong>Signal Filters</strong>, and can be removed by resetting corrections under corrections/<strong>reset</strong>. Reset corrections before switching between signal filters. The width of the filter window’s can also be adjusted in preferences by <code>correction.filterwidth</code> which is automatically set to 2. See figure below for a look at these filters.</p>
 <ul>
 <li>Gaussian</li>
 <li>Wiener</li>
@@ -329,7 +328,7 @@ div.csl-indent {
 </section>
 <section id="photobleaching" class="level1">
 <h1>Photobleaching</h1>
-<p>By navigating to tools/photobleach/<strong>photobleach detection</strong>, the user can run an algorithm that checks each trace for photobleaching and cuts the trace there. Alternatively, users can hit <strong>P</strong> and cut only the trace they are looking at as was discussed in 2.3. The algorithm essentially identifies transitions by maximizing the evidence of a Gaussian between sections of data and placing transitions between those. Photobleaches are then transitions to mean 0 states.</p>
+<p>By navigating to tools/photobleach/<strong>photobleach detection</strong>, the user can run an algorithm that checks each trace for photobleaching and cuts the trace there. Alternatively, users can hit <strong>P</strong> and cut only the trace they are looking at. The algorithm essentially identifies transitions by maximizing the evidence of a Gaussian between sections of data and placing transitions between those. Photobleaches are then transitions to mean 0 states.</p>
 
 
 

@@ -4,13 +4,13 @@ bibliography: bibliography.bib
 ---
 
 # Loading Data
-tMAVEN can support ASCII, SMD [@SMD , HDF5 based], raw HDF5, and SPARTAN files. Load data by hitting File/**Load**, select file type, and then the file itself. Note that class, pre/post *etc.* files may be uploaded separately. The default upload settings are for SMD files, so if using ASCII files, the upload setting must be chosen through the menus File/Load/Text files (ASCII/UTF)/Raw/[user's format]. In this section, N refers to number of traces, T to number of time points and C to number of  colors. Collation axis (0 or 1) refers to how the text separates individual traces 
+tMAVEN can support ASCII, SMD [@SMD , HDF5 based], raw HDF5, and SPARTAN files. Load data by hitting File/**Load**, select file type, and then the file itself. Note that class, pre/post *etc.* files may be uploaded separately. The default upload settings are for SMD files, so if using ASCII files, the upload setting must be chosen through the menus File/Load/Text files (ASCII/UTF)/Raw/[user's format]. In this section, N refers to number of traces, T to number of time points and C to number of  colors. Collation axis (0 or 1) refers to how the text separates individual traces. Delimiter may be selected under the io.delimiter preference e.g. CSV for comma delimited. 
 
 
 ![ASCII Upload](images/ASCIIupload.png)
 <!-- %ebfret is n*t and might be csv or tsb delimiter  -->
 
-Note that any preferences using True/False are case sensitive. There is also an **HDF5 viewer* tool under ``View'' that the user may find useful.
+Note that any preferences using True/False are case sensitive. There is also an **HDF5 viewer** tool under View/ that the user may find useful.
 
 # The Molecule Table
 Navigate to the molecule table View/**Molecule Table** or hit command T to bring up the molecule table. Notice the columns:
