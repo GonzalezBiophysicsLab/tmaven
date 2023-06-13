@@ -249,7 +249,6 @@ class molecules_widget(QTableView):
 				for i in sel:
 					self.gui.maven.data.classes[i] = new_class_ind
 			self.model.dataChanged.emit(QModelIndex(),QModelIndex())
-			return
 		# elif event.key() == Qt.Key_Tab:
 		# 	sel = self.get_selection()
 		# 	if not sel is None:
@@ -258,10 +257,20 @@ class molecules_widget(QTableView):
 		# 	self.model.dataChanged.emit(QModelIndex(),QModelIndex())
 		elif event == QKeySequence.Undo:
 			self.undo()
+			self.defocus()
 		elif event == QKeySequence.Redo:
 			self.redo()
+			self.defocus()
+		elif event.key() == Qt.Key_Escape:
+			self.defocus()
 		else:
 			super().keyPressEvent(event)
+
+	def defocus(self):
+		try:
+			self.parent().parent().setFocus()
+		except:
+			pass
 
 	def undo(self):
 		if len(self.undo) > 0:

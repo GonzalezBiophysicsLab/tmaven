@@ -153,7 +153,6 @@ class pref_model(QAbstractTableModel):
 
 		return Qt.NoItemFlags
 
-
 class prefs_widget(QWidget):
 	''' QWidget that displays a `prefs_object`
 
@@ -237,11 +236,16 @@ class prefs_widget(QWidget):
 		'''
 		if event.key() == Qt.Key_Escape:
 			if self.le_filter.hasFocus() and not str(self.le_filter.text()) == "":
-				self.le_filter.clear()
-				return
-			self.le_filter.setFocus()
-			self.proxy_view.clearSelection()
-			super().keyPressEvent(event)
+				self.refocus_le()
+			else:
+				try:
+					self.parent().parent().setFocus()
+				except:
+					pass
+			return
+			# self.le_filter.setFocus()
+			# self.proxy_view.clearSelection()
+			# super().keyPressEvent(event)
 
 		elif event.key() == Qt.Key_Return and self.le_filter.hasFocus():
 			# clicksign = 'Execute'
@@ -255,3 +259,5 @@ class prefs_widget(QWidget):
 				self.focusNextChild()
 				self.proxy_view.setCurrentIndex(self.proxy_model.index(0,1))
 				return
+		else:
+			super().keyPressEvent(event)
