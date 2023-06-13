@@ -31,7 +31,8 @@ class main_window(QMainWindow):
 
 	def initialize_widgets(self):
 		## window style
-		self.setWindowTitle('tMAVEN')
+		from .. import __version__
+		self.setWindowTitle('tMAVEN (%s)'%(str(__version__)))
 		from .stylesheet import ui_stylesheet
 		self.setStyleSheet(ui_stylesheet)
 		self.setStyle(QStyleFactory.create('Fusion')) ## WOW THIS THROWS RANDOM SEGFAULTS WHEN QUITTING?
