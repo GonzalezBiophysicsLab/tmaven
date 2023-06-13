@@ -11,4 +11,6 @@ __license__ = "GPLv3"
 __url__ = "https://github.com/GonzalezBiophysicsLab/tmaven"
 
 
+__author__ = "GonzalezBiophysicsLab"
+
 from .app import run_app,setup_maven
