@@ -309,9 +309,9 @@ class controller_modeler(object):
 
 		if not model.tmatrix is None:
 			tmatrix = model.tmatrix
-			tmstar = model.tmstar
+			norm_tmatrix = model.norm_tmatrix
 			s += 'tmatrix = \n{}\n'.format(tmatrix)
-			s += 'tmatrix normalized = \n{}\n'.format(tmstar)
+			s += 'tmatrix normalized = \n{}\n'.format(norm_tmatrix)
 
 		if not model.rates is None:
 			rate_type = model.rate_type
@@ -920,7 +920,7 @@ class controller_modeler(object):
 			pre = self.maven.data.pre_list[ii]
 			post = self.maven.data.post_list[ii]
 
-			vit = r.mean[viterbi(yi,r.mean,r.var,r.tmatrix,r.frac).astype('int')]
+			vit = r.mean[viterbi(yi,r.mean,r.var,r.norm_tmatrix,r.frac).astype('int')]
 			idealized[ii,pre:post] = vit
 			trace_level_inst = trace_model_container(r, ii)
 			trace_level_inst.idealized = idealized[ii]
@@ -932,6 +932,31 @@ class controller_modeler(object):
 		result.trace_level = trace_level
 		result.type = "kmeans + vb HMM"
 		result.ran = ran
+
+		tmatrix = np.ones((nstates,nstates))
+
+		for i in range(len(y)):
+			ii = result.ran[i]
+			vb = trace_level[str(ii)]
+			probs = 1./np.sqrt(2.*np.pi*result.var[None,:])*np.exp(-.5/result.var[None,:]*(vb.mean[:,None]-result.mean[None,:])**2.)
+			probs /= probs.sum(1)[:,None]
+		
+			for j,m in enumerate(probs.T):
+				for k,n in enumerate(probs.T):
+
+					tmatrix[j,k] += (vb.tmatrix*(m[:,None])*(n[None,:])).sum()
+
+
+		result.rate_type = "Transition Matrix"
+		result.tmatrix = tmatrix
+		norm_tmatrix = result.tmatrix.copy()
+		for i in range(norm_tmatrix.shape[0]):
+			norm_tmatrix[i] /= norm_tmatrix[i].sum()
+		result.norm_tmatrix = norm_tmatrix
+		from .dwells import convert_tmatrix
+		rates = convert_tmatrix(tmatrix)
+		result.rates = rates
+		
 		result.idealize = lambda : self.idealize_fret_kmeans_viterbi(result,idealized)
 		result.idealize()
 		self.recast_rs(result)
@@ -1433,5 +1458,5 @@ class controller_modeler(object):
 		post = self.maven.data.post_list
 		for i in range(data.shape[0]):
 			if post[i]-pre[i]>=2:
-				result.chain[i,pre[i]:post[i]] = viterbi(data[i,pre[i]:post[i]],result.mean,result.var,result.tmatrix,result.frac).astype('int')
+				result.chain[i,pre[i]:post[i]] = viterbi(data[i,pre[i]:post[i]],result.mean,result.var,result.norm_tmatrix,result.frac).astype('int')
 				result.idealized[i,pre[i]:post[i]] = result.mean[result.chain[i,pre[i]:post[i]]]
