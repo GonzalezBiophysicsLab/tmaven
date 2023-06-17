@@ -93,9 +93,12 @@ def _vit_calc_omega(ln_p_x_z,ln_A,ln_ppi):
 @nb.jit(nb.int64[:](nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:,:],nb.float64[:]),nopython=True,cache=True)
 def viterbi(x,mu,var,tmatrix,ppi):
 	### v is vbhmm_result
+	tm = np.zeros_like(tmatrix)
+	for i in range(tmatrix.shape[0]):
+		tm[i] = tmatrix[i] / np.sum(tmatrix[i])
 
 	ln_p_x_z = np.log(p_normal(x,mu,var))
-	ln_A = np.log(tmatrix)
+	ln_A = np.log(tm)
 	ln_ppi = np.log(ppi)
 
 	omega,zmax = _vit_calc_omega(ln_p_x_z,ln_A,ln_ppi)
