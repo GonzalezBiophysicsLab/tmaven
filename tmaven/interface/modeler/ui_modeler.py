@@ -19,12 +19,14 @@ def build_menu(gui):
 	gui.update_idealization = lambda : update_idealization(gui)
 	gui.export_model = lambda : export(gui)
 	gui.load_model = lambda : load(gui)
+	gui.generate_report = lambda : generate_report(gui)
 	menu_modeler.addAction('Remove Models',gui.remove_models)
 	menu_modeler.addAction('Clear Active',gui.clear_model)
 	menu_modeler.addAction('Change Active',gui.change_model)
 	menu_modeler.addAction('Export Active',gui.export_model)
 	menu_modeler.addAction('Load Active',gui.load_model)
 	menu_modeler.addAction('Update Idealized',gui.update_idealization)
+	menu_modeler.addAction('Generate Report',gui.generate_report)
 
 
 	# ind = menu_modeler.addMenu('Individual (FRET)')
@@ -167,6 +169,11 @@ def remove_models(gui):
 	if success:
 		gui.maven.modeler.remove_models(indexes)
 		logger.info('Removed models {}. Activate model is now {}'.format(indexes,gui.maven.modeler._active_model_index))
+
+def generate_report(gui):
+	if len(gui.maven.modeler.models) == 0:
+		return
+	gui.maven.modeler.make_report(gui.maven.modeler.model)
 
 def export(gui):
 	if len(gui.maven.modeler.models) == 0:
