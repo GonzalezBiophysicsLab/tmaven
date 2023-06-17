@@ -52,7 +52,11 @@ class model_container(object):
 		#self.check_consistency()
 
 		if not tmatrix is None:
-			 self.rate_type = "Transition Matrix"
+			self.rate_type = "Transition Matrix"
+			tmstar = self.tmatrix.copy()
+			for i in range(tmstar.shape[0]):
+				tmstar[i] /= tmstar[i].sum()
+			self.tmstar = tmstar
 		else:
 			self.rate_type = "N/A"
 

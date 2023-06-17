@@ -309,7 +309,9 @@ class controller_modeler(object):
 
 		if not model.tmatrix is None:
 			tmatrix = model.tmatrix
+			tmstar = model.tmstar
 			s += 'tmatrix = \n{}\n'.format(tmatrix)
+			s += 'tmatrix normalized = \n{}\n'.format(tmstar)
 
 		if not model.rates is None:
 			rate_type = model.rate_type
