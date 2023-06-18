@@ -90,12 +90,19 @@ def _vit_calc_omega(ln_p_x_z,ln_A,ln_ppi):
 		# zmax[t] = np.argmax(ln_A + omega[t-1][:,None],axis=0)
 	return omega,zmax
 
+@nb.jit(nb.float64[:,:](nb.float64[:,:]),nopython=True,cache=True)
+def normalize_tmatrix(tm):
+	norm_tm = np.zeros_like(tm)
+	for i in range(tm.shape[0]):
+		norm_tm[i] = tm[i] / np.sum(tm[i])
+
+	return norm_tm
+
+
 @nb.jit(nb.int64[:](nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:,:],nb.float64[:]),nopython=True,cache=True)
 def viterbi(x,mu,var,norm_tmatrix,ppi):
 	### v is vbhmm_result
-	tm = np.zeros_like(norm_tmatrix)
-	for i in range(norm_tmatrix.shape[0]):
-		tm[i] = norm_tmatrix[i] / np.sum(norm_tmatrix[i])
+	tm = normalize_tmatrix(norm_tmatrix)
 
 	ln_p_x_z = np.log(p_normal(x,mu,var))
 	ln_A = np.log(tm)
@@ -105,3 +112,34 @@ def viterbi(x,mu,var,norm_tmatrix,ppi):
 	zhat = _vit_calc_zhat(omega,zmax)
 
 	return zhat
+
+
+
+def convert_tmatrix(tmatrix):
+
+	norm_tm = normalize_tmatrix(tmatrix)
+	if norm_tm.shape[0] > 1:
+		rates = -np.log(1.- norm_tm)/1.
+		for i in range(rates.shape[0]):
+			rates[i,i] = 0.
+	else:
+		rates = np.zeros_like(norm_tm)
+		
+	return rates
+
+def compose_tmatrix(y,result):
+	nstates = result.nstates
+	tmatrix = np.ones((nstates,nstates))
+
+	for i in range(len(y)):
+		ii = result.ran[i]
+		vb = result.trace_level[str(ii)]
+		probs = 1./np.sqrt(2.*np.pi*result.var[None,:])*np.exp(-.5/result.var[None,:]*(vb.mean[:,None]-result.mean[None,:])**2.)
+		probs /= probs.sum(1)[:,None]
+		
+		for j,m in enumerate(probs.T):
+			for k,n in enumerate(probs.T):
+				tmatrix[j,k] += (vb.tmatrix*(m[:,None])*(n[None,:])).sum()
+
+
+	return tmatrix

@@ -933,29 +933,12 @@ class controller_modeler(object):
 		result.type = "kmeans + vb HMM"
 		result.ran = ran
 
-		tmatrix = np.ones((nstates,nstates))
-
-		for i in range(len(y)):
-			ii = result.ran[i]
-			vb = trace_level[str(ii)]
-			probs = 1./np.sqrt(2.*np.pi*result.var[None,:])*np.exp(-.5/result.var[None,:]*(vb.mean[:,None]-result.mean[None,:])**2.)
-			probs /= probs.sum(1)[:,None]
-		
-			for j,m in enumerate(probs.T):
-				for k,n in enumerate(probs.T):
-
-					tmatrix[j,k] += (vb.tmatrix*(m[:,None])*(n[None,:])).sum()
-
-
 		result.rate_type = "Transition Matrix"
+		from .fxns.hmm import compose_tmatrix, normalize_tmatrix,convert_tmatrix 
+		tmatrix = compose_tmatrix(y,result)
 		result.tmatrix = tmatrix
-		norm_tmatrix = result.tmatrix.copy()
-		for i in range(norm_tmatrix.shape[0]):
-			norm_tmatrix[i] /= norm_tmatrix[i].sum()
-		result.norm_tmatrix = norm_tmatrix
-		from .dwells import convert_tmatrix
-		rates = convert_tmatrix(tmatrix)
-		result.rates = rates
+		result.norm_tmatrix = normalize_tmatrix(tmatrix)
+		result.rates = convert_tmatrix(tmatrix)
 		
 		result.idealize = lambda : self.idealize_fret_kmeans_viterbi(result,idealized)
 		result.idealize()
@@ -1019,6 +1002,14 @@ class controller_modeler(object):
 		result.trace_level = trace_level
 		result.type = "vb GMM + vb HMM"
 		result.ran = ran
+
+		result.rate_type = "Transition Matrix"
+		from .fxns.hmm import compose_tmatrix, normalize_tmatrix,convert_tmatrix 
+		tmatrix = compose_tmatrix(y,result)
+		result.tmatrix = tmatrix
+		result.norm_tmatrix = normalize_tmatrix(tmatrix)
+		result.rates = convert_tmatrix(tmatrix)
+
 		result.idealize = lambda : self.idealize_fret_gmm_viterbi(result,idealized)
 		result.idealize()
 
@@ -1097,6 +1088,14 @@ class controller_modeler(object):
 			result.trace_level = trace_level
 			result.type = "vb GMM + vb HMM"
 			result.ran = ran
+
+			result.rate_type = "Transition Matrix"
+			from .fxns.hmm import compose_tmatrix, normalize_tmatrix,convert_tmatrix 
+			tmatrix = compose_tmatrix(y,result)
+			result.tmatrix = tmatrix
+			result.norm_tmatrix = normalize_tmatrix(tmatrix)
+			result.rates = convert_tmatrix(tmatrix)
+
 			result.idealize = lambda : self.idealize_fret_gmm_viterbi(result,idealized)
 			result.idealize()
 			self.recast_rs(result)
