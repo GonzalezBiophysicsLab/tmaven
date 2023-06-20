@@ -614,6 +614,14 @@ class controller_modeler(object):
 		result.trace_level = trace_level
 		result.type = "kmeans + ml HMM"
 		result.ran = ran
+
+		result.rate_type = "Transition Matrix"
+		from .fxns.hmm import compose_tmatrix, normalize_tmatrix,convert_tmatrix 
+		tmatrix = compose_tmatrix(y,result)
+		result.tmatrix = tmatrix
+		result.norm_tmatrix = normalize_tmatrix(tmatrix)
+		result.rates = convert_tmatrix(tmatrix)
+
 		result.idealize = lambda : self.idealize_fret_kmeans_viterbi(result,idealized)
 		result.idealize()
 		self.recast_rs(result)
