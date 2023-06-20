@@ -180,6 +180,7 @@ class main_window(QMainWindow):
 		self.menu_plots.addAction('FRET Hist 1D',lambda : popplot_container(self,self.maven.plots.fret_hist1d))
 		self.menu_plots.addAction('FRET Hist 2D',lambda : popplot_container(self,self.maven.plots.fret_hist2d))
 		self.menu_plots.addAction('FRET TDP',lambda : popplot_container(self,self.maven.plots.fret_tdp))
+		self.menu_plots.addAction('Transition Prob Hist', lambda: popplot_container(self,self.maven.plots.tm_hist))
 		self.menu_plots.addAction('vb Model States',lambda : popplot_container(self,self.maven.plots.model_vbstates))
 		self.menu_plots.addAction('Dwell Times',lambda : popplot_container(self,self.maven.plots.survival_dwell))
 

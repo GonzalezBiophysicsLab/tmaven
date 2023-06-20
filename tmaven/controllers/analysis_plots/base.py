@@ -146,7 +146,7 @@ class controller_base_analysisplot(object):
 		if self.maven.modeler.model is None:
 			return None
 		return self.maven.modeler.model.chain.copy()
-
+	
 	def devicePixelRatio(self):
 		## maybe look this up from the figure?
 		return 1.
