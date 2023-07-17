@@ -10,7 +10,7 @@
   </url>
   <url>
     <loc>https://GonzalezBiophysicsLab.github.io/tmaven/index.html</loc>
-    <lastmod>2023-06-21T19:10:41.382Z</lastmod>
+    <lastmod>2023-07-17T18:19:06.060Z</lastmod>
   </url>
   <url>
     <loc>https://GonzalezBiophysicsLab.github.io/tmaven/install.html</loc>
@@ -26,15 +26,15 @@
   </url>
   <url>
     <loc>https://GonzalezBiophysicsLab.github.io/tmaven/examples/example_script1.html</loc>
-    <lastmod>2023-06-21T19:10:42.641Z</lastmod>
+    <lastmod>2023-07-17T18:13:00.587Z</lastmod>
   </url>
   <url>
     <loc>https://GonzalezBiophysicsLab.github.io/tmaven/examples/example_smdload.html</loc>
-    <lastmod>2023-06-21T19:10:42.907Z</lastmod>
+    <lastmod>2023-07-17T18:13:02.136Z</lastmod>
   </url>
   <url>
     <loc>https://GonzalezBiophysicsLab.github.io/tmaven/examples/example_defaultprefs.html</loc>
-    <lastmod>2023-06-21T19:10:43.184Z</lastmod>
+    <lastmod>2023-07-17T18:13:08.725Z</lastmod>
   </url>
   <url>
     <loc>https://GonzalezBiophysicsLab.github.io/tmaven/tmanual/modelling.html</loc>
@@ -42,7 +42,7 @@
   </url>
   <url>
     <loc>https://GonzalezBiophysicsLab.github.io/tmaven/tmanual/navigating.html</loc>
-    <lastmod>2023-06-21T19:10:43.930Z</lastmod>
+    <lastmod>2023-07-17T18:03:56.134Z</lastmod>
   </url>
   <url>
     <loc>https://GonzalezBiophysicsLab.github.io/tmaven/tmanual/web_intro.html</loc>
@@ -75,5 +75,13 @@
   <url>
     <loc>https://GonzalezBiophysicsLab.github.io/tmaven/develop.html</loc>
     <lastmod>2023-06-21T19:10:46.158Z</lastmod>
+  </url>
+  <url>
+    <loc>https://GonzalezBiophysicsLab.github.io/tmaven/examples/example_rastergramplot.html</loc>
+    <lastmod>2023-07-17T18:19:33.702Z</lastmod>
+  </url>
+  <url>
+    <loc>https://GonzalezBiophysicsLab.github.io/tmaven/examples/example_entropyplot.html</loc>
+    <lastmod>2023-07-17T18:33:38.478Z</lastmod>
   </url>
 </urlset>

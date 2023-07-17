@@ -1,6 +1,6 @@
 project:
   type: website
-  output-dir: "../docs"
+  output-dir: "../"
 
 website:
   title: "tMAVEN Documentation"
@@ -58,6 +58,8 @@ website:
           - "examples/example_defaultprefs.qmd"
           - "examples/example_smdload.qmd"
           - "examples/example_script1.qmd"
+          - "examples/example_rastergramplot.qmd"
+          - "examples/example_entropyplot.qmd"
 
       - section: "Information"
         contents:

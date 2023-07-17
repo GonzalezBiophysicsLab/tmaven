@@ -1,9 +1,0 @@
-# Preface {.unnumbered}
-
-tMANUAL is a guide to using tMAVEN.
-
-For more information visit:
-
-* [Website] <https://gonzalezbiophysicslab.github.io/tmaven/>
-* [Github] <https://github.com/GonzalezBiophysicsLab/tmaven>
-

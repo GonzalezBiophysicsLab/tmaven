@@ -1,0 +1,58 @@
+---
+title: "Plot Rastergram"
+---
+
+Here's a full script that you can use to plot the (ordered) set of all events in your trajectories. For instance, if you have a three state model, where `state 0` is unbound, and `state 1` and `state 2` are bound but different conformations, you can change the `inds` variable (line 3, below) to show when `state 1`  and `state 2` are happening.
+
+``` python
+inds = [1,2]
+```
+
+Note that you *must* have a model first. In general, you should save this as a `.py` file, and use the `Scripts` >> `Run Scripts` menu option to run that file. You can edit it as you go if you want to change something, and then re-run it. Note that it use's the current activate model for the calculation.
+
+Save the code below in a file as `plot_rastergram.py`
+
+![](../images/rastergram.png)
+
+``` python
+import numpy as np
+import matplotlib.pyplot as plt
+
+inds = [0,]
+
+m = maven.modeler.model
+nt = maven.data.nt
+nk = m.nstates
+kb = 1.
+
+vits = m.chain
+nmol,nt = vits.shape
+
+pre = maven.data.pre_list
+post = maven.data.post_list
+
+data = np.zeros((nmol,nt)) + np.nan
+for i in range(nmol):
+	if post[i]-pre[i] > 1:
+		data[i,0:post[i]-pre[i]] = np.isin(vits[i][pre[i]:post[i]],inds).astype('float')
+
+
+first = np.nanargmax(data,axis=1)
+order = first.argsort()
+data = data[order]
+
+dt = maven.prefs['plot.time_dt']
+desc = m.description()
+desc = desc.split('] ')[1]
+desc = ''.join(desc.split(' -')[:-1])
+
+fig,ax = plt.subplots(1,figsize=(3,3))
+ax.pcolormesh(np.arange(nt)*dt,np.arange(nmol),data,cmap='Greys')
+ax.set_ylabel('Molecules')
+ax.set_yticks(())
+ax.set_xlabel('Time (s)')
+ax.set_title(desc)
+fig.tight_layout()
+plt.show()
+
+```

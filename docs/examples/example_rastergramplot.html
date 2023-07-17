@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>tMAVEN Documentation - Load SMD</title>
+<title>tMAVEN Documentation - Plot Rastergram</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -131,7 +131,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   <header id="quarto-header" class="headroom fixed-top">
   <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
     <div class="container-fluid d-flex justify-content-between">
-      <h1 class="quarto-secondary-nav-title">Load SMD</h1>
+      <h1 class="quarto-secondary-nav-title">Plot Rastergram</h1>
       <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
         <i class="bi bi-chevron-right"></i>
       </button>
@@ -247,7 +247,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../examples/example_smdload.html" class="sidebar-item-text sidebar-link active">Load SMD</a>
+  <a href="../examples/example_smdload.html" class="sidebar-item-text sidebar-link">Load SMD</a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -257,7 +257,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../examples/example_rastergramplot.html" class="sidebar-item-text sidebar-link">Plot Rastergram</a>
+  <a href="../examples/example_rastergramplot.html" class="sidebar-item-text sidebar-link active">Plot Rastergram</a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -304,7 +304,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title d-none d-lg-block">Load SMD</h1>
+<h1 class="title d-none d-lg-block">Plot Rastergram</h1>
 </div>
 
 
@@ -319,8 +319,50 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 </header>
 
-<p>Here’s a code example</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>maven.io.load_smdtmaven_hdf5(<span class="st">'./docs/examples/example_smd.hdf5'</span>,<span class="st">'L1-tRNA'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Here’s a full script that you can use to plot the (ordered) set of all events in your trajectories. For instance, if you have a three state model, where <code>state 0</code> is unbound, and <code>state 1</code> and <code>state 2</code> are bound but different conformations, you can change the <code>inds</code> variable (line 3, below) to show when <code>state 1</code> and <code>state 2</code> are happening.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>inds <span class="op">=</span> [<span class="dv">1</span>,<span class="dv">2</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Note that you <em>must</em> have a model first. In general, you should save this as a <code>.py</code> file, and use the <code>Scripts</code> &gt;&gt; <code>Run Scripts</code> menu option to run that file. You can edit it as you go if you want to change something, and then re-run it. Note that it use’s the current activate model for the calculation.</p>
+<p>Save the code below in a file as <code>plot_rastergram.py</code></p>
+<p><img src="../images/rastergram.png" class="img-fluid"></p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>inds <span class="op">=</span> [<span class="dv">0</span>,]</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>m <span class="op">=</span> maven.modeler.model</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>nt <span class="op">=</span> maven.data.nt</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>nk <span class="op">=</span> m.nstates</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>kb <span class="op">=</span> <span class="fl">1.</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>vits <span class="op">=</span> m.chain</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>nmol,nt <span class="op">=</span> vits.shape</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>pre <span class="op">=</span> maven.data.pre_list</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>post <span class="op">=</span> maven.data.post_list</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> np.zeros((nmol,nt)) <span class="op">+</span> np.nan</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(nmol):</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> post[i]<span class="op">-</span>pre[i] <span class="op">&gt;</span> <span class="dv">1</span>:</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>        data[i,<span class="dv">0</span>:post[i]<span class="op">-</span>pre[i]] <span class="op">=</span> np.isin(vits[i][pre[i]:post[i]],inds).astype(<span class="st">'float'</span>)</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>first <span class="op">=</span> np.nanargmax(data,axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>order <span class="op">=</span> first.argsort()</span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> data[order]</span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>dt <span class="op">=</span> maven.prefs[<span class="st">'plot.time_dt'</span>]</span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>desc <span class="op">=</span> m.description()</span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>desc <span class="op">=</span> desc.split(<span class="st">'] '</span>)[<span class="dv">1</span>]</span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>desc <span class="op">=</span> <span class="st">''</span>.join(desc.split(<span class="st">' -'</span>)[:<span class="op">-</span><span class="dv">1</span>])</span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>fig,ax <span class="op">=</span> plt.subplots(<span class="dv">1</span>,figsize<span class="op">=</span>(<span class="dv">3</span>,<span class="dv">3</span>))</span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>ax.pcolormesh(np.arange(nt)<span class="op">*</span>dt,np.arange(nmol),data,cmap<span class="op">=</span><span class="st">'Greys'</span>)</span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">'Molecules'</span>)</span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>ax.set_yticks(())</span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">'Time (s)'</span>)</span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>ax.set_title(desc)</span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a>fig.tight_layout()</span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 
 
