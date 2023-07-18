@@ -71,6 +71,10 @@ def ml_em_hmm(x,nstates,maxiters=1000,threshold=1e-6,init_kmeans=False):
 
 	#### collect results
 	from .model_container import model_container
+
+	#getting soft counts
+	tmatrix *= len(x) 
+	
 	out = model_container(type='ml HMM',nstates=nstates,r=r,mean=mu,var=var,
 						frac=ppi,tmatrix=tmatrix,likelihood=likelihood,iteration=iteration)
 

@@ -192,7 +192,6 @@ def vb_em_hmm(x,nstates,maxiters=1000,threshold=1e-10,priors=None,init_kmeans=Fa
 	from .model_container import model_container
 	var = 1./np.exp(E_lnlam)
 	ppi = r.sum(0) / r.sum()
-	tmstar = tmatrix.copy()
 
 	priors = {'mu_prior':mu_prior,
 			  'beta_prior':beta_prior,

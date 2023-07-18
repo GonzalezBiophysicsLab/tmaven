@@ -309,7 +309,9 @@ class controller_modeler(object):
 
 		if not model.tmatrix is None:
 			tmatrix = model.tmatrix
+			norm_tmatrix = model.norm_tmatrix
 			s += 'tmatrix = \n{}\n'.format(tmatrix)
+			s += 'tmatrix normalized = \n{}\n'.format(norm_tmatrix)
 
 		if not model.rates is None:
 			rate_type = model.rate_type
@@ -612,6 +614,14 @@ class controller_modeler(object):
 		result.trace_level = trace_level
 		result.type = "kmeans + ml HMM"
 		result.ran = ran
+
+		result.rate_type = "Transition Matrix"
+		from .fxns.hmm import compose_tmatrix, normalize_tmatrix,convert_tmatrix 
+		tmatrix = compose_tmatrix(y,result)
+		result.tmatrix = tmatrix
+		result.norm_tmatrix = normalize_tmatrix(tmatrix)
+		result.rates = convert_tmatrix(tmatrix)
+
 		result.idealize = lambda : self.idealize_fret_kmeans_viterbi(result,idealized)
 		result.idealize()
 		self.recast_rs(result)
@@ -918,7 +928,7 @@ class controller_modeler(object):
 			pre = self.maven.data.pre_list[ii]
 			post = self.maven.data.post_list[ii]
 
-			vit = r.mean[viterbi(yi,r.mean,r.var,r.tmatrix,r.frac).astype('int')]
+			vit = r.mean[viterbi(yi,r.mean,r.var,r.norm_tmatrix,r.frac).astype('int')]
 			idealized[ii,pre:post] = vit
 			trace_level_inst = trace_model_container(r, ii)
 			trace_level_inst.idealized = idealized[ii]
@@ -930,6 +940,14 @@ class controller_modeler(object):
 		result.trace_level = trace_level
 		result.type = "kmeans + vb HMM"
 		result.ran = ran
+
+		result.rate_type = "Transition Matrix"
+		from .fxns.hmm import compose_tmatrix, normalize_tmatrix,convert_tmatrix 
+		tmatrix = compose_tmatrix(y,result)
+		result.tmatrix = tmatrix
+		result.norm_tmatrix = normalize_tmatrix(tmatrix)
+		result.rates = convert_tmatrix(tmatrix)
+		
 		result.idealize = lambda : self.idealize_fret_kmeans_viterbi(result,idealized)
 		result.idealize()
 		self.recast_rs(result)
@@ -992,6 +1010,14 @@ class controller_modeler(object):
 		result.trace_level = trace_level
 		result.type = "vb GMM + vb HMM"
 		result.ran = ran
+
+		result.rate_type = "Transition Matrix"
+		from .fxns.hmm import compose_tmatrix, normalize_tmatrix,convert_tmatrix 
+		tmatrix = compose_tmatrix(y,result)
+		result.tmatrix = tmatrix
+		result.norm_tmatrix = normalize_tmatrix(tmatrix)
+		result.rates = convert_tmatrix(tmatrix)
+
 		result.idealize = lambda : self.idealize_fret_gmm_viterbi(result,idealized)
 		result.idealize()
 
@@ -1070,6 +1096,14 @@ class controller_modeler(object):
 			result.trace_level = trace_level
 			result.type = "vb GMM + vb HMM"
 			result.ran = ran
+
+			result.rate_type = "Transition Matrix"
+			from .fxns.hmm import compose_tmatrix, normalize_tmatrix,convert_tmatrix 
+			tmatrix = compose_tmatrix(y,result)
+			result.tmatrix = tmatrix
+			result.norm_tmatrix = normalize_tmatrix(tmatrix)
+			result.rates = convert_tmatrix(tmatrix)
+
 			result.idealize = lambda : self.idealize_fret_gmm_viterbi(result,idealized)
 			result.idealize()
 			self.recast_rs(result)
@@ -1431,5 +1465,5 @@ class controller_modeler(object):
 		post = self.maven.data.post_list
 		for i in range(data.shape[0]):
 			if post[i]-pre[i]>=2:
-				result.chain[i,pre[i]:post[i]] = viterbi(data[i,pre[i]:post[i]],result.mean,result.var,result.tmatrix,result.frac).astype('int')
+				result.chain[i,pre[i]:post[i]] = viterbi(data[i,pre[i]:post[i]],result.mean,result.var,result.norm_tmatrix,result.frac).astype('int')
 				result.idealized[i,pre[i]:post[i]] = result.mean[result.chain[i,pre[i]:post[i]]]

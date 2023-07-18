@@ -628,9 +628,6 @@ def eb_em_hmm(x,nstates,maxiters=1000,nrestarts=1,threshold=1e-10,priors=None,nc
 	frac = E_z.sum(0)/E_z.sum()
 	#frac = pi/(pi.sum())
 
-	from .dwells import convert_tmatrix
-	rates = convert_tmatrix(tmatrix)
-
 	priors = {'mu_prior':mu_prior,
 			  'beta_prior':beta_prior,
 			  'a_prior':a_prior,
@@ -642,7 +639,7 @@ def eb_em_hmm(x,nstates,maxiters=1000,nrestarts=1,threshold=1e-10,priors=None,nc
 
 	out = model_container(type='eb HMM',
 						nstates=nstates,mean=mu,var=var,frac=frac,
-						tmatrix=tmatrix,rates=rates,
+						tmatrix=tmatrix,
 						likelihood=likelihood,
 						iteration=iteration,a=a,b=b,beta=beta, pi=pi,
 						priors=priors)

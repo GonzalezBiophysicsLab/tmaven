@@ -29,19 +29,6 @@ def calculate_dwells(result):
     result.dwells = dwell_list
     logger.info('Dwell time calculated')
 
-def convert_tmatrix(tmatrix):
-    tmstar = tmatrix.copy()
-    for i in range(tmstar.shape[0]):
-    	tmstar[i] /= tmstar[i].sum()
-
-    if tmstar.shape[0] > 1:
-    	rates = -np.log(1.-tmstar)/1.
-    	for i in range(rates.shape[0]):
-    		rates[i,i] = 0.
-    else:
-    	rates = np.zeros_like(tmstar)
-
-    return rates
 
 @nb.njit
 def survival(dist):

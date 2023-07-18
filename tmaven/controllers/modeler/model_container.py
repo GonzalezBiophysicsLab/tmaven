@@ -50,9 +50,11 @@ class model_container(object):
 		self.dwells = dwells
 
 		#self.check_consistency()
-
+		from .fxns.hmm import normalize_tmatrix, convert_tmatrix
 		if not tmatrix is None:
-			 self.rate_type = "Transition Matrix"
+			self.rate_type = "Transition Matrix"
+			self.norm_tmatrix = normalize_tmatrix(tmatrix)
+			self.rates = convert_tmatrix(self.norm_tmatrix)
 		else:
 			self.rate_type = "N/A"
 

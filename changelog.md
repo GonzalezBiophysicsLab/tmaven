@@ -2,17 +2,20 @@
 
 ## Unreleased
 
+* Nothing yet
+
+## 0.1.2
 ### Added
 
-* Nothing yet
+* Adds transition matrix plot
+* Adds composite models 
+* Adds model report generation
 
 ### Changed
 
-* Nothing yet
+* model.tmatrix changes from counts to probability
+* updates website documentation
 
-### Removed
-
-* Nothing yet
 
 ## 0.1.1
 

@@ -286,9 +286,6 @@ def consensus_vb_em_hmm(x,nstates,maxiters=1000,threshold=1e-10,nrestarts=1,prio
 	ppi /= ppi.sum()
 	var = 1./np.exp(E_lnlam)
 
-	from .dwells import convert_tmatrix
-	rates = convert_tmatrix(tmatrix)
-
 	new_r = []
 	for i in range(xind[-1]+1):
 		ind = xind==i
@@ -304,7 +301,7 @@ def consensus_vb_em_hmm(x,nstates,maxiters=1000,threshold=1e-10,nrestarts=1,prio
 
 	out = model_container(type='vb Consensus HMM',
 						  nstates = nstates,mean=mu,var=var,frac=ppi,
-						  tmatrix=tmatrix,rates=rates,
+						  tmatrix=tmatrix,
 						  likelihood=likelihood,
 						  iteration=iteration, r=new_r,a=a,b=b,beta=beta, pi=pi,
 						  E_lnlam=E_lnlam,E_lnpi=E_lnpi,E_lntm=E_lntm,
