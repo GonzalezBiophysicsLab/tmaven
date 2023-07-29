@@ -629,6 +629,9 @@ class fret_canvas(FigureCanvas):
 			* Middle click - calculate the photobleaching point `fret_plot.photobleaching.photobleaching.get_point_pbtime`
 
 		'''
+		if self.gui.flag_locked:
+			return
+		
 		if (event.inaxes == self.ax[0,0]) or (event.inaxes == self.ax[1,0]):
 			try:
 				if event.button == 3 and self.toolbar.mode == "": ## Right click - set photobleaching point
