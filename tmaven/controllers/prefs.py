@@ -45,7 +45,7 @@ class prefs_object(dict):
 				success = True
 
 			s = 'changed' if success else 'failed'
-			logger.info('preference %s %s:%s:%s --> %s:%s:%s'%(s,key,dk.dtype,dk.val,key,type(val),val))
+			# logger.info('preference %s %s:%s:%s --> %s:%s:%s'%(s,key,dk.dtype,dk.val,key,type(val),val))
 			if success:
 				pi = pref_item(key,val,type(val))
 				dict.__setitem__(self,key,pi)

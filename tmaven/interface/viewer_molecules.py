@@ -56,7 +56,7 @@ class molecules_model(QAbstractTableModel):
 		self.gui = gui
 
 	def columnCount(self, index):
-		return 5
+		return 6
 
 	def rowCount(self,index):
 		return self.gui.maven.data.nmol
@@ -64,12 +64,12 @@ class molecules_model(QAbstractTableModel):
 	def headerData(self,section,orientation,role):
 		if role == Qt.DisplayRole:
 			if orientation == Qt.Horizontal:
-				return ['Class','On/Off','Pre','Post','Source'][section]
+				return ['Class','On/Off','Pre','Post','Data\nindex','Source\nindex'][section]
 			return section
 		elif role == Qt.TextAlignmentRole:
 			if orientation == Qt.Horizontal:
-				if section == 4:
-					return Qt.AlignVCenter | Qt.AlignLeft
+				if section == 4 or section == 5:
+					return Qt.AlignVCenter #| Qt.AlignLeft
 				else:
 					return Qt.AlignCenter
 			if orientation == Qt.Vertical:
@@ -81,8 +81,8 @@ class molecules_model(QAbstractTableModel):
 			return QVariant()
 
 		if role == Qt.TextAlignmentRole:
-			if index.column() == 4:
-				return Qt.AlignVCenter | Qt.AlignLeft
+			if index.column() == 4 or index.column() == 5:
+				return Qt.AlignVCenter #| Qt.AlignLeft
 			else:
 				return Qt.AlignCenter
 			return
@@ -115,7 +115,11 @@ class molecules_model(QAbstractTableModel):
 
 		if column == 4:
 			if role == Qt.DisplayRole:
-				return str(self.gui.maven.smd.source_names[self.gui.maven.smd.source_index[row]])
+				return str(self.gui.maven.data.data_index[row])
+		if column == 5:
+			if role == Qt.DisplayRole:
+				return str(self.gui.maven.smd.source_index[row])
+				# return str(self.gui.maven.smd.source_names[self.gui.maven.smd.source_index[row]])
 
 		if column == 2:
 			if role == Qt.DisplayRole:
@@ -159,6 +163,8 @@ class molecules_model(QAbstractTableModel):
 		elif index.column() == 1:
 			return Qt.ItemIsUserCheckable | Qt.ItemIsEnabled  | Qt.ItemIsSelectable
 		elif index.column() == 4:
+			return Qt.ItemIsSelectable | Qt.ItemIsEnabled
+		elif index.column() == 5:
 			return Qt.ItemIsSelectable | Qt.ItemIsEnabled
 		elif index.column() == 2:
 			return Qt.ItemIsSelectable | Qt.ItemIsEnabled
@@ -230,7 +236,9 @@ class molecules_widget(QTableView):
 		# self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 		# self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 		self.setSizePolicy(QSizePolicy.MinimumExpanding,QSizePolicy.MinimumExpanding)
-		self.resizeColumnsToContents()
+		# self.resizeColumnsToContents()
+		for i in range(self.model.columnCount(0)):
+			self.setColumnWidth(i,40)
 
 	def get_selection(self):
 		all = np.array([])
