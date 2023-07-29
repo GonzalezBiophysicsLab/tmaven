@@ -5,7 +5,7 @@ logger = logging.getLogger("tmaven")
 
 from PyQt5.QtWidgets import QApplication,QMainWindow,QDesktopWidget,QLabel,QMessageBox,QShortcut,QPushButton,QMenu,QAction,QStyleFactory,QSlider, QSizePolicy, QTreeWidget, QTreeWidgetItem, QDockWidget, QLabel, QHBoxLayout, QPlainTextEdit
 from PyQt5.QtGui import QIcon, QKeySequence, QPalette, QColor
-from PyQt5.QtCore import Qt, pyqtSignal, QTimer
+from PyQt5.QtCore import Qt, pyqtSignal, QTimer, QSize
 import matplotlib
 matplotlib.use('Qt5Agg') ## forces Qt5 early on...
 
@@ -47,6 +47,16 @@ class main_window(QMainWindow):
 		from PyQt5.Qt import QFont,QFontDatabase
 		monospace = QFont(QFontDatabase.systemFont(QFontDatabase.FixedFont))
 		self.label_molnum.setFont(monospace)
+		
+		## lock
+		self.flag_locked = False
+		self.button_lock = QPushButton()
+		# from .stylesheet import slider_style_sheet
+		# self.button_lock.setStyleSheet(slider_style_sheet)
+		self.button_lock.setCheckable(True)
+		self.button_lock.setIconSize(QSize(16, 16))
+		self.button_lock.clicked.connect(self.toggle_lock)
+		self.update_lock_icon()
 
 		#### molecule slider
 		self.slider_select = QSlider(Qt.Horizontal)
@@ -98,6 +108,7 @@ class main_window(QMainWindow):
 		hbox = QHBoxLayout()
 		hbox.addWidget(self.slider_select)
 		hbox.addWidget(self.label_molnum)
+		hbox.addWidget(self.button_lock)
 		self.qw.setLayout(hbox)
 		# self.vbox.addStretch(1)
 		self.vbox.addWidget(self.plot_container)
@@ -115,6 +126,17 @@ class main_window(QMainWindow):
 		self.maven.prefs.emit_changed = lambda : self.pref_edited.emit()
 		self.data_update.connect(self.proc_data_update)
 		self.maven.emit_data_update()
+
+
+	def toggle_lock(self):
+		self.flag_locked = not self.flag_locked
+		self.update_lock_icon()
+		
+	def update_lock_icon(self):
+		if self.flag_locked:
+			self.button_lock.setIcon(load_icon('locked.png'))
+		else:
+			self.button_lock.setIcon(load_icon('unlocked.png'))
 
 	def reset_menus(self):
 		from . import ui_io, ui_scripts, ui_cull, ui_corrections, ui_selection, ui_photobleaching, ui_trace_filter, ui_experimental
@@ -209,32 +231,13 @@ class main_window(QMainWindow):
 		kk = event.key()
 		from PyQt5.QtCore import Qt
 
-		if kk in [Qt.Key_BracketLeft,Qt.Key_BracketRight]:
-			if kk == Qt.Key_BracketLeft:
-				if self.maven.data.post_list[self.index] > 0:
-					self.maven.data.post_list[self.index] -= 1
-			else:
-				if self.maven.data.post_list[self.index] < self.maven.data.ntime:
-					self.maven.data.post_list[self.index] += 1
-			self.plot_container.plot.softredraw()
-		# elif kk == Qt.Key_Space:
-		# 	self.maven.data.flag_ons[self.index] = not self.maven.data.flag_ons[self.index]
-		elif kk == Qt.Key_R:
-			self.maven.data.pre_list[self.index] = 0
-			self.maven.data.post_list[self.index] = self.maven.data.ntime
-			self.plot_container.plot.softredraw()
-		elif kk == Qt.Key_G:
+		
+		if kk == Qt.Key_G:
 			try:
 				self.plot_container.plot.ax[0,0].grid()
 				self.plot_container.plot.ax[1,0].grid()
 				self.plot_container.plot.softredraw()
 				self.plot_container.plot.update_blits()
-			except:
-				pass
-		elif kk == Qt.Key_P:
-			try:
-				self.maven.photobleaching.calc_single_photobleach(self.index)
-				self.plot_container.plot.softredraw()
 			except:
 				pass
 		elif kk in [Qt.Key_Right, Qt.Key_Down]:
@@ -247,7 +250,39 @@ class main_window(QMainWindow):
 			if new_index < 0:
 				new_index = 0
 			self.change_index(new_index)
-		elif event.key() in class_keys:
+		elif kk in [Qt.Key_Minus,Qt.Key_Equal] and not self.flag_locked:
+			if kk == Qt.Key_Minus:
+				if self.maven.data.pre_list[self.index] > 0:
+					self.maven.data.pre_list[self.index] -= 1
+			else:
+				if self.maven.data.pre_list[self.index] < self.maven.data.ntime:
+					self.maven.data.pre_list[self.index] += 1
+			self.plot_container.plot.softredraw()
+		elif kk in [Qt.Key_BracketLeft,Qt.Key_BracketRight] and not self.flag_locked:
+			if kk == Qt.Key_BracketLeft:
+				if self.maven.data.post_list[self.index] > 0:
+					self.maven.data.post_list[self.index] -= 1
+			else:
+				if self.maven.data.post_list[self.index] < self.maven.data.ntime:
+					self.maven.data.post_list[self.index] += 1
+			self.plot_container.plot.softredraw()
+		# elif kk == Qt.Key_Space:
+		# 	self.maven.data.flag_ons[self.index] = not self.maven.data.flag_ons[self.index]
+		elif kk == Qt.Key_R and not self.flag_locked:
+			self.maven.data.pre_list[self.index] = 0
+			self.maven.data.post_list[self.index] = self.maven.data.ntime
+			self.plot_container.plot.softredraw()
+		elif kk == Qt.Key_C and not self.flag_locked:
+			self.maven.data.split_trace(self.index,self.maven.data.post_list[self.index])
+		elif kk == Qt.Key_V and not self.flag_locked:
+			self.change_index(self.maven.data.collect_trace(self.index))
+		elif kk == Qt.Key_P and not self.flag_locked:
+			try:
+				self.maven.photobleaching.calc_single_photobleach(self.index)
+				self.plot_container.plot.softredraw()
+			except:
+				pass
+		elif event.key() in class_keys and not self.flag_locked:
 			new_class_ind = class_keys[kk]
 			self.maven.data.classes[self.index] = new_class_ind
 			self.update_mol_label()
@@ -376,6 +411,7 @@ class main_window(QMainWindow):
 		self.molecules_viewer.update_theme(palette)
 		self.plot_container.update_toolbar_theme()
 		self.label_molnum.setPalette(palette)
+		self.button_lock.setPalette(palette)
 
 	def change_theme_dark(self):
 		palette = self.dark_theme()
