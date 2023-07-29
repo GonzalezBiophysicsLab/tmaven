@@ -1,6 +1,11 @@
 import numpy as np
 import numba as nb
 from math import lgamma
+from math import erf as erff
+
+@nb.vectorize(cache=True)
+def erf(x):
+        return erff(x)
 
 @nb.vectorize(cache=True)
 def gammaln(x):
@@ -119,3 +124,21 @@ def trigamma(q):
 #
 # %timeit special.psi(a)
 # %timeit psi(a)
+
+@nb.vectorize(cache=True)
+def invpsi(x):
+# Y = INVPSI(X)
+#
+# Inverse digamma (psi) function.  The digamma function is the
+# derivative of the log gamma function.  This calculates the value
+# Y > 0 for a value X such that digamma(Y) = X.
+#
+# This algorithm is from Paul Fackler: http://www4.ncsu.edu/~pfackler/
+
+    L = 1;
+    y = np.exp(x)
+    while L > 10e-8:
+        y += L*np.sign(x-psi(y))
+        L = L / 2
+
+    return y
