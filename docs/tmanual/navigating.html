@@ -211,6 +211,16 @@ div.csl-indent {
   <a href="../examples/example_script1.html" class="sidebar-item-text sidebar-link">Scripted modeling - no GUI</a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../examples/example_rastergramplot.html" class="sidebar-item-text sidebar-link">Plot Rastergram</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../examples/example_entropyplot.html" class="sidebar-item-text sidebar-link">Plot Entropy</a>
+  </div>
+</li>
       </ul>
   </li>
         <li class="sidebar-item sidebar-item-section">
@@ -275,7 +285,7 @@ div.csl-indent {
 
 <section id="loading-data" class="level1">
 <h1>Loading Data</h1>
-<p>tMAVEN can support ASCII, SMD <span class="citation" data-cites="SMD">(<a href="#ref-SMD" role="doc-biblioref">Greenfeld et al. 2015</a> , HDF5 based)</span>, raw HDF5, and SPARTAN files. Load data by hitting File/<strong>Load</strong>, select file type, and then the file itself. Note that class, pre/post <em>etc.</em> files may be uploaded separately. The default upload settings are for SMD files, so if using ASCII files, the upload setting must be chosen through the menus File/Load/Text files (ASCII/UTF)/Raw/[user’s format]. In this section, N refers to number of traces, T to number of time points and C to number of colors. Collation axis (0 or 1) refers to how the text separates individual traces. Delimiter may be selected under the io.delimiter preference e.g.&nbsp;CSV for comma delimited.</p>
+<p>tMAVEN can support ASCII, SMD <span class="citation" data-cites="SMD">(<a href="#ref-SMD" role="doc-biblioref">Greenfeld et al. 2015</a> , HDF5 based)</span>, raw HDF5, and SPARTAN files. Load data by hitting File/<strong>Load</strong>, select file type, and then the file itself. Note that class, pre/post <em>etc.</em> files may be uploaded separately. The default upload settings are for SMD format, so if using ASCII files, the upload setting must be chosen through the menus File/Load/Text files (ASCII/UTF)/Raw/[user’s format]. In this section, N refers to number of traces, T to number of time points and C to number of color channels for some N by T by C format. C,T,N is most common format such as in vbFRET <span class="citation" data-cites="bronson">(<a href="#ref-bronson" role="doc-biblioref">Bronson et al. 2009</a>)</span> and ebFRET <span class="citation" data-cites="van_de_Meent">(<a href="#ref-van_de_Meent" role="doc-biblioref">Meent, Bronson, and Gonzalez 2014</a>)</span>. Alternatively, if using <strong>Raw</strong>, users can manually alter settings for uploading under “io.” preferences: Namely, io.axis_order for which [0,1,2] corresponds to [N,T,C]. Decollate_axis (0 or 1) refers to how the text separates individual traces, and the delimiter may be inputed under io.delimiter.</p>
 <p><img src="images/ASCIIupload.png" class="img-fluid" alt="ASCII Upload"> <!-- %ebfret is n*t and might be csv or tsb delimiter  --></p>
 <p>Note that any preferences using True/False are case sensitive. There is also an <strong>HDF5 viewer</strong> tool under View/ that the user may find useful.</p>
 </section>
@@ -306,7 +316,7 @@ div.csl-indent {
 </figure>
 </div>
 <p>Most actions in tMAVEN do not alter the raw data of a trace, such as gamma and bleed-through corrections. Only cutting traces actually alters the pre and post times which can be seen in the molecule table or on the traces themselves. The user can set the post time by right clicking at the desired point on a graph or left clicking for the pre time. Notice that once a section has been cut out, it appears much fainter on the graph. Reset the pre and post times for a single trace by hitting <strong>R</strong>. Users can also use the square brackets to increase and decrease the post time by 1 point.</p>
-<p>Other tools include the <strong>pan</strong> and <strong>zoom</strong> features (see Figure). Use the zoom tool to select a section of the graph to enlarge and to allow more precise selection of pre/post time. Additionally, hit to toggle viewing subdivisions on the graph (settings for these can be altered in preferences as described earlier). Another useful tool is , which finds and cuts out photobleaching for only the trace shown. Hit <strong>P</strong> to apply this tool to the shown trace. Photobleach for all traces is also available and is discussed in section 3.5. <!-- click and right click, use zoom (inspect? tool), graph subdivisions- command g --></p>
+<p>Other tools include the <strong>pan</strong> and <strong>zoom</strong> features (see Figure). Use the zoom tool to select a section of the graph to enlarge and to allow more precise selection of pre/post time. Additionally, hit <strong>G</strong> to toggle viewing subdivisions on the graph (settings for these can be altered in preferences as described earlier). Another useful tool is <strong>single photobleach detection</strong>, which finds and cuts out photobleaching for only the trace shown. Hit <strong>P</strong> to apply this tool to the shown trace. Photobleach for all traces is also available and is discussed in section 3.5. <!-- click and right click, use zoom (inspect? tool), graph subdivisions- command g --></p>
 <p>But before any manual trace picking is done, it is highly recommended that the user employ the preprocessing tools described in section 3.</p>
 
 
@@ -314,8 +324,14 @@ div.csl-indent {
 </section>
 
 <div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="doc-bibliography">
+<div id="ref-bronson" class="csl-entry" role="doc-biblioentry">
+Bronson, J. E., Jingyi Fei, Jake M. Hofman, R. L. Gonzalez Jr, and Chris H. Wiggins. 2009. <span>“Learning Rates and States from Biophysical Time Series: A Bayesian Approach to Model Selection and Single-Molecule FRET Data.”</span> <em>Biophysical Journal</em> 97 (12): 3196–3205. <a href="https://doi.org/10.1016/j.bpj.2009.09.031">https://doi.org/10.1016/j.bpj.2009.09.031</a>.
+</div>
 <div id="ref-SMD" class="csl-entry" role="doc-biblioentry">
 Greenfeld, M., J. W. van de Meent, D. S. Pavlichin, H. Mabuchi, C. H. Wiggins, R. L. Gonzalez Jr, and D. Herschlag. 2015. <span>“Single-Molecule Dataset (SMD): A Generalized Storage Format for Raw and Processed Single-Molecule Data.”</span> <em>BMC Bioinformatics</em> 16 (3). <a href="https://doi.org/10.1186/s12859-014-0429-4">https://doi.org/10.1186/s12859-014-0429-4</a>.
+</div>
+<div id="ref-van_de_Meent" class="csl-entry" role="doc-biblioentry">
+Meent, J. W. van de, C. H. Bronson J. E.and Wiggins, and R. L. Gonzalez Jr. 2014. <span>“Empirical Bayes Methods Enable Advanced Population-Level Analyses of Single-Molecule FRET Experiments.”</span> <em>Biophysical Journal</em> 106 (6): 1327–37. <a href="https://doi.org/10.1016/j.bpj.2013.12.055">https://doi.org/10.1016/j.bpj.2013.12.055</a>.
 </div>
 </div></section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
