@@ -1373,7 +1373,7 @@ class controller_modeler(object):
 		model = self.model
 
 		if not model.tmatrix is None:
-			from .dwells import convert_tmatrix
+			from .fxns.hmm import convert_tmatrix
 			model.rates = convert_tmatrix(model.tmatrix)
 			model.rate_type = "Transition Matrix"
 		else:
