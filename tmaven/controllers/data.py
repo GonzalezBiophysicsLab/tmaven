@@ -167,7 +167,7 @@ class controller_data(object):
 		keep = self.data_index == self.data_index[ind]
 		if keep.sum() < 2:
 			logger.info('only one instance of %d(%d)'%(ind,self.data_index[ind]))
-			return
+			return ind
 		inds = np.sort(np.nonzero(keep)[0])
 		for i in range(1,inds.size):
 			self.combine_traces(inds[0],inds[inds.size-i])
