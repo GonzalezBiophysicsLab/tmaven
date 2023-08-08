@@ -4,6 +4,16 @@
 
 * Nothing yet
 
+## 0.1.3
+### Added
+* Adds lock mode
+* Adds more keyboard shortcuts 
+* Adds splitting traces
+
+### Changed
+* Updates website
+* Updates tmatrix and dwell time distribution code
+
 ## 0.1.2
 ### Added
 
