@@ -1,7 +1,6 @@
 ---
 title: "Quick Tutorial"
 resources:
-  - examples/example_smd.hdf5
   - quicktutorial.mp4
 ---
 
