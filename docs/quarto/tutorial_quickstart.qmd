@@ -6,6 +6,11 @@ resources:
 ---
 
 
-Download the [example data, here](examples/example_smd.hdf5), and then follow the steps in this video to model the data use a two-state global HMM.
+Download the [example data here](examples/example_smd.hdf5), and then follow the steps in this video to model the data using a two-state global HMM.
+
+This HDF5 file contains two smFRET datasets in the single-molecule dataset (SMD) format. They are two different smFRET signals (L1-L9 and L1-tRNA) on the same bacterial ribosome complex with deactylated tRNA$^{Phe}$ in the P-site at 25. These data are published in a recent paper [^1].
+
+[^1]: Ray, K., Kinz-Thompson, C.D., Fei, J., Wang, B., Lin, Q., Gonzalez, Jr., R.L. (2023) Entropic control of the free-energy landscape of an archetypal biomolecular machine. Proc. Natl. Acad. Sci. USA, 120(21), e2220591120. DOI: [10.1073/pnas.2220591120](https://doi.org/10.1073/pnas.2220591120).
+ 
 
 {{< video quicktutorial.mp4 >}}
