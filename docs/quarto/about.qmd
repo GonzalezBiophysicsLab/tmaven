@@ -3,6 +3,23 @@ title: 'About tMAVEN'
 toc-expand: false
 ---
 
-# Intro
-tMAVEN is a development that came out of the [Gonzalez Biophysics Lab](https://github.com/GonzalezBiophysicsLab) from the [Gonzalez lab at Columbia University](http://www.columbia.edu/cu/chemistry/groups/gonzalez/index.html) from ~2015-now
+
+tMAVEN is a program for analyzing time series data from single-molecule experiments. It is fine-tuned for single-molecule fluorescence resonance energy transfer (smFRET) experiments. The major design goals are to allow for:
+
+* extremely *fast* pre-processing 
+* perfectly reproducible figures (*e.g.*, tick locations)
+* a one-stop-shop for kinetic modeling
+* immutable data -- you only work on a copy of it!
+* power-user coding *via* scripts (see Examples pages)
+
+# Who and Where
+tMAVEN is a development that came out of the [Gonzalez Biophysics Lab](https://github.com/GonzalezBiophysicsLab) from the [Gonzalez lab at Columbia University](http://www.columbia.edu/cu/chemistry/groups/gonzalez/index.html)  from about 2015-present.
+
+
+
+# Citing tMAVEN
+If you use tMAVEN in your work, please cite the associated paper:
+
+Verma, A.R., Ray, K., Bodick, M., Kinz-Thompson, C.D., Gonzalez, Jr., R.L. (2023) *Accurately Capturing Heterogeneity in Single-molecule Experiments with tMAVEN*. In preparation. [[Link](https://www.biorxiv.org)]
+
 

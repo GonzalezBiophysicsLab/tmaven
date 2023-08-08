@@ -1,0 +1,37 @@
+---
+title: "Shortcut Keys"
+---
+
+*Note*: Most keys are locked when the lock button (bottom left of the window) is activated. 
+
+
+# Commands
+Use command (⌘; Mac) or control (Windows, Linux)
+
+| Command | Key |
+|---------|-----|
+| Show Preferences | `⌘ + p` |
+| Show Molecule Table | `⌘ + t` |
+| Run Script | `⌘ + r` |
+| Open SMD | `⌘ + o` |
+| Save SMD | `⌘ + s` |
+| Quit | `⌘ + q` |
+
+# Hot-keys
+*Note*: If these aren't working, a tab might have the focus, and you might need to give the focus back to the main window (e.g., click on the ticks).
+
+| Command | Key |
+|---------|-----|
+| Toggle grid | `g` |
+| Go to next molecule | `right arrow`, `down arrow` |
+| Go to previous molecule | `left arrow`, `up arrow` |
+| Jog pre-time backwards by one point | `-` |
+| Jog pre-time forwards by one point | `+` |
+| Jog post-time backwards by one point | `[` |
+| Jog post-time forwards by one point | `]` |
+| Reset pre- and post-time | `r` |
+| Split trace at post-time location | `c` |
+| Recombine all split of this trace | `v` |
+| Auto-detect photobleaching point | `p` |
+| Assign class | `1`, `2`, ..., `9`, `0` |
+

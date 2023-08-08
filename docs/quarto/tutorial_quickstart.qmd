@@ -1,0 +1,11 @@
+---
+title: "Quick Tutorial"
+resources:
+  - examples/example_smd.hdf5
+  - quicktutorial.mp4
+---
+
+
+Download the [example data, here](examples/example_smd.hdf5), and then follow the steps in this video to model the data use a two-state global HMM.
+
+{{< video quicktutorial.mp4 >}}

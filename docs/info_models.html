@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.335">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>tMAVEN Documentation - Models</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="nav-sidebar floating">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+    <div class="container-fluid d-flex justify-content-between">
+      <h1 class="quarto-secondary-nav-title">Models</h1>
+      <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header sidebar-header-stacked">
+      <a href="./index.html" class="sidebar-logo-link">
+      <img src="./images/logo.png" alt="" class="sidebar-logo py-0 d-lg-inline d-none">
+      </a>
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">(t)ime series (M)odeling, (A)nalysis, and (V)isualization (EN)vironment</a> 
+        <div class="sidebar-tools-main tools-wide">
+    <a href="https://www.biorxiv.org" title="tMAVEN paper" class="sidebar-tool px-1"><i class="bi bi-file-earmark-text"></i></a>
+    <a href="https://github.com/GonzalezBiophysicsLab/tmaven" title="tMAVEN repo" class="sidebar-tool px-1"><i class="bi bi-github"></i></a>
+    <a href="https://GonzalezBiophysicsLab.github.io/tmaven" title="tMAVEN website" class="sidebar-tool px-1"><i class="bi bi-hexagon"></i></a>
+</div>
+    </div>
+      </div>
+      <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">Home</a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./about.html" class="sidebar-item-text sidebar-link">About tMAVEN</a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="false">Get Started</a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="false">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./install.html" class="sidebar-item-text sidebar-link">Installing tMAVEN</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./tutorial_quickstart.html" class="sidebar-item-text sidebar-link">Quick Tutorial</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./shortcuts.html" class="sidebar-item-text sidebar-link">Shortcut Keys</a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="false">tMANUAL</a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="false">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./tmanual/web_intro.html" class="sidebar-item-text sidebar-link">0. Introduction</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./tmanual/installing.html" class="sidebar-item-text sidebar-link">1. Installing</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./tmanual/navigating.html" class="sidebar-item-text sidebar-link">2. Navigating</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./tmanual/preprocessing.html" class="sidebar-item-text sidebar-link">3. Preprocessing</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./tmanual/modelling.html" class="sidebar-item-text sidebar-link">4. Modelling</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./tmanual/plotting.html" class="sidebar-item-text sidebar-link">5. Plotting</a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="false">Examples</a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="false">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./examples/example_defaultprefs.html" class="sidebar-item-text sidebar-link">Lab Default Preferences</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./examples/example_smdload.html" class="sidebar-item-text sidebar-link">Load SMD</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./examples/example_script1.html" class="sidebar-item-text sidebar-link">Scripted modeling - no GUI</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./examples/example_rastergramplot.html" class="sidebar-item-text sidebar-link">Plot Rastergram</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./examples/example_entropyplot.html" class="sidebar-item-text sidebar-link">Plot Entropy</a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="true">Information</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./info_priors.html" class="sidebar-item-text sidebar-link">Priors</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./info_models.html" class="sidebar-item-text sidebar-link active">Models</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./info_pysmd.html" class="sidebar-item-text sidebar-link">SMD Files</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./develop.html" class="sidebar-item-text sidebar-link">Develop</a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">Overview</a></li>
+  <li><a href="#description-of-models" id="toc-description-of-models" class="nav-link" data-scroll-target="#description-of-models">Description of Models</a>
+  <ul class="collapse">
+  <li><a href="#mixture-models" id="toc-mixture-models" class="nav-link" data-scroll-target="#mixture-models">Mixture Models</a>
+  <ul class="collapse">
+  <li><a href="#threshold" id="toc-threshold" class="nav-link" data-scroll-target="#threshold"><code>threshold</code></a></li>
+  <li><a href="#kmeans" id="toc-kmeans" class="nav-link" data-scroll-target="#kmeans"><code>kmeans</code></a></li>
+  <li><a href="#mlgmm" id="toc-mlgmm" class="nav-link" data-scroll-target="#mlgmm"><code>mlgmm</code></a></li>
+  <li><a href="#vbgmm" id="toc-vbgmm" class="nav-link" data-scroll-target="#vbgmm"><code>vbgmm</code></a></li>
+  </ul></li>
+  <li><a href="#individual-hmms" id="toc-individual-hmms" class="nav-link" data-scroll-target="#individual-hmms">Individual HMMs</a>
+  <ul class="collapse">
+  <li><a href="#mlhmm" id="toc-mlhmm" class="nav-link" data-scroll-target="#mlhmm"><code>mlhmm</code></a></li>
+  <li><a href="#vbhmm" id="toc-vbhmm" class="nav-link" data-scroll-target="#vbhmm"><code>vbhmm</code></a></li>
+  </ul></li>
+  <li><a href="#composite-hmms" id="toc-composite-hmms" class="nav-link" data-scroll-target="#composite-hmms">Composite HMMs</a>
+  <ul class="collapse">
+  <li><a href="#kmeans_mlhmm" id="toc-kmeans_mlhmm" class="nav-link" data-scroll-target="#kmeans_mlhmm"><code>kmeans_mlhmm</code></a></li>
+  <li><a href="#kmeans_vbhmm" id="toc-kmeans_vbhmm" class="nav-link" data-scroll-target="#kmeans_vbhmm"><code>kmeans_vbhmm</code></a></li>
+  <li><a href="#vbgmm_vbhmm" id="toc-vbgmm_vbhmm" class="nav-link" data-scroll-target="#vbgmm_vbhmm"><code>vbgmm_vbhmm</code></a></li>
+  <li><a href="#threshold_vbhmm" id="toc-threshold_vbhmm" class="nav-link" data-scroll-target="#threshold_vbhmm"><code>threshold_vbhmm</code></a></li>
+  <li><a href="#threshold_vbconhmm" id="toc-threshold_vbconhmm" class="nav-link" data-scroll-target="#threshold_vbconhmm"><code>threshold_vbconhmm</code></a></li>
+  </ul></li>
+  <li><a href="#global-hmms" id="toc-global-hmms" class="nav-link" data-scroll-target="#global-hmms">Global HMMs</a></li>
+  <li><a href="#vbconhmm" id="toc-vbconhmm" class="nav-link" data-scroll-target="#vbconhmm"><code>vbconhmm</code></a></li>
+  <li><a href="#ebhmm" id="toc-ebhmm" class="nav-link" data-scroll-target="#ebhmm"><code>ebhmm</code></a></li>
+  <li><a href="#model-selection" id="toc-model-selection" class="nav-link" data-scroll-target="#model-selection">Model Selection</a>
+  <ul class="collapse">
+  <li><a href="#vbgmm_modelselection" id="toc-vbgmm_modelselection" class="nav-link" data-scroll-target="#vbgmm_modelselection"><code>vbgmm_modelselection</code></a></li>
+  <li><a href="#vbhmm_modelselection" id="toc-vbhmm_modelselection" class="nav-link" data-scroll-target="#vbhmm_modelselection"><code>vbhmm_modelselection</code></a></li>
+  <li><a href="#vbconhmm_modelselection" id="toc-vbconhmm_modelselection" class="nav-link" data-scroll-target="#vbconhmm_modelselection"><code>vbconhmm_modelselection</code></a></li>
+  <li><a href="#vbgmm_vbhmm_modelselection" id="toc-vbgmm_vbhmm_modelselection" class="nav-link" data-scroll-target="#vbgmm_vbhmm_modelselection"><code>vbgmm_vbhmm_modelselection</code></a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#mixture-models-1" id="toc-mixture-models-1" class="nav-link" data-scroll-target="#mixture-models-1">Mixture Models</a></li>
+  <li><a href="#timing" id="toc-timing" class="nav-link" data-scroll-target="#timing">Timing</a>
+  <ul class="collapse">
+  <li><a href="#apple-m2-pro" id="toc-apple-m2-pro" class="nav-link" data-scroll-target="#apple-m2-pro">Apple M2 Pro</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title d-none d-lg-block">Models</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<section id="overview" class="level1">
+<h1>Overview</h1>
+<p>tMAVEN provides many built-in models that you can run on your data. Generally, they are divided into several categories. On this page, we discuss each model, and then provide timings for how long they take to run on a typical dataset.</p>
+</section>
+<section id="description-of-models" class="level1">
+<h1>Description of Models</h1>
+<section id="mixture-models" class="level2">
+<h2 class="anchored" data-anchor-id="mixture-models">Mixture Models</h2>
+<section id="threshold" class="level3">
+<h3 class="anchored" data-anchor-id="threshold"><code>threshold</code></h3>
+<p>A threshold is applied and datapoints on each side of the threshold are clustered together.</p>
+</section>
+<section id="kmeans" class="level3">
+<h3 class="anchored" data-anchor-id="kmeans"><code>kmeans</code></h3>
+<p>The K-means clustering algorithm is use to cluster the datapoints into <span class="math inline">\(N_{states}\)</span>.</p>
+</section>
+<section id="mlgmm" class="level3">
+<h3 class="anchored" data-anchor-id="mlgmm"><code>mlgmm</code></h3>
+<p>A maximum likelihood Gaussian mixture model (GMM) clustering algorithm is use to cluster the datapoints into <span class="math inline">\(N_{states}\)</span>.</p>
+</section>
+<section id="vbgmm" class="level3">
+<h3 class="anchored" data-anchor-id="vbgmm"><code>vbgmm</code></h3>
+<p>A variational Bayes Gaussian mixture model (GMM) clustering algorithm is use to cluster the datapoints into <span class="math inline">\(N_{states}\)</span>.</p>
+</section>
+</section>
+<section id="individual-hmms" class="level2">
+<h2 class="anchored" data-anchor-id="individual-hmms">Individual HMMs</h2>
+<section id="mlhmm" class="level3">
+<h3 class="anchored" data-anchor-id="mlhmm"><code>mlhmm</code></h3>
+<p>This is a separate maximum likelihood HMM for each trajectory. No ensemble model is generated, therefore no statistics are provided and much of the plotting functionality cannot be performed.</p>
+</section>
+<section id="vbhmm" class="level3">
+<h3 class="anchored" data-anchor-id="vbhmm"><code>vbhmm</code></h3>
+<p>This is a separate variational Bayes HMM (i.e., vbFRET) for each trajectory. No ensemble model is generated, therefore no statistics are provided and much of the plotting functionality cannot be performed.</p>
+</section>
+</section>
+<section id="composite-hmms" class="level2">
+<h2 class="anchored" data-anchor-id="composite-hmms">Composite HMMs</h2>
+<p>Composite HMMs created by modeling each trajectory with its own HMM. We do this by using model selection (where appropriate; see below). Thus we run the one through <span class="math inline">\(N_{states}\)</span> models for each trajectory, select the best (max evidence) of those models, and then do some version of clustering of the individual states found across all of the trajectories using <span class="math inline">\(N_{states}\)</span> number of clusters. After assigning the individual states to the clustered global states, HMM parameters are assembled to create a composite HMM.</p>
+<section id="kmeans_mlhmm" class="level3">
+<h3 class="anchored" data-anchor-id="kmeans_mlhmm"><code>kmeans_mlhmm</code></h3>
+<p>A maximum likelihood HMM is run on each trajectory using <span class="math inline">\(N_{states}\)</span>, and then K-means with <span class="math inline">\(N_{states}\)</span> is used to cluster the emission states. No model selection is performed, so the individual trajectory models often have spurious states – especially when kinetics are relatively slow.</p>
+</section>
+<section id="kmeans_vbhmm" class="level3">
+<h3 class="anchored" data-anchor-id="kmeans_vbhmm"><code>kmeans_vbhmm</code></h3>
+<p>A variational Bayes HMM (i.e., vbFRET) is run on each trajectory using model selection from one to <span class="math inline">\(N_{states}\)</span>, and then K-means with <span class="math inline">\(N_{states}\)</span> is used to cluster the emission states.</p>
+</section>
+<section id="vbgmm_vbhmm" class="level3">
+<h3 class="anchored" data-anchor-id="vbgmm_vbhmm"><code>vbgmm_vbhmm</code></h3>
+<p>A variational Bayes HMM (i.e., vbFRET) is run on each trajectory using model selection from one to <span class="math inline">\(N_{states}\)</span>, and then a variational Bayes GMM is used with model selection from one to <span class="math inline">\(N_{states}\)</span> to cluster the emission states.</p>
+</section>
+<section id="threshold_vbhmm" class="level3">
+<h3 class="anchored" data-anchor-id="threshold_vbhmm"><code>threshold_vbhmm</code></h3>
+<p>A variational Bayes HMM (i.e., vbFRET) is run on each trajectory using model selection from one to <span class="math inline">\(N_{states}\)</span>, and then a threshold is applied to the emission states to cluster them into two groups.</p>
+</section>
+<section id="threshold_vbconhmm" class="level3">
+<h3 class="anchored" data-anchor-id="threshold_vbconhmm"><code>threshold_vbconhmm</code></h3>
+<p>A global variational Bayes HMM is run on all trajectories using <span class="math inline">\(N_{states}\)</span>, and then a threshold is applied to the emission states to cluster them into two groups.</p>
+</section>
+</section>
+<section id="global-hmms" class="level2">
+<h2 class="anchored" data-anchor-id="global-hmms">Global HMMs</h2>
+</section>
+<section id="vbconhmm" class="level2">
+<h2 class="anchored" data-anchor-id="vbconhmm"><code>vbconhmm</code></h2>
+<p>This is a global variational Bayes HMM. It is conceptually similar to vbFRET, but all of the trajectories and assumed to be idependent and identically distributed (IID). This means that they will all obey the same HMM.</p>
+</section>
+<section id="ebhmm" class="level2">
+<h2 class="anchored" data-anchor-id="ebhmm"><code>ebhmm</code></h2>
+<p>This is an empirical Bayes HMM (i.e., ebFRET). The model provided in the empirical prior. This is a pseudo-global method in that it also models each trajectory individually. The idealized (Viterbi) paths in the plot are from the individual posteriors. Parameters are from the empirical prior.</p>
+</section>
+<section id="model-selection" class="level2">
+<h2 class="anchored" data-anchor-id="model-selection">Model Selection</h2>
+<p>These are variations of several models discussed above. Specifically for the Bayesian-based methods, we use the maximum evidence or evidence lower bound (ELBO) to identify the optimal number of states. This works by running the same type of model, each time using a different number of states. The variation with the largest evidence/ELBO is chosen as the best model. Generally, you want to run the one state through at least the six state model.</p>
+<section id="vbgmm_modelselection" class="level3">
+<h3 class="anchored" data-anchor-id="vbgmm_modelselection"><code>vbgmm_modelselection</code></h3>
+<p>This is a variational Bayes GMM (mixture model) with model selection from one to <span class="math inline">\(N_{states}\)</span>.</p>
+</section>
+<section id="vbhmm_modelselection" class="level3">
+<h3 class="anchored" data-anchor-id="vbhmm_modelselection"><code>vbhmm_modelselection</code></h3>
+<p>This is a variational Bayes HMM (i.e., vbFRET) with model selection from one to <span class="math inline">\(N_{states}\)</span>.</p>
+</section>
+<section id="vbconhmm_modelselection" class="level3">
+<h3 class="anchored" data-anchor-id="vbconhmm_modelselection"><code>vbconhmm_modelselection</code></h3>
+<p>This is a global variational Bayes HMM (i.e., global vbFRET) with model selection from one to <span class="math inline">\(N_{states}\)</span>.</p>
+</section>
+<section id="vbgmm_vbhmm_modelselection" class="level3">
+<h3 class="anchored" data-anchor-id="vbgmm_vbhmm_modelselection"><code>vbgmm_vbhmm_modelselection</code></h3>
+<p>This is a composite variational Bayes HMM (i.e., composite vbFRET). Model selection with the vbhmm is performed from one to <span class="math inline">\(N_{states}\)</span>, and then model selection for the number of cluster states in the GMM is performed from one to <span class="math inline">\(N_{states}\)</span></p>
+</section>
+</section>
+</section>
+<section id="mixture-models-1" class="level1">
+<h1>Mixture Models</h1>
+</section>
+<section id="timing" class="level1">
+<h1>Timing</h1>
+<p>Use <code>test_timing.py</code> to run all of the models on the test dataset (L1-tRNA; ribosomal complex with tRNA<span class="math inline">\(^{Phe}\)</span> at 25 C) composed of 406 trajectories. All models are two states. All model selection is done with one through six states. <em>Note</em>: the first time you run a model, it must be ‘just-in-time’ (JIT) compiled, and this will take a few seconds. Any additional time you run the model, it will not take this long. These timings are the median of 5 runs, and so do NOT include the JIT compiling time.</p>
+<section id="apple-m2-pro" class="level2">
+<h2 class="anchored" data-anchor-id="apple-m2-pro">Apple M2 Pro</h2>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Mixture</th>
+<th>Time (s)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>threshold</td>
+<td>0.107</td>
+</tr>
+<tr class="even">
+<td>kmeans</td>
+<td>0.167</td>
+</tr>
+<tr class="odd">
+<td>mlgmm</td>
+<td>1.024</td>
+</tr>
+<tr class="even">
+<td>vbgmm</td>
+<td>0.287</td>
+</tr>
+</tbody>
+</table>
+<table class="table">
+<thead>
+<tr class="header">
+<th>HMM</th>
+<th>Time (s)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>mlhmm</td>
+<td>0.453</td>
+</tr>
+<tr class="even">
+<td>vbhmm</td>
+<td>0.508</td>
+</tr>
+</tbody>
+</table>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Composite</th>
+<th>Time (s)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>vbconhmm</td>
+<td>8.230</td>
+</tr>
+<tr class="even">
+<td>ebhmm</td>
+<td>6.479</td>
+</tr>
+</tbody>
+</table>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Global</th>
+<th>Time (s)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>kmeans_mlhmm</td>
+<td>0.529</td>
+</tr>
+<tr class="even">
+<td>kmeans_vbhmm</td>
+<td>1.783</td>
+</tr>
+<tr class="odd">
+<td>vbgmm_vbhmm</td>
+<td>1.913</td>
+</tr>
+<tr class="even">
+<td>threshold_vbhmm</td>
+<td>1.671</td>
+</tr>
+<tr class="odd">
+<td>threshold_vbconhmm</td>
+<td>14.339</td>
+</tr>
+</tbody>
+</table>
+<table class="table">
+<thead>
+<tr class="header">
+<th>w/ Model Selection(1-6)</th>
+<th>Time (s)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>vbgmm_modelselection</td>
+<td>3.663</td>
+</tr>
+<tr class="even">
+<td>vbhmm_modelselection</td>
+<td>13.550</td>
+</tr>
+<tr class="odd">
+<td>vbconhmm_modelselection</td>
+<td>101.481</td>
+</tr>
+<tr class="even">
+<td>vbgmm_vbhmm_modelselection</td>
+<td>41.001</td>
+</tr>
+</tbody>
+</table>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

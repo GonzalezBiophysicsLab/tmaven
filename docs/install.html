@@ -101,6 +101,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script src="site_libs/quarto-contrib/videojs/video.min.js"></script>
+<link href="site_libs/quarto-contrib/videojs/video-js.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -187,7 +189,12 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./develop.html" class="sidebar-item-text sidebar-link">Develop</a>
+  <a href="./tutorial_quickstart.html" class="sidebar-item-text sidebar-link">Quick Tutorial</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./shortcuts.html" class="sidebar-item-text sidebar-link">Shortcut Keys</a>
   </div>
 </li>
       </ul>
@@ -277,17 +284,22 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
       <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./info_pysmd.html" class="sidebar-item-text sidebar-link">SMD (.HDF5) data format</a>
+  <a href="./info_priors.html" class="sidebar-item-text sidebar-link">Priors</a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./info_priors.html" class="sidebar-item-text sidebar-link">Information on priors</a>
+  <a href="./info_models.html" class="sidebar-item-text sidebar-link">Models</a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./extra_hmms.html" class="sidebar-item-text sidebar-link">Two-state HMMs</a>
+  <a href="./info_pysmd.html" class="sidebar-item-text sidebar-link">SMD Files</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./develop.html" class="sidebar-item-text sidebar-link">Develop</a>
   </div>
 </li>
       </ul>
@@ -301,8 +313,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#new-python-environment" id="toc-new-python-environment" class="nav-link active" data-scroll-target="#new-python-environment">New Python Environment</a></li>
-  <li><a href="#install-package" id="toc-install-package" class="nav-link" data-scroll-target="#install-package">Install package</a></li>
+  <li><a href="#standalone-binary" id="toc-standalone-binary" class="nav-link active" data-scroll-target="#standalone-binary">Standalone binary</a></li>
+  <li><a href="#python-package" id="toc-python-package" class="nav-link" data-scroll-target="#python-package">Python package</a></li>
   </ul>
 </nav>
     </div>
@@ -326,22 +338,73 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 </header>
 
-<section id="new-python-environment" class="level1">
-<h1>New Python Environment</h1>
-<p>Consider making a separate conda enviroment for tMAVEN</p>
+<p>There are two ways you can install tMAVEN:</p>
+<ol type="1">
+<li>Install it as a standalone program (Binary)</li>
+<li>Install it as a Python package (Code)</li>
+</ol>
+<p>Unless you have a reason (<em>e.g.</em>, you want to make significant changes to the code), you should probably just install tMAVEN as a standalone program.</p>
+<section id="standalone-binary" class="level1">
+<h1>Standalone binary</h1>
+<ol type="1">
+<li>Go to the <a href="https://github.com/GonzalezBiophysicsLab/tmaven/releases/latest">latest binary release on Github</a>.</li>
+<li>Download
+<ol type="1">
+<li>The <code>.dmg</code> file (Mac).</li>
+<li>The <code>.msi</code> file (Windows).</li>
+</ol></li>
+<li>Double click on the file and follow the directions to install tMAVEN.</li>
+</ol>
+<p>Here are video directions for Mac:</p>
+<div class="quarto-video"><video id="video_shortcode_videojs_video1" class="video-js vjs-default-skin vjs-fluid" controls="" preload="auto" data-setup="{}" title=""><source src="mac_install.mp4"></video></div>
+<div class="callout-note callout callout-style-default callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Mac security issue.</strong> If you try to install on a Mac, you may encounter a security issue that won’t allow you to launch tMAVEN because the OS cannot verify that it isn’t malware. You need to do the following:</p>
+<ol type="1">
+<li>Go to the <code>Apple</code> menu item</li>
+<li>Open <code>System Settings</code></li>
+<li>Go to the <code>Privacy &amp; Security</code> tab on the side.</li>
+<li>Scroll down past the <code>Privacy</code> section, and into the <code>Security</code> section</li>
+<li>Find the section that says <code>tMAVEN was blocked from use becasue it is not from an identified developer.</code></li>
+<li>Click <code>Open Anyway</code></li>
+</ol>
+</div>
+</div>
 </section>
-<section id="install-package" class="level1">
-<h1>Install package</h1>
+<section id="python-package" class="level1">
+<h1>Python package</h1>
 <ul>
-<li>Navigate to the tMAVEN repository at <a href="https://github.com/GonzalezBiophysicsLab/tmaven" class="uri">https://github.com/GonzalezBiophysicsLab/tmaven</a>, and clone the repository.</li>
-<li>Open terminal navigate to the tMAVEN folder</li>
-<li>To install this package, run</li>
+<li>[Optional] Create a new conda environment, <code>conda create -n tmaven python==3.9</code></li>
+<li>[Optional] Activate your conda environment, <code>conda activate tmaven</code></li>
+<li>[Optional] Make sure you have pip, <code>conda install pip</code></li>
+<li>Visit the <a href="https://github.com/GonzalezBiophysicsLab/tmaven">tMAVEN repository on Github</a> and download/clone the repository, or simply clone it from in your terminal with <code>git clone https://github.com/GonzalezBiophysicsLab/tmaven</code></li>
+<li>Navigate to the tmaven folder, <code>cd /the/path/to/the/folder/tmaven</code></li>
+<li>Install the package in place using pip by running <code>pip install -e ./</code></li>
+<li>To open tMAVEN, run <code>tmaven</code> from any folder, or you can launch it in the tmaven folder as <code>python -m tmaven</code></li>
 </ul>
-<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<ul>
-<li>To open tMAVEN, run</li>
-</ul>
-<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">tmaven</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="callout-note callout callout-style-default callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Apple silicon workaround.</strong> Note, if you are on a Mac with an Apple silicon chip, you may need to emulate x86_64 architecture for some libraries that tMAVEN relies on; this means that everything, including you Python, needs to be emulated. Any easy way to do this is add the following line to your RC file (<em>e.g.</em>, .bashrc, .zshrc):</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="bu">alias</span> intel=<span class="st">"env /usr/bin/arch -x86_64 /bin/zsh --login"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Close and reopen your terminal (or <code>source</code> your editted RC file). Then run <code>intel</code> in your terminal window. Now you can make an new conda environment and install tMAVEN.</p>
+</div>
+</div>
 
 
 </section>
@@ -481,6 +544,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 });
 </script>
 </div> <!-- /content -->
+<script>videojs(video_shortcode_videojs_video1);</script>
 
 
 

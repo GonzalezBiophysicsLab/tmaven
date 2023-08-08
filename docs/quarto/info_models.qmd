@@ -1,0 +1,114 @@
+---
+title: "Models"
+---
+
+# Overview
+tMAVEN provides many built-in models that you can run on your data. Generally, they are divided into several categories. On this page, we discuss each model, and then provide timings for how long they take to run on a typical dataset.
+
+# Description of Models
+
+## Mixture Models
+
+### `threshold`
+A threshold is applied and datapoints on each side of the threshold are clustered together.
+
+### `kmeans`
+The K-means clustering algorithm is use to cluster the datapoints into $N_{states}$.
+
+### `mlgmm`
+A maximum likelihood Gaussian mixture model (GMM) clustering algorithm is use to cluster the datapoints into $N_{states}$.
+
+### `vbgmm`
+A variational Bayes Gaussian mixture model (GMM) clustering algorithm is use to cluster the datapoints into $N_{states}$.
+
+## Individual HMMs
+
+### `mlhmm`
+This is a separate maximum likelihood HMM for each trajectory. No ensemble model is generated, therefore no statistics are provided and much of the plotting functionality cannot be performed.
+
+### `vbhmm`
+This is a separate variational Bayes HMM (i.e., vbFRET) for each trajectory. No ensemble model is generated, therefore no statistics are provided and much of the plotting functionality cannot be performed.
+
+## Composite HMMs
+Composite HMMs created by modeling each trajectory with its own HMM. We do this by using model selection (where appropriate; see below). Thus we run the one through $N_{states}$ models for each trajectory, select the best (max evidence) of those models, and then do some version of clustering of the individual states found across all of the trajectories using $N_{states}$ number of clusters. After assigning the individual states to the clustered global states, HMM parameters are assembled to create a composite HMM.
+
+### `kmeans_mlhmm`
+A maximum likelihood HMM is run on each trajectory using $N_{states}$, and then K-means with $N_{states}$ is used to cluster the emission states. No model selection is performed, so the individual trajectory models often have spurious states -- especially when kinetics are relatively slow.
+
+### `kmeans_vbhmm`
+A variational Bayes HMM (i.e., vbFRET) is run on each trajectory using model selection from one to $N_{states}$, and then K-means with $N_{states}$ is used to cluster the emission states.
+
+### `vbgmm_vbhmm`
+A variational Bayes HMM (i.e., vbFRET) is run on each trajectory using model selection from one to $N_{states}$, and then a variational Bayes GMM is used with model selection from one to $N_{states}$ to cluster the emission states.
+
+### `threshold_vbhmm`
+A variational Bayes HMM (i.e., vbFRET) is run on each trajectory using model selection from one to $N_{states}$, and then a threshold is applied to the emission states to cluster them into two groups.
+
+### `threshold_vbconhmm`
+A global variational Bayes HMM is run on all trajectories using $N_{states}$, and then a threshold is applied to the emission states to cluster them into two groups.
+
+## Global HMMs
+
+## `vbconhmm`
+This is a global variational Bayes HMM. It is conceptually similar to vbFRET, but all of the trajectories and assumed to be idependent and identically distributed (IID). This means that they will all obey the same HMM.
+
+## `ebhmm`
+This is an empirical Bayes HMM (i.e., ebFRET). The model provided in the empirical prior. This is a pseudo-global method in that it also models each trajectory individually. The idealized (Viterbi) paths in the plot are from the individual posteriors. Parameters are from the empirical prior.
+
+## Model Selection
+These are variations of several models discussed above. Specifically for the Bayesian-based methods, we use the maximum evidence or evidence lower bound (ELBO) to identify the optimal number of states. This works by running the same type of model, each time using a different number of states. The variation with the largest evidence/ELBO is chosen as the best model. Generally, you want to run the one state through at least the six state model.
+
+### `vbgmm_modelselection`
+This is a variational Bayes GMM (mixture model) with model selection from one to $N_{states}$.
+
+### `vbhmm_modelselection`
+This is a variational Bayes HMM (i.e., vbFRET) with model selection from one to $N_{states}$.
+
+### `vbconhmm_modelselection`
+This is a global variational Bayes HMM (i.e., global vbFRET) with model selection from one to $N_{states}$.
+
+### `vbgmm_vbhmm_modelselection`
+This is a composite variational Bayes HMM (i.e., composite vbFRET). Model selection with the vbhmm is performed from one to $N_{states}$, and then model selection for the number of cluster states in the GMM is performed from one to $N_{states}$
+
+
+# Mixture Models
+
+
+# Timing
+Use `test_timing.py` to run all of the models on the test dataset (L1-tRNA; ribosomal complex with tRNA$^{Phe}$ at 25 C) composed of 406 trajectories. All models are two states. All model selection is done with one through six states. *Note*: the first time you run a model, it must be 'just-in-time' (JIT) compiled, and this will take a few seconds. Any additional time you run the model, it will not take this long. These timings are the median of 5 runs, and so do NOT include the JIT compiling time.
+
+## Apple M2 Pro
+
+| Mixture | Time (s) |
+|----|----|
+| threshold | 0.107 |
+| kmeans | 0.167 |
+| mlgmm | 1.024 |
+| vbgmm | 0.287 |
+
+| HMM | Time (s) |
+|----|----|
+| mlhmm | 0.453 |
+| vbhmm | 0.508 |
+
+| Composite | Time (s) |
+|----|----|
+| vbconhmm | 8.230 |
+| ebhmm | 6.479 |
+
+| Global | Time (s) |
+|----|----|
+| kmeans_mlhmm | 0.529 |
+| kmeans_vbhmm | 1.783 |
+| vbgmm_vbhmm | 1.913 |
+| threshold_vbhmm | 1.671 |
+| threshold_vbconhmm | 14.339 |
+
+| w/ Model Selection(1-6) | Time (s) |
+|----|----|
+| vbgmm_modelselection | 3.663 |
+| vbhmm_modelselection | 13.550 |
+| vbconhmm_modelselection | 101.481 |
+| vbgmm_vbhmm_modelselection | 41.001 |
+
+

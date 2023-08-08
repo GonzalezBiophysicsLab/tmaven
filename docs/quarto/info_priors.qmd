@@ -1,5 +1,31 @@
 ---
-title: "Information on priors"
+title: "Priors"
 ---
 
-Here's some info on priors
+# Background
+Priors is shorthand for [Prior Probability Distribution](https://en.wikipedia.org/wiki/Prior_probability). In the [Bayesian interpretation of probability](https://en.wikipedia.org/wiki/Bayesian_probability), the prior is what you know about your model before you perform the experiment. For instance, you might only know that your rate constants/transition probabilities are faster than once per year and slower than once per femtosecond, but ignoring this in your analysis means you're not properly handling probabilities.
+
+# Specific Priors
+Because many of the Bayesian-based modeling methods are related to either a simple Gaussian mixture model (GMM) or a simple hidden Markov model (HMM), they have very similar parameterizations, and thus the same type of priors. In tMAVEN, this is reflected by the re-use of preference variables amongst some of the modeling methods. Generally, the preference variables are specified as `modeler.<method name>.prior.<parameter name>`.
+
+## GMM
+These are the default prior values for a variational Bayes GMM. They are for a joint Normal-Gamma distribution and values are taken from the vbFRET emissions. Mixture coefficients are Dirichlet. 
+
+| Parameter | Value |
+|-----------|-------|
+| $a$ (Gamma) | 0.1 |
+| $b$ (Gamma) | 0.01 |
+| $\beta$ (Normal) | 0.25 |
+| $\pi$ (Mixture) | 1.0 |
+
+
+## HMM
+These are thedefault prior values for `ebhmm` (i.e., ebFRET), `vbconhmm` (i.e., global vbFRET), and `vbhmm` (i.e., vbFRET). Emissions are Normal-Gamma, first data-point is Dirichlet, and transition probability for each state is Dirichlet.
+
+| Parameter | Value |
+|-----------|-------|
+| $a$ (Gamma) | 0.1 |
+| $b$ (Gamma) | 0.01 |
+| $\beta$ (Normal) | 0.25 |
+| $\alpha$ (Transition probability) | 1.0 |
+| $\pi$ (First datapoint) | 1.0 |

@@ -42,7 +42,9 @@ website:
       - section: "Get Started"
         contents:
           - install.qmd
-          - develop.qmd
+          - tutorial_quickstart.qmd
+          - shortcuts.qmd
+
           
       - section: "tMANUAL"
         contents:
@@ -63,9 +65,12 @@ website:
 
       - section: "Information"
         contents:
-          - info_pysmd.qmd
+
           - info_priors.qmd
-          - extra_hmms.qmd
+          - info_models.qmd
+          - info_pysmd.qmd
+          - develop.qmd
+          # - extra_hmms.qmd
 
 # exectue:
 #   freeze: true

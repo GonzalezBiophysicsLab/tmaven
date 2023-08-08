@@ -1,8 +1,8 @@
 ---
-title: "SMD (.HDF5) data format"
+title: "SMD Files"
 ---
-# Python module to handle the SDM2 version of the (S)ingle-(M)olecule (D)ataset (SMD) file format
-We say that data from a single-molecule experiment is stored in an `SMD`. These exist in files (HDF5 format) or in memory as an object. This format is slighty different than originally described in: Greenfeld, M., van de Meent, JW., Pavlichin, D.S. et al. Single-molecule dataset (SMD): a generalized storage format for raw and processed single-molecule data. BMC Bioinformatics 16, 3 (2015). https://doi.org/10.1186/s12859-014-0429-4.
+# The (S)ingle-(M)olecule (D)ataset (SMD) file format
+Data from a single-molecule experiment are stored in an `SMD`. These exist in files (HDF5 format) or in memory as an object. This format is slighty different than originally described in: Greenfeld, M., van de Meent, JW., Pavlichin, D.S. et al. Single-molecule dataset (SMD): a generalized storage format for raw and processed single-molecule data. BMC Bioinformatics 16, 3 (2015). https://doi.org/10.1186/s12859-014-0429-4.
 
 ## Notable differences
 * HDF5 file based instead of JSON
@@ -11,38 +11,29 @@ We say that data from a single-molecule experiment is stored in an `SMD`. These 
 * When molecules from different data sources can be combined into the same SMD, the original source is remembered.
 * Classifying/grouping molecules is very important for many methods; each molecule in the SMD has an integer to specify the class to which it belongs.
 
-## Instructions
-Install in place using
-```bash
-cd <path to pysmd-hdf5 folder>
-pip install -e './'
-```
-
 ## Format Specifications/Description
 Notes/Non-standard points are put in angle brackets.
 
-### SMD (v2 in a Python Object)
-Assume you have an SMD container object called `dataset`
+### SMD (in a Python Object)
+In tMAVEN, each `maven` instance has an `maven.smd` SMD object, even if there is no data in it. There can only be one at a time in tMAVEN. The parameters in each object are 
 
 ```
-dataset.raw : ndarray(NxTxD...) - the data
-<!-- dataset.classes : ndarray(N) - integers of class to which each molecule is assigned -->
-<!-- dataset.data_index : ndarray(N) - integers specifying current order of molecules in the SMD -->
-dataset.source_index : ndarray(N) - integers specifying the source each molecule came from
-dataset.source_names : list - the names of each sources
-dataset.source_dicts : list - dictionaries with metadata entries for each source
-dataset.smd_dict : dictionary - metadata entries describing smd file
+maven.smd.raw : ndarray(NxTxD...) - the data
+maven.smd.source_index : ndarray(N) - integers specifying the source each molecule came from
+maven.smd.source_names : list - the names of each sources
+maven.smd.source_dicts : list - dictionaries with metadata entries for each source
+maven.smd.smd_dict : dictionary - metadata entries describing smd file
 
-dataset.nmol : int - the value of dataset.raw.shape[0]
-dataset.nt : int - the value of dataset.raw.shape[1]
-dataset.ntime : int - the value of dataset.raw.shape[1]
-dataset.ncolor : int - the value of dataset.raw.shape[2]
-dataset.ncolors : int - the value of dataset.raw.shape[2]
-dataset.ndata - : int - the value of dataset.raw.shape[2:]
+maven.smd.nmol : int - the value of dataset.raw.shape[0]
+maven.smd.nt : int - the value of dataset.raw.shape[1]
+maven.smd.ntime : int - the value of dataset.raw.shape[1]
+maven.smd.ncolor : int - the value of dataset.raw.shape[2]
+maven.smd.ncolors : int - the value of dataset.raw.shape[2]
+maven.smd.ndata - : int - the value of dataset.raw.shape[2:]
 ```
 
-### SMD (v2) in an HDF5 File
-Assume you have an HDF5 file with handle `f` that contains an SMD2 entry called 'my_smd_expt7'.
+### SMD (in an HDF5 File)
+We save SMD data in HDF5 files. Assume you have an HDF5 file with handle `f` that contains an SMD entry called 'my_smd_expt7'. The raw data is stored in the SMD specified places. Any tMAVEN-specific data (e.g., classes, pre- or post-times) are stores in the a separate groupd within the SMD called `tmaven`.
 
 ```
 f['my_smd_expt7'] : group - this is the SMD2 entry
@@ -53,7 +44,6 @@ f['my_smd_expt7'].attrs['description'] = "Description of the dataset goes here"
 
 f['my_smd_expt7/data'] : group - this holds the data
 f['my_smd_expt7/data/raw'] : dataset[int/float/double (nmol,ntime,ndata)] - this is the data for each molecule
-<!-- f['my_smd_expt7/data/classes'] : dataset[int (nmol)] - specifies the class for each molecule -->
 f['my_smd_expt7/data/source_index'] : dataset[int (nmol)] - specifies the source for each molecule
 
 f['my_smd_expt7/sources'] : group - This holds the information about the origin of each molecule (e.g., separate movies)
@@ -71,6 +61,3 @@ f['my_smd_expt7/analysisA'] : group  - this is an example of how you would save 
 f['my_smd_expt7/program7result'] : group - each program is responsible for the format/specification beyond this point...
 ```
 
-## Questions
-* What do you do if you want to combine different types of data into the same dataset (e.g., movie punchouts and XY coordinates)?
-Use two separate SMDs, since the data is distinct. You can use the decription to reference the different entries

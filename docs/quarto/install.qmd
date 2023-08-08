@@ -1,20 +1,59 @@
 ---
 title: "Installing tMAVEN"
+resources:
+  - mac_install.mp4
 ---
 
-# New Python Environment
-Consider making a separate conda enviroment for tMAVEN
+There are two ways you can install tMAVEN:
 
-# Install package
+1. Install it as a standalone program (Binary)
+2. Install it as a Python package (Code)
 
-* Navigate to the tMAVEN repository at <https://github.com/GonzalezBiophysicsLab/tmaven>, and clone the repository.
-* Open terminal navigate to the tMAVEN folder
-* To install this package, run
-``` bash
-pip install
-```
-* To open tMAVEN, run
+Unless you have a reason (*e.g.*, you want to make significant changes to the code), you should probably just install tMAVEN as a standalone program.
+
+
+# Standalone binary
+1. Go to the [latest binary release on Github](https://github.com/GonzalezBiophysicsLab/tmaven/releases/latest).
+2. Download
+    1. The `.dmg` file (Mac).
+    2. The `.msi` file (Windows).
+3. Double click on the file and follow the directions to install tMAVEN.
+
+Here are video directions for Mac:
+
+{{< video mac_install.mp4 >}}
+
+::: {.callout-note}
+**Mac security issue.**
+If you try to install on a Mac, you may encounter a security issue that won't allow you to launch tMAVEN because the OS cannot verify that it isn't malware. You need to do the following:
+
+1. Go to the `Apple` menu item
+2. Open `System Settings`
+3. Go to the `Privacy & Security` tab on the side.
+4. Scroll down past the `Privacy` section, and into the `Security` section
+5. Find the section that says `tMAVEN was blocked from use becasue it is not from an identified developer.`
+6. Click `Open Anyway`
+:::
+
+
+
+# Python package
+
+* [Optional] Create a new conda environment, `conda create -n tmaven python==3.9`
+* [Optional] Activate your conda environment, `conda activate tmaven`
+* [Optional] Make sure you have pip, `conda install pip`
+* Visit the [tMAVEN repository on Github](https://github.com/GonzalezBiophysicsLab/tmaven) and download/clone the repository, or simply clone it from in your terminal with `git clone https://github.com/GonzalezBiophysicsLab/tmaven`
+* Navigate to the tmaven folder, `cd /the/path/to/the/folder/tmaven`
+* Install the package in place using pip by running `pip install -e ./`
+* To open tMAVEN, run `tmaven` from any folder, or you can launch it in the tmaven folder as `python -m tmaven`
+
+::: {.callout-note}
+**Apple silicon workaround.**
+Note, if you are on a Mac with an Apple silicon chip, you may need to emulate x86_64 architecture for some libraries that tMAVEN relies on; this means that everything, including you Python, needs to be emulated. Any easy way to do this is add the following line to your RC file (*e.g.*, .bashrc, .zshrc):
+
 ```bash
-tmaven
+alias intel="env /usr/bin/arch -x86_64 /bin/zsh --login"
 ```
 
+Close and reopen your terminal (or `source` your editted RC file). Then run `intel` in your terminal window. Now you can make an new conda environment and install tMAVEN.
+:::
