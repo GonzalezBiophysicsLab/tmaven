@@ -32,7 +32,7 @@ def calculate_dwells(result):
 
 @nb.njit
 def survival(dist):
-    n = np.int(np.max(dist))
+    n = np.int32(np.max(dist))
 
     raw_surv = np.zeros(n)
 
