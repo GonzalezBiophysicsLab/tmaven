@@ -565,7 +565,7 @@ def eb_outer_loop(xind,xdata,nstates,maxiters,threshold,mu_prior,beta_prior,a_pr
 			if Lbest[nr] > Lbest[best]:
 				best = nr
 
-	print(nstates,Lbest,L_global[best,iteration[best]-1],iteration, best)
+	# print(nstates,Lbest,L_global[best,iteration[best]-1],iteration, best)
 	return emp_mu[best], emp_beta[best], emp_a[best], emp_b[best], emp_pi[best], emp_tm[best], L_global[best,:iteration[best]], iteration[best], E_z_out[best]
 
 
@@ -644,5 +644,5 @@ def eb_em_hmm(x,nstates,maxiters=1000,nrestarts=1,threshold=1e-10,priors=None,nc
 						iteration=iteration,a=a,b=b,beta=beta, pi=pi,
 						priors=priors)
 
-	print(nstates, likelihood[-1])
+	# print(nstates, likelihood[-1])
 	return out, vb_results
