@@ -1,16 +1,11 @@
 # tMAVEN
 `tMAVEN` is a Python package: (M)odeling, (A)nalysis and (V)isualization (EN)vironment for N-dimensional single-molecule (t)ime series.
 
+* Visit the [tMAVEN website](https://gonzalezbiophysicslab.github.io/tmaven/)
+* Read the [tMANUAL](https://gonzalezbiophysicslab.github.io/tmaven/tmanual/tMANUAL.pdf)
+* Download the [latest release](https://www.github.com/gonzalezbiophysicslab/releases/latest)
 
-# Install
-There are several options. The gist is:
-1. Download a binary release. Install, and run as a standard application.
-2. Download the git repository. Install with `pip install`. Then
-    1. Use `tmaven` in a terminal
-    2. Import in a script and run headless
 
-# More information
-See the website: https://gonzalezbiophysicslab.github.io/tmaven/
+Read the paper: 
 
-See the manual: https://gonzalezbiophysicslab.github.io/tmaven/tmanual/tMANUAL.pdf
- 
+Verma, A.R., Ray, K., Bodick, M., Kinz-Thompson, C.D., Gonzalez, Jr., R.L. (2023) *Accurately Capturing Heterogeneity in Single-molecule Experiments with tMAVEN*. In preparation. <!-- [[Link](https://www.biorxiv.org)] -->
