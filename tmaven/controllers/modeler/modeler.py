@@ -1029,7 +1029,7 @@ class controller_modeler(object):
 
 		var /= result.r.sum()
 
-		print(viterbi_var,var)
+		# print(viterbi_var,var)
 		result.var = var
 		result.viterbi_var = viterbi_var
 		self.recast_rs(result)
