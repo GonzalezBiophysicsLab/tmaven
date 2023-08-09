@@ -71,6 +71,7 @@ class controller_io(object):
 	def clear_data(self):
 		self.maven.smd = smd_container()
 		self.process_data_change()
+		self.maven.modeler.set_model(None)
 
 	def blank_smd(self):
 		return smd_container()
