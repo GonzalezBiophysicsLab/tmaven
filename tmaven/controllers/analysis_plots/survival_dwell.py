@@ -29,7 +29,6 @@ class controller_survival_dwell(controller_base_analysisplot):
 			'dwell_nticks':6,
 			'dwell_state':0,
 			'dwell_force_xmax': False,
-			'dwell_min': 0.,
 			'dwell_max': 100,
 			'time_dt':1.0,
 
@@ -38,7 +37,7 @@ class controller_survival_dwell(controller_base_analysisplot):
 			'hist_color':'tab:red',
 			'hist_edgecolor':'tab:black',
 			'hist_log_y':False,
-			'hist_force_ymax':False,
+			'hist_force_y':False,
 			'hist_ymax':5.0,
 			'hist_ymin':0.0,
 			'hist_nticks':5,
@@ -248,7 +247,7 @@ class controller_survival_dwell(controller_base_analysisplot):
 		rax.set_xlim(0,xlim_rax[1])
 		
 
-		if self.prefs['hist_force_ymax']:
+		if self.prefs['hist_force_y']:
 			ax.set_ylim(self.prefs['hist_ymin'], self.prefs['hist_ymax'])
 			ticks_ax = self.best_ticks(self.prefs['hist_ymin'], self.prefs['hist_ymax'], self.prefs['hist_nticks'])
 		else:
@@ -259,10 +258,22 @@ class controller_survival_dwell(controller_base_analysisplot):
 					ticks_ax = self.best_ticks(10**(-np.floor(np.log10(len(self.d)))),ylim_ax[1], self.prefs['hist_nticks'])
 				except:
 					ticks_ax = self.best_ticks(0,ax.get_ylim()[1], self.prefs['hist_nticks'])
+		ax.set_yticks(ticks_ax)
+
+		if self.prefs['residual_force_y']:
+			rax.set_ylim(self.prefs['residual_ymin'], self.prefs['residual_ymax'])
+			ticks_rax = self.best_ticks(self.prefs['residual_ymin'], self.prefs['residual_ymax'], self.prefs['residual_nticks'])
+		else:
 			ticks_rax = self.best_ticks(ylim_rax[0],ylim_rax[1], self.prefs['residual_nticks'])
-			ax.set_yticks(ticks_ax)
-			rax.set_yticks(ticks_rax)
-		ticks = self.best_ticks(0,xlim_ax[1],self.prefs['dwell_nticks'])
+		rax.set_yticks(ticks_rax)
+
+		if self.prefs['dwell_force_xmax']:
+			ax.set_xlim(0,self.prefs['dwell_max'])
+			rax.set_xlim(0,self.prefs['dwell_max'])
+			ticks = self.best_ticks(0,self.prefs['dwell_max'],self.prefs['dwell_nticks'])
+		else:
+			ticks = self.best_ticks(0,xlim_ax[1],self.prefs['dwell_nticks'])
+		
 		ax.set(xticks = [], xticklabels=[])
 		rax.set_xticks(ticks)
 
