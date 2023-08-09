@@ -41,7 +41,7 @@ class controller_base_analysisplot(object):
 		## override this
 		pass
 
-	def fix_ax(self,fig,ax):
+	def fix_ax(self,fig):
 		fig.set_figwidth(self.prefs['fig_width'])
 		fig.set_figheight(self.prefs['fig_height'])
 

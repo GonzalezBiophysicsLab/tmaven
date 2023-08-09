@@ -89,7 +89,7 @@ class controller_fret_hist1d(controller_base_analysisplot):
 
 		## Setup
 		ax.cla()
-		self.fix_ax(fig,ax)
+		self.fix_ax(fig)
 
 		if self.prefs['idealized']:
 			self.fpb = self.get_idealized_data()
