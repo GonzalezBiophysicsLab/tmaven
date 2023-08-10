@@ -32,7 +32,7 @@ class controller_survival_dwell(controller_base_analysisplot):
 			'dwell_max': 100,
 			'time_dt':1.0,
 
-			'hist_on':True,
+			'hist_on':False,
 			'hist_type':'bar',
 			'hist_color':'tab:red',
 			'hist_edgecolor':'tab:black',
@@ -136,8 +136,7 @@ class controller_survival_dwell(controller_base_analysisplot):
 				color=color, edgecolor=ecolor, log=self.prefs['hist_log_y'])[:2]
 
 			self.hist_x = bin_edge[1:] - 0.5*(bin_edge[1] - bin_edge[0])
-			self.hist_y = bin_height
-
+			self.hist_y = bin_height.astype('double')
 
 		if self.prefs['model_on'] and not self.maven.modeler.model.rates is None:
 			if self.maven.modeler.model.rate_type == "Transition Matrix":
