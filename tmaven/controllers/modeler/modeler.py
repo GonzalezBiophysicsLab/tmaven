@@ -27,7 +27,10 @@ default_prefs = {
 	'modeler.ebhmm.prior.a':2.5,
 	'modeler.ebhmm.prior.b':0.01,
 	'modeler.ebhmm.prior.alpha':1.,
-	'modeler.ebhmm.prior.pi':1.
+	'modeler.ebhmm.prior.pi':1.,
+	'modeler.hhmm.tolerance': 1e-4,
+    'modeler.hhmm.maxiters':100,
+    'modeler.hhmm.restarts':2
 }
 
 def export_dict_to_group(h_group, dicty, attributes=[]):
@@ -442,6 +445,17 @@ class controller_modeler(object):
 
 		result = self.cached_functions['kmeans'](y,nstates)
 		return result
+	
+	def cache_vmphhmm(self,y,depth_vec,prod_states,max_iter,tol,restarts,guess):
+		''' Run vmp hhmm'''
+		if not 'hHMM' in self.cached_functions:
+			logger.info('Caching hHMM...')
+			from .hhmm_vmp import vmp_hhmm
+			self.cached_functions['hHMM'] = vmp_hhmm
+
+		result = vmp_hhmm(y,depth_vec,prod_states,max_iter,tol,restarts,guess)
+		return result
+
 
 	def cache_exponential_fxn(self,type):
 		from .dwells import optimize_single_surv, optimize_double_surv, optimize_triple_surv, optimize_stretch_surv
@@ -1313,6 +1327,66 @@ class controller_modeler(object):
 				self._active_model_index = len(self.models)-1
 				self.make_report(results[i])
 		self.maven.emit_data_update()
+
+	def run_fret_hhmm(self):
+		max_iter = self.maven.prefs['modeler.hhmm.maxiters']
+		tol = self.maven.prefs['modeler.hhmm.tolerance']
+		restarts = self.maven.prefs['modeler.hhmm.restarts']
+		guess = np.array([0., 1.])
+		depth_vec = [2]
+		prod_states = 2
+
+
+		post_mu, post_beta, post_a, post_b, post_pi, post_tm, post_exit,likelihood = self.cached_vmphhmm(dataset,
+																							depth_vec,prod_states,
+																							max_iter,tol,
+																							restarts,guess)
+
+		#hardcoded to 4 state
+		flat_tm = np.zeros((4,4),dtype=np.float64)
+		#result = [post_mu, post_beta, post_a, post_b, post_pi, post_tm, post_exit]
+
+		new_tm = []
+		for level in post_tm:
+			new_level = []
+			for tm in level:
+				newt = tm.T.copy()
+				for i in range(newt.shape[0]):
+					newt[i] /= newt[i].sum()
+				new_level.append(newt)
+			new_tm.append(new_level)
+
+		flat_tm[:2,:2] = new_tm[1][0]
+		flat_tm[-2:,-2:] = new_tm[1][1]
+		flat_tm[:2,-2:] = post_exit[1][0].reshape(2,1)@post_pi[1][1].reshape(1,2)*new_tm[0][0][0,1]
+		flat_tm[-2:,:2] = post_exit[1][1].reshape(2,1)@post_pi[1][0].reshape(1,2)*new_tm[0][0][1,0]
+
+		#print(flat_tm)
+		mu = np.zeros(4)
+		mu[:2] = post_mu.flatten()
+		mu[-2:] = post_mu.flatten()
+		var = np.zeros(4)
+		var[:2] = (post_b/post_a).flatten()
+		var[-2:] = (post_b/post_a).flatten()
+
+		upper_pi = (post_exit[0][0]*post_pi[0][0]).flatten()
+		pi =  np.zeros(4)
+		pi[:2] = upper_pi*post_pi[1][0]*post_exit[1][1].flatten()
+		pi[-2:] = upper_pi*post_pi[1][1]*post_exit[1][0].flatten()
+		pi /= pi.sum()
+
+		for i in range(flat_tm.shape[0]):
+			flat_tm[i] /= flat_tm[i].sum()
+
+		from .model_container import model_container
+
+		result = model_container(type='hierarchical HMM',
+								nstates = 4,mean=mu,var=var,frac=pi,
+								tmatrix=flat_tm,
+								likelihood=likelihood,
+								a=post_a,b=post_b,beta=post_beta, h_pi=post_pi, h_tm=post_tm, h_exit=post_exit)
+
+		return result
 
 	def run_fret_vbhmm_one(self,nstates):
 		success,keep,y = self.get_fret_traces()

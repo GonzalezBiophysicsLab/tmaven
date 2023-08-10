@@ -142,3 +142,7 @@ def invpsi(x):
         L = L / 2
 
     return y
+
+@nb.njit
+def rev_eye(N):
+    return np.ones((N,N)) - np.eye(N)
