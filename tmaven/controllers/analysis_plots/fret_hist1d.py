@@ -65,7 +65,7 @@ class controller_fret_hist1d(controller_base_analysisplot):
 			'hist_color':'tab:blue',
 			'hist_edgecolor':'tab:blue',
 			'hist_log_y':False,
-			'hist_force_ymax':False,
+			'hist_auto_ylim':True,
 			'hist_ymax':5.0,
 			'hist_ymin':0.0,
 			'hist_nticks':5,
@@ -89,7 +89,7 @@ class controller_fret_hist1d(controller_base_analysisplot):
 
 		## Setup
 		ax.cla()
-		self.fix_ax(fig)
+		self.fix_ax(fig,ax)
 
 		if self.prefs['idealized']:
 			self.fpb = self.get_idealized_data()
@@ -138,16 +138,20 @@ class controller_fret_hist1d(controller_base_analysisplot):
 
 	def garnish(self,fig,ax):
 		## Fix up the plot
-		ylim = ax.get_ylim()
+		# ylim = ax.get_ylim()
 		ax.set_xlim(self.prefs['fret_min'], self.prefs['fret_max'])
-		ax.set_ylim(*ylim) ## incase modeling gave crazy results
+		# ax.set_ylim(*ylim) ## incase modeling gave crazy results
+		if not self.prefs['hist_auto_ylim']:
+			ax.set_ylim(self.prefs['hist_ymin'], self.prefs['hist_ymax'])
+		else:
+			ax.set_ylim(self.hist_y[self.hist_y>0].min(),self.hist_y.max()*1.1)
 		if not self.prefs['hist_log_y']:
-			if self.prefs['hist_force_ymax']:
-				ax.set_ylim(self.prefs['hist_ymin'], self.prefs['hist_ymax'])
+			if self.prefs['hist_auto_ylim']:
 				ticks = self.best_ticks(self.prefs['hist_ymin'], self.prefs['hist_ymax'], self.prefs['hist_nticks'])
 			else:
 				ticks = self.best_ticks(0,ax.get_ylim()[1], self.prefs['hist_nticks'])
 			ax.set_yticks(ticks)
+
 		ticks = self.best_ticks(self.prefs['fret_min'],self.prefs['fret_max'],self.prefs['fret_nticks'])
 		ax.set_xticks(ticks)
 
