@@ -73,7 +73,7 @@ class controller_fret_tdp(controller_base_analysisplot):
 		if len(fig.axes)>1:
 			[aa.remove() for aa in fig.axes[1:]]
 		ax.cla()
-		self.fix_ax(fig)
+		self.fix_ax(fig,ax)
 
 		## This is protected and shouldn't crash
 		d1,d2,N = self.get_neighbor_data()

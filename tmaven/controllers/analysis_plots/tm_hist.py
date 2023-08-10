@@ -125,7 +125,7 @@ class controller_tm_hist(controller_base_analysisplot):
 
 		## Setup
 		ax.cla()
-		self.fix_ax(fig)
+		self.fix_ax(fig,ax)
 
 		states = self.prefs['states']
 		try:

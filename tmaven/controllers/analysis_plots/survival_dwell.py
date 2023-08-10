@@ -98,7 +98,7 @@ class controller_survival_dwell(controller_base_analysisplot):
 		if len(fig.axes)>1:
 			[aa.remove() for aa in fig.axes[1:]]
 		ax.cla()
-		self.fix_ax(fig)
+		self.fix_ax(fig,ax)
 
 
 		self.d = d
