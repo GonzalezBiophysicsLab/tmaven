@@ -48,18 +48,20 @@ class controller_survival_dwell(controller_base_analysisplot):
 			'survival_mark_size':3,
 			'survival_edgecolor': 'black',
 
-			'model_on': False,
+			'model_on': True,
 			'model_color': 'tab:black',
 			'model_ls': '--',
+			'model_lw':1.,
 
 			'residual_heightpercent':25,
 			'residual_padpercent':5,
 			'residual_nticks':2,
-			'residual_ylabel_text': 'Residuals',
+			'residual_ylabel_text': 'Residual',
 			'residual_force_y':False,
 			'residual_ymin':-0.1,
 			'residual_ymax':0.1,
 			'residual_zero_alpha':0.15,
+			'residual_lw':1.,
 
 			'textbox_x':0.965,
 			'textbox_y':0.9,
@@ -137,61 +139,59 @@ class controller_survival_dwell(controller_base_analysisplot):
 			self.hist_y = bin_height
 
 
-		if self.prefs['model_on']:
-			if not self.maven.modeler.model.rates is None:
+		if self.prefs['model_on'] and not self.maven.modeler.model.rates is None:
+			if self.maven.modeler.model.rate_type == "Transition Matrix":
+				k = self.maven.modeler.model.rates[self.prefs['dwell_state']].sum()
+				k = k/dt
+				self.k = k
+				self.a = 1
+				self.beta = None
 
-				if self.maven.modeler.model.rate_type == "Transition Matrix":
-					k = self.maven.modeler.model.rates[self.prefs['dwell_state']].sum()
-					k = k/dt
-					self.k = k
-					self.a = 1
+				decay_surv = np.exp(-k*tau)
+				decay_hist = k*np.exp(-self.hist_x*k)
+
+			elif self.maven.modeler.model.rate_type == "Dwell Analysis":
+				
+				rate = self.maven.modeler.model.rates[self.prefs['dwell_state']]
+				k = rate['ks']
+				k = k/dt
+				self.k = k
+				self.a = rate['As']
+				
+				if 'betas' in rate:
+					self.beta = rate['betas']
+					
+					decay_surv = stretched_exp_surv(tau, self.k, self.beta, self.a)
+					decay_hist = stretched_exp_hist(self.hist_x, self.k, self.beta, self.a)
+
+				elif len(self.k) == 1:
 					self.beta = None
-
-					decay_surv = np.exp(-k*tau)
-					decay_hist = k*np.exp(-self.hist_x*k)
-
-				elif self.maven.modeler.model.rate_type == "Dwell Analysis":
 					
-					rate = self.maven.modeler.model.rates[self.prefs['dwell_state']]
-					k = rate['ks']
-					k = k/dt
-					self.k = k
-					self.a = rate['As']
+					decay_surv = single_exp_surv(tau, self.k, self.a)
+					decay_hist = single_exp_hist(self.hist_x, self.k, self.a)
+
+				elif len(self.k) == 2:
+					self.beta = None
 					
-					if 'betas' in rate:
-						self.beta = rate['betas']
-						
-						decay_surv = stretched_exp_surv(tau, self.k, self.beta, self.a)
-						decay_hist = stretched_exp_hist(self.hist_x, self.k, self.beta, self.a)
+					decay_surv = double_exp_surv(tau, self.k[0], self.k[1], self.a[0], self.a[1])
+					decay_hist = double_exp_hist(self.hist_x, self.k[0], self.k[1], self.a[0], self.a[1])
 
-					elif len(self.k) == 1:
-						self.beta = None
-						
-						decay_surv = single_exp_surv(tau, self.k, self.a)
-						decay_hist = single_exp_hist(self.hist_x, self.k, self.a)
-
-					elif len(self.k) == 2:
-						self.beta = None
-						
-						decay_surv = double_exp_surv(tau, self.k[0], self.k[1], self.a[0], self.a[1])
-						decay_hist = double_exp_hist(self.hist_x, self.k[0], self.k[1], self.a[0], self.a[1])
-
-					elif len(self.k) == 3:
-						self.beta = None
-						
-						decay_surv = triple_exp_surv(tau, self.k[0], self.k[1], self.k[1],self.a[0]/self.a.sum(), self.a[1]/self.a.sum(),self.a.sum())
-						decay_hist = triple_exp_hist(self.hist_x, self.k[0], self.k[1], self.k[1],self.a[0]/self.a.sum(), self.a[1]/self.a.sum(),self.a.sum())
-
-				color = self.prefs['model_color']
-				if not colors.is_color_like(color):
-					color = 'black'
+				elif len(self.k) == 3:
+					self.beta = None
 					
-				if self.prefs['survival_on']:
-					self.model = decay_surv
-					ax.plot(tau,decay_surv,color=color,ls =self.prefs['model_ls'])
-				elif self.prefs['hist_on']:
-					self.model = decay_hist
-					ax.plot(self.hist_x,decay_hist,color=color,ls =self.prefs['model_ls'])
+					decay_surv = triple_exp_surv(tau, self.k[0], self.k[1], self.k[1],self.a[0]/self.a.sum(), self.a[1]/self.a.sum(),self.a.sum())
+					decay_hist = triple_exp_hist(self.hist_x, self.k[0], self.k[1], self.k[1],self.a[0]/self.a.sum(), self.a[1]/self.a.sum(),self.a.sum())
+
+			color = self.prefs['model_color']
+			if not colors.is_color_like(color):
+				color = 'black'
+				
+			if self.prefs['survival_on']:
+				self.model = decay_surv
+				ax.plot(tau,decay_surv,color=color,ls =self.prefs['model_ls'])
+			elif self.prefs['hist_on']:
+				self.model = decay_hist
+				ax.plot(self.hist_x,decay_hist,color=color,ls =self.prefs['model_ls'])
 
 		if self.prefs['hist_log_y']:
 			ax.set_yscale('log')
@@ -223,12 +223,12 @@ class controller_survival_dwell(controller_base_analysisplot):
 
 				if self.prefs["survival_on"]:
 					residuals = self.surv - self.model
-					rax.plot(tau, residuals, color=color,ls =self.prefs['model_ls'])
+					rax.plot(tau, residuals, color=color,ls =self.prefs['model_ls'],lw=self.prefs['model_lw'])
 				elif self.prefs["hist_on"]:
 					residuals = self.hist_y - self.model
-					rax.plot(self.hist_x, residuals, color=color,ls =self.prefs['model_ls'])
+					rax.plot(self.hist_x, residuals, color=color,ls =self.prefs['model_ls'],lw=self.prefs['residual_lw'])
 
-		self.fix_ax(fig)
+		self.fix_ax(fig,ax)
 		self.garnish(fig,ax,rax)
 		fig.canvas.draw()
 
@@ -298,7 +298,7 @@ class controller_survival_dwell(controller_base_analysisplot):
 			bbox=bbox_props, fontsize=self.prefs['textbox_fontsize']/dpr,
 			family=self.prefs['font'])
 
-		if self.prefs['model_on']:
+		if self.prefs['model_on'] and not self.maven.modeler.model.rates is None:
 			if not self.beta is None:
 				lstr2 ='A = {} \nk = {}\n'.format(np.around(self.a, decimals = 3),np.around(self.k, decimals = 3)) + r'$\beta$ = {}'.format(np.around(self.beta, decimals = 3))
 			else:
