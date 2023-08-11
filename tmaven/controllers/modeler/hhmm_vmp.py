@@ -489,6 +489,7 @@ def vmp_hhmm(data,depth_vec,prod,max_iter,tol,restarts,initguess):
     ev = np.NINF
 
     for it in range(restarts+1):
+        print("Restart {}".format(it+1))
 
         stuff = initialize(data,N,depth_vec,prod,initguess)
 
@@ -509,7 +510,7 @@ def vmp_hhmm(data,depth_vec,prod,max_iter,tol,restarts,initguess):
         record_evidence = []
 
         while converged == False:
-            #print('Starting Iteration %d'%(count))
+            print('Starting Iteration %d'%(count))
             tempev = np.zeros((len(data),1))
             Ts = [None] * len(data)
             test = [[0 for j in range(int(post_path[i-1,-1]))] for i in range(post_depth,0,-1)]
