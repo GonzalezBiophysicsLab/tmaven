@@ -5,7 +5,7 @@ from .fxns.statistics import dkl_dirichlet
 
 
 def initialize(data,N,depth_vec,prod_states,guess):
-    dat = (data.T).flatten()
+    dat = np.concatenate(data).T #(data.T).flatten()
     depth = len(depth_vec) + 1
     count = np.ones(depth)
     active = np.zeros((depth,1))
@@ -170,7 +170,7 @@ def gauss_update(data,update_a,update_b,update_beta,update_mu,hyper_a,hyper_b,hy
 
     # mu update
     message_mu = np.zeros((2,len(data)))
-    message_mu[0,:] = data.flatten().T * hyper_a[i,:] / hyper_b[i,:]
+    message_mu[0,:] = data.T * hyper_a[i,:] / hyper_b[i,:] #data.flatten().T * hyper_a[i,:] / hyper_b[i,:]
     message_mu[1,:] = -np.ones((1,len(data))) * hyper_a[i,:] / (2. * hyper_b[i,:])
     message_mu *= conprob
     phi_mu = np.array([hyper_beta[i,:].dot(hyper_mu[i,:]), (-hyper_beta[i,:] / 2.)[0]]) \
@@ -181,8 +181,10 @@ def gauss_update(data,update_a,update_b,update_beta,update_mu,hyper_a,hyper_b,hy
 
     # precision update
     message_prec = np.zeros((2,len(data)))
-    message_prec[0,:] = -0.5 * (data.flatten().T**2 - 2. * data.flatten().T * update_mu[i,:] \
+    message_prec[0,:] = -0.5 * (data.T**2 - 2. * data.T * update_mu[i,:] \
                                  + update_mu[i,:]**2 + 1 / update_beta[i,:])
+    #message_prec[0,:] = -0.5 * (data.flatten().T**2 - 2. * data.flatten().T * update_mu[i,:] \
+    #                             + update_mu[i,:]**2 + 1 / update_beta[i,:])
     message_prec[1,:] = np.ones((1,len(data))) / 2.
     message_prec *= conprob
     phi_prec = np.array([-hyper_b[i,:][0], hyper_a[i,:][0] - 1.]) + np.sum(message_prec,1)
@@ -485,7 +487,7 @@ def vmp_hhmm(data,depth_vec,prod,max_iter,tol,restarts,initguess):
     #n = numstates
     N = len(data)
     depth = len(depth_vec) + 1
-    fulldata = data.flatten()
+    fulldata = np.concatenate(data) #data.flatten()
     ev = np.NINF
 
     for it in range(restarts+1):

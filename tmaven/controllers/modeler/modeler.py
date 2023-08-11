@@ -45,6 +45,7 @@ def export_dict_to_group(h_group, dicty, attributes=[]):
 			elif np.isscalar(dicty[k]):
 				h_group.create_dataset(k,data=dicty[k])
 			elif not isinstance(dicty[k],types.FunctionType):
+				print(k)
 				h_group.create_dataset(k,data=dicty[k],compression='gzip')
 
 
@@ -446,7 +447,7 @@ class controller_modeler(object):
 		result = self.cached_functions['kmeans'](y,nstates)
 		return result
 	
-	def cache_vmphhmm(self,y,depth_vec,prod_states,max_iter,tol,restarts,guess):
+	def cached_vmphhmm(self,y,depth_vec,prod_states,max_iter,tol,restarts,guess):
 		''' Run vmp hhmm'''
 		if not 'hHMM' in self.cached_functions:
 			logger.info('Caching hHMM...')
@@ -1382,15 +1383,27 @@ class controller_modeler(object):
 		for i in range(flat_tm.shape[0]):
 			flat_tm[i] /= flat_tm[i].sum()
 
+		tree = {}
+
+		for i in range(len(post_pi)):
+			tree_level = {}
+			tree_level['pi'] = np.array(post_pi[i])
+			tree_level['tm'] = np.array(post_tm[i])
+			tree_level['exit'] = np.array(post_exit[i])
+			tree['d={}'.format(i+2)] = tree_level
+
+
 		from .model_container import model_container
 
 		result = model_container(type='hierarchical HMM',
 								nstates = 4,mean=mu,var=var,frac=pi,
 								tmatrix=flat_tm,
 								likelihood=likelihood,
-								a=post_a,b=post_b,beta=post_beta, h_pi=post_pi, h_tm=post_tm, h_exit=post_exit)
+								a=post_a,b=post_b,beta=post_beta, tree=tree)
 
-		return result
+		self.model = result
+		self.make_report(result)
+		self.maven.emit_data_update()
 
 	def run_fret_vbhmm_one(self,nstates):
 		success,keep,y = self.get_fret_traces()
