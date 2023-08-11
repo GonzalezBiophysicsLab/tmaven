@@ -1329,6 +1329,10 @@ class controller_modeler(object):
 		self.maven.emit_data_update()
 
 	def run_fret_hhmm(self):
+		success,keep,y = self.get_fret_traces()
+		if not success:
+			return
+	
 		max_iter = self.maven.prefs['modeler.hhmm.maxiters']
 		tol = self.maven.prefs['modeler.hhmm.tolerance']
 		restarts = self.maven.prefs['modeler.hhmm.restarts']
@@ -1337,7 +1341,7 @@ class controller_modeler(object):
 		prod_states = 2
 
 
-		post_mu, post_beta, post_a, post_b, post_pi, post_tm, post_exit,likelihood = self.cached_vmphhmm(dataset,
+		post_mu, post_beta, post_a, post_b, post_pi, post_tm, post_exit,likelihood = self.cached_vmphhmm(y,
 																							depth_vec,prod_states,
 																							max_iter,tol,
 																							restarts,guess)
