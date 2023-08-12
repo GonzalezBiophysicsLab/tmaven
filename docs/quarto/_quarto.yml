@@ -62,6 +62,7 @@ website:
           - "examples/example_script1.qmd"
           - "examples/example_rastergramplot.qmd"
           - "examples/example_entropyplot.qmd"
+          - "examples/example_runhhmm.qmd"
 
       - section: "Information"
         contents:
