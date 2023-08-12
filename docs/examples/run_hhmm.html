@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>tMAVEN Documentation - Installing tMAVEN</title>
+<title>tMAVEN Documentation - Run hHMM in tMAVEN script mode</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -57,23 +57,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </style>
 
 
-<script src="site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="site_libs/clipboard/clipboard.min.js"></script>
-<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="site_libs/quarto-search/fuse.min.js"></script>
-<script src="site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="./">
-<script src="site_libs/quarto-html/quarto.js"></script>
-<script src="site_libs/quarto-html/popper.min.js"></script>
-<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="site_libs/quarto-html/anchor.min.js"></script>
-<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
-<script src="site_libs/quarto-contrib/videojs/video.min.js"></script>
-<link href="site_libs/quarto-contrib/videojs/video-js.css" rel="stylesheet">
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -96,7 +94,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 }</script>
 
 
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="../styles.css">
 </head>
 
 <body class="nav-sidebar floating">
@@ -108,7 +106,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./install.html">Get Started</a></li><li class="breadcrumb-item"><a href="./install.html">Installing tMAVEN</a></li></ol></nav>
+      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">
+      (t)ime series (M)odeling, (A)nalysis, and (V)isualization (EN)vironment
+      </li></ol></nav>
       <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
       </a>
       <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
@@ -122,11 +122,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <!-- sidebar -->
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation floating overflow-auto">
     <div class="pt-lg-2 mt-2 text-left sidebar-header sidebar-header-stacked">
-      <a href="./index.html" class="sidebar-logo-link">
-      <img src="./images/logo.png" alt="" class="sidebar-logo py-0 d-lg-inline d-none">
+      <a href="../index.html" class="sidebar-logo-link">
+      <img src="../images/logo.png" alt="" class="sidebar-logo py-0 d-lg-inline d-none">
       </a>
     <div class="sidebar-title mb-0 py-0">
-      <a href="./">(t)ime series (M)odeling, (A)nalysis, and (V)isualization (EN)vironment</a> 
+      <a href="../">(t)ime series (M)odeling, (A)nalysis, and (V)isualization (EN)vironment</a> 
         <div class="sidebar-tools-main tools-wide">
     <a href="https://www.biorxiv.org" rel="" title="tMAVEN paper" class="quarto-navigation-tool px-1" aria-label="tMAVEN paper"><i class="bi bi-file-earmark-text"></i></a>
     <a href="https://github.com/GonzalezBiophysicsLab/tmaven" rel="" title="tMAVEN repo" class="quarto-navigation-tool px-1" aria-label="tMAVEN repo"><i class="bi bi-github"></i></a>
@@ -143,40 +143,40 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./index.html" class="sidebar-item-text sidebar-link">
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Home</span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./about.html" class="sidebar-item-text sidebar-link">
+  <a href="../about.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">About tMAVEN</span></a>
   </div>
 </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="false">
  <span class="menu-text">Get Started</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./install.html" class="sidebar-item-text sidebar-link active">
+  <a href="../install.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Installing tMAVEN</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./tutorial_quickstart.html" class="sidebar-item-text sidebar-link">
+  <a href="../tutorial_quickstart.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Quick Tutorial</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./shortcuts.html" class="sidebar-item-text sidebar-link">
+  <a href="../shortcuts.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Shortcut Keys</span></a>
   </div>
 </li>
@@ -193,37 +193,37 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./tmanual/web_intro.html" class="sidebar-item-text sidebar-link">
+  <a href="../tmanual/web_intro.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">0. Introduction</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./tmanual/installing.html" class="sidebar-item-text sidebar-link">
+  <a href="../tmanual/installing.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">1. Installing</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./tmanual/navigating.html" class="sidebar-item-text sidebar-link">
+  <a href="../tmanual/navigating.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">2. Navigating</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./tmanual/preprocessing.html" class="sidebar-item-text sidebar-link">
+  <a href="../tmanual/preprocessing.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">3. Preprocessing</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./tmanual/modelling.html" class="sidebar-item-text sidebar-link">
+  <a href="../tmanual/modelling.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">4. Modelling</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./tmanual/plotting.html" class="sidebar-item-text sidebar-link">
+  <a href="../tmanual/plotting.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">5. Plotting</span></a>
   </div>
 </li>
@@ -240,31 +240,31 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./examples/example_defaultprefs.html" class="sidebar-item-text sidebar-link">
+  <a href="../examples/example_defaultprefs.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Lab Default Preferences</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./examples/example_smdload.html" class="sidebar-item-text sidebar-link">
+  <a href="../examples/example_smdload.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Load SMD</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./examples/example_script1.html" class="sidebar-item-text sidebar-link">
+  <a href="../examples/example_script1.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Scripted modeling - no GUI</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./examples/example_rastergramplot.html" class="sidebar-item-text sidebar-link">
+  <a href="../examples/example_rastergramplot.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Plot Rastergram</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./examples/example_entropyplot.html" class="sidebar-item-text sidebar-link">
+  <a href="../examples/example_entropyplot.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Plot Entropy</span></a>
   </div>
 </li>
@@ -281,25 +281,25 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./info_priors.html" class="sidebar-item-text sidebar-link">
+  <a href="../info_priors.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Priors</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./info_models.html" class="sidebar-item-text sidebar-link">
+  <a href="../info_models.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Models</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./info_pysmd.html" class="sidebar-item-text sidebar-link">
+  <a href="../info_pysmd.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">SMD Files</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./develop.html" class="sidebar-item-text sidebar-link">
+  <a href="../develop.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Develop</span></a>
   </div>
 </li>
@@ -311,21 +311,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" class="toc-active">
-    <h2 id="toc-title">On this page</h2>
-   
-  <ul>
-  <li><a href="#standalone-binary" id="toc-standalone-binary" class="nav-link active" data-scroll-target="#standalone-binary">Standalone binary</a></li>
-  <li><a href="#python-package" id="toc-python-package" class="nav-link" data-scroll-target="#python-package">Python package</a></li>
-  </ul>
-</nav>
+        
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Installing tMAVEN</h1>
+<h1 class="title">Run hHMM in tMAVEN script mode</h1>
 </div>
 
 
@@ -340,76 +333,36 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 </header>
 
-<p>There are two ways you can install tMAVEN:</p>
-<ol type="1">
-<li>Install it as a standalone program (Binary)</li>
-<li>Install it as a Python package (Code)</li>
-</ol>
-<p>Unless you have a reason (<em>e.g.</em>, you want to make significant changes to the code), you should probably just install tMAVEN as a standalone program.</p>
-<section id="standalone-binary" class="level1">
-<h1>Standalone binary</h1>
-<ol type="1">
-<li>Go to the <a href="https://github.com/GonzalezBiophysicsLab/tmaven/releases/latest">latest binary release on Github</a>.</li>
-<li>Download
-<ol type="1">
-<li>The <code>.dmg</code> file (Mac).</li>
-<li>The <code>.msi</code> file (Windows).</li>
-</ol></li>
-<li>Double click on the file and follow the directions to install tMAVEN.</li>
-</ol>
-<p>Here are video directions for Mac:</p>
-<div class="quarto-video"><video id="video_shortcode_videojs_video1" class="video-js vjs-default-skin vjs-fluid" controls="" preload="auto" data-setup="{}" title=""><source src="mac_install.mp4"></video></div>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Note
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p><strong>Mac security issue.</strong> If you try to install on a Mac, you may encounter a security issue that won’t allow you to launch tMAVEN because the OS cannot verify that it isn’t malware. You need to do the following:</p>
-<ol type="1">
-<li>Go to the <code>Apple</code> menu item</li>
-<li>Open <code>System Settings</code></li>
-<li>Go to the <code>Privacy &amp; Security</code> tab on the side.</li>
-<li>Scroll down past the <code>Privacy</code> section, and into the <code>Security</code> section</li>
-<li>Find the section that says <code>tMAVEN was blocked from use becasue it is not from an identified developer.</code></li>
-<li>Click <code>Open Anyway</code></li>
-</ol>
-</div>
-</div>
-</section>
-<section id="python-package" class="level1">
-<h1>Python package</h1>
-<ul>
-<li>[Optional] Create a new conda environment, <code>conda create -n tmaven python==3.9</code></li>
-<li>[Optional] Activate your conda environment, <code>conda activate tmaven</code></li>
-<li>[Optional] Make sure you have pip, <code>conda install pip</code></li>
-<li>Visit the <a href="https://github.com/GonzalezBiophysicsLab/tmaven">tMAVEN repository on Github</a> and download/clone the repository, or simply clone it from in your terminal with <code>git clone https://github.com/GonzalezBiophysicsLab/tmaven</code></li>
-<li>Navigate to the tmaven folder, <code>cd /the/path/to/the/folder/tmaven</code></li>
-<li>Install the package in place using pip by running <code>pip install -e ./</code></li>
-<li>To open tMAVEN, run <code>tmaven</code> from any folder, or you can launch it in the tmaven folder as <code>python -m tmaven</code></li>
-</ul>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Note
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p><strong>Apple silicon workaround.</strong> Note, if you are on a Mac with an Apple silicon chip, you may need to emulate x86_64 architecture for some libraries that tMAVEN relies on; this means that everything, including you Python, needs to be emulated. Any easy way to do this is add the following line to your RC file (<em>e.g.</em>, .bashrc, .zshrc):</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="bu">alias</span> intel=<span class="st">"env /usr/bin/arch -x86_64 /bin/zsh --login"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Close and reopen your terminal (or <code>source</code> your editted RC file). Then run <code>intel</code> in your terminal window. Now you can make an new conda environment and install tMAVEN.</p>
-</div>
-</div>
+<p>The following is a script example for apply a hierarchical HMM (hHMM) in tMAVEN. The algorithm used is translated into Python from the MATLAB version described in: Hon, J., and Gonzalez, R.L., Jr., Bayesian-estimated hierarchical HMMs enable robust analysis of single-molecule kinetic heterogeneity. Biophysical Journal. 116, 1790-1802 (2019).</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tmaven.app <span class="im">import</span> setup_maven</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co">#### Analyze data with hHMM</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co">## Make a new MAVEN instance</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>maven  <span class="op">=</span> setup_maven([<span class="st">'--log_stdout'</span>])</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co">## Load data</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>maven.io.load_smdtmaven_hdf5(<span class="st">'example_smd.hdf5'</span>,<span class="st">'L1-tRNA'</span>)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="co">## Turn on only the first 10 trajectorys</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>maven.data.flag_ons<span class="op">*=</span><span class="va">False</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>maven.data.flag_ons[:<span class="dv">10</span>]<span class="op">+=</span><span class="va">True</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Specify the model parameters</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>maven.prefs[<span class="st">'modeler.hhmm.restarts'</span>] <span class="op">=</span> <span class="dv">4</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>maven.prefs[<span class="st">'modeler.hhmm.maxiters'</span>] <span class="op">=</span> <span class="dv">100</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>maven.prefs[<span class="st">'modeler.hhmm.tolerance'</span>] <span class="op">=</span> <span class="fl">1e-4</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="co">## Run 2xw hHMM</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>maven.modeler.run_fret_hhmm()</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="co"># Export</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>oname <span class="op">=</span> <span class="st">'result_hhmm.hdf5'</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>maven.modeler.export_result_to_hdf5(oname)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>This script runs a two-level two-state hHMM. Integrating this into the tMAVEN GUI, along with interface options to specify and customize the tree structure of the hHMM applied to the data, is currently a work in progress.</p>
 
 
-</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
@@ -646,7 +599,6 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 });
 </script>
 </div> <!-- /content -->
-<script>videojs(video_shortcode_videojs_video1);</script>
 
 
 
