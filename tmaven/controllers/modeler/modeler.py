@@ -1401,6 +1401,7 @@ class controller_modeler(object):
 								likelihood=likelihood,
 								a=post_a,b=post_b,beta=post_beta, tree=tree)
 
+		result.ran = [np.nonzero(keep)[0]]
 		self.model = result
 		self.make_report(result)
 		self.maven.emit_data_update()
