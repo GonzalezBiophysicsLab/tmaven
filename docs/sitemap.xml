@@ -2,11 +2,11 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://GonzalezBiophysicsLab.github.io/tmaven/info_pysmd.html</loc>
-    <lastmod>2023-08-08T20:38:51.347Z</lastmod>
+    <lastmod>2023-08-12T14:33:04.498Z</lastmod>
   </url>
   <url>
     <loc>https://GonzalezBiophysicsLab.github.io/tmaven/info_priors.html</loc>
-    <lastmod>2023-08-08T20:38:51.626Z</lastmod>
+    <lastmod>2023-08-12T14:33:02.235Z</lastmod>
   </url>
   <url>
     <loc>https://GonzalezBiophysicsLab.github.io/tmaven/index.html</loc>
@@ -14,7 +14,7 @@
   </url>
   <url>
     <loc>https://GonzalezBiophysicsLab.github.io/tmaven/install.html</loc>
-    <lastmod>2023-08-08T20:38:52.160Z</lastmod>
+    <lastmod>2023-08-12T14:33:08.661Z</lastmod>
   </url>
   <url>
     <loc>https://GonzalezBiophysicsLab.github.io/tmaven/shortcuts.html</loc>
@@ -22,7 +22,7 @@
   </url>
   <url>
     <loc>https://GonzalezBiophysicsLab.github.io/tmaven/about.html</loc>
-    <lastmod>2023-08-08T20:38:52.682Z</lastmod>
+    <lastmod>2023-08-12T14:32:54.734Z</lastmod>
   </url>
   <url>
     <loc>https://GonzalezBiophysicsLab.github.io/tmaven/examples/example_rastergramplot.html</loc>
@@ -86,10 +86,14 @@
   </url>
   <url>
     <loc>https://GonzalezBiophysicsLab.github.io/tmaven/info_models.html</loc>
-    <lastmod>2023-08-08T20:38:57.104Z</lastmod>
+    <lastmod>2023-08-12T14:32:59.874Z</lastmod>
   </url>
   <url>
     <loc>https://GonzalezBiophysicsLab.github.io/tmaven/develop.html</loc>
     <lastmod>2023-08-08T20:38:57.432Z</lastmod>
+  </url>
+  <url>
+    <loc>https://GonzalezBiophysicsLab.github.io/tmaven/examples/run_hhmm.html</loc>
+    <lastmod>2023-08-12T14:41:30.046Z</lastmod>
   </url>
 </urlset>
