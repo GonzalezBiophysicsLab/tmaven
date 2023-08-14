@@ -6,7 +6,7 @@ def run(gui):
 	fname = QFileDialog.getOpenFileName(gui,'Choose script (.py) to run ','./')[0]
 	if fname == "":
 		return
-	gui.maven.scripts.run(fname)
+	gui.maven.scripts.run(fname,gui=gui)
 
 def input_run(gui):
 	from PyQt5.QtWidgets import QInputDialog
@@ -17,7 +17,7 @@ def input_run(gui):
 	try:
 		logger.info('Script: running \n%s'%(text))
 		code = compile(text,'<string>','exec')
-		context = {'maven':gui.maven} ## this will hold all of the elements in the plugin file... eg functions, global variables.
+		context = {'maven':gui.maven,'gui':gui} ## this will hold all of the elements in the plugin file... eg functions, global variables.
 		exec(code,context)
 	except Exception as e:
 		logger.error(str(e))

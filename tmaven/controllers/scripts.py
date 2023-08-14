@@ -27,7 +27,7 @@ class controller_scripts(object):
 		logger.info('Script Runner Initialized')
 
 	@tryexcept
-	def run(self,fname):
+	def run(self,fname,gui=None):
 		''' run a plugin file
 		'''
 
@@ -40,7 +40,7 @@ class controller_scripts(object):
 		try:
 			logger.info('Script: running %s'%(fname))
 			code = compile(plugin,fname,'exec')
-			context = {'maven':self.maven} ## this will hold all of the elements in the plugin file... eg functions, global variables.
+			context = {'maven':self.maven,'gui':gui} ## this will hold all of the elements in the plugin file... eg functions, global variables.
 			exec(code,context)
 		except Exception as e:
 			logging.error(str(e))
