@@ -260,8 +260,10 @@ class controller_modeler(object):
 		pre,post = self.get_prepost()
 		notshort = post-pre > 2
 		keep = keep[notshort]
+		print(len(keep))
 		y = [self.maven.calc_fret(i)[pre[i]:post[i],1].astype('double').flatten() for i in range(keep.size) if keep[i]]
 		y = self.clip_traces(y,-1,2)
+		print(len(y))
 		return True,keep,y
 
 	def get_prepost(self):
@@ -345,8 +347,8 @@ class controller_modeler(object):
 		N,T = data.shape
 		rs = result.r
 		result.r = np.zeros((N,T,result.nstates)) + np.nan
-		for i in range(N):
-			ii = result.ran[i]
+		for i,ii in enumerate(result.ran):
+			print(i,ii)
 			pre = self.maven.data.pre_list[ii]
 			post = self.maven.data.post_list[ii]
 			result.r[ii,pre:post] = rs[i]
@@ -479,6 +481,7 @@ class controller_modeler(object):
 
 		result = self.cached_kmeans(np.concatenate(y),nstates)
 		result.ran = np.nonzero(keep)[0].tolist()
+		print(result.ran)
 		result.idealize = lambda : self.idealize_fret_kmeans(result)
 		result.idealize()
 		self.recast_rs(result)
