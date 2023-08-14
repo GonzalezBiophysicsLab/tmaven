@@ -30,7 +30,10 @@ default_prefs = {
 	'modeler.ebhmm.prior.pi':1.,
 	'modeler.hhmm.tolerance': 1e-4,
     'modeler.hhmm.maxiters':100,
-    'modeler.hhmm.restarts':2
+    'modeler.hhmm.restarts':2,
+    'modeler.dwells.include_first':True,
+    'modeler.dwells.include_last':False,
+    'modeler.dwells.fix_norm':False
 }
 
 def export_dict_to_group(h_group, dicty, attributes=[]):
@@ -1452,7 +1455,8 @@ class controller_modeler(object):
 
 		model.rates[state] = {}
 		model.rates[state]['ks'] = rates[0]
-		model.rates[state]['As'] = rates[-1]
+		model.rates[state]['As'] = rates[-2]
+		model.rates[state]['error'] = rates[-1]
 
 		if type == "Stretched Exponential":
 			model.rates[state]["betas"] = rates[1]

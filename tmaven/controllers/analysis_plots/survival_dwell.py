@@ -178,8 +178,8 @@ class controller_survival_dwell(controller_base_analysisplot):
 				elif len(self.k) == 3:
 					self.beta = None
 					
-					decay_surv = triple_exp_surv(tau, self.k[0], self.k[1], self.k[1],self.a[0]/self.a.sum(), self.a[1]/self.a.sum(),self.a.sum())
-					decay_hist = triple_exp_hist(self.hist_x, self.k[0], self.k[1], self.k[1],self.a[0]/self.a.sum(), self.a[1]/self.a.sum(),self.a.sum())
+					decay_surv = triple_exp_surv(tau, self.k[0], self.k[1], self.k[2], self.a[0], self.a[1],self.a[2])
+					decay_hist = triple_exp_hist(self.hist_x, self.k[0], self.k[1], self.k[2], self.a[0], self.a[1],self.a[2])
 
 			color = self.prefs['model_color']
 			if not colors.is_color_like(color):

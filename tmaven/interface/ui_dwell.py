@@ -48,11 +48,9 @@ class _dwell_dialog(QDialog):
 
 		return button
 
-	def add_check_box(self, label, grid, position, fxn, default):
-		check = QCheckBox(label, self)
+	def add_check_box(self, label, grid, position, default=False):
+		check = flag_check(label,default)
 		grid.addWidget(check, position[0], position[1])
-		check.setChecked(default)
-		check.stateChanged.connect(fxn)
 
 		return check
 
@@ -95,9 +93,12 @@ class _dwell_dialog(QDialog):
 			if self.active_state in model.rates:
 				rate = model.rates[self.active_state]
 				rate_str = "Rates = \n {} \n".format(str(rate['ks']))
+				rate_str += "Error = \n {} \n".format(str(rate['error'][0]))
 				rate_str += "Coefficients = \n {} \n".format(str(rate['As']))
+				rate_str += "Error = \n {} \n".format(str(rate['error'][-1]))
 				if 'betas' in rate:
 					rate_str += "Betas = \n {} \n".format(str(rate['betas']))
+					rate_str += "Error = \n {} \n".format(str(rate['error'][1]))
 			else:
 				rate_str = "Rates = N/A"
 		else:
@@ -116,12 +117,6 @@ class _dwell_dialog(QDialog):
 		self.update_analysis()
 		self.update_result()
 
-	def fixA_change(self):
-		if self.fixA_check.isChecked():
-			self.fixA = True
-		else:
-			self.fixA = False
-
 	def state_change(self):
 		self.active_state = int(self.state_combo.currentText())
 		self.update_result()
@@ -132,7 +127,8 @@ class _dwell_dialog(QDialog):
 	def add_dwells(self):
 		from ..controllers.modeler.dwells import calculate_dwells
 		model = self.gui.maven.modeler.model
-		calculate_dwells(model)
+		first_flag = self.first_check.isChecked()
+		calculate_dwells(model,first_flag)
 		self.update_dwell()
 
 	def plot_dwells(self):
@@ -147,7 +143,8 @@ class _dwell_dialog(QDialog):
 		if model.dwells is None:
 			return
 
-		self.gui.maven.modeler.run_fret_dwell_analysis(self.active_func, self.active_state, fix_A = self.fixA)
+		self.gui.maven.modeler.run_fret_dwell_analysis(self.active_func, self.active_state,
+						 				 fix_A = self.fixA_check.isChecked())
 		self.update_result()
 
 	def run_tmatrix(self):
@@ -184,6 +181,7 @@ def dialog_dwell_analysis(gui,model):
 
 	dwell_dialog.add_push_button('Calculate', grid2, [1,0], fxn = lambda : dwell_dialog.add_dwells())
 	dwell_dialog.add_push_button('Plot', grid2, [1,1], fxn = lambda : dwell_dialog.plot_dwells())
+	dwell_dialog.first_check = dwell_dialog.add_check_box("Include first", grid2, [2,0])
 	groupbox2.setLayout(grid2)
 	dwell_dialog.grid.addWidget(groupbox2, 1, 0)
 
@@ -201,32 +199,38 @@ def dialog_dwell_analysis(gui,model):
 	dwell_dialog.func_combo.activated.connect(lambda: dwell_dialog.func_change())
 	dwell_dialog.add_push_button("T-matrix", grid3, [3,0], fxn = lambda : dwell_dialog.run_tmatrix())
 	dwell_dialog.add_push_button("Run", grid3, [3,1], fxn = lambda : dwell_dialog.run_dwell_analysis())
-	dwell_dialog.fixA_check = dwell_dialog.add_check_box("Enforce Normalisation", grid3, [4,1], fxn = lambda: dwell_dialog.fixA_change(), default = False)
-	dwell_dialog.fixA = False
+	dwell_dialog.fixA_check = dwell_dialog.add_check_box("Enforce Normalisation", grid3, [4,1])
 
 	groupbox3.setLayout(grid3)
 	dwell_dialog.grid.addWidget(groupbox3, 2, 0)
 
-	# Result groupbox
+	# Result groupb
+
 	groupbox4 = QGroupBox("Results")
 	grid4 = QGridLayout()
 
 	state_str = "State = {}\n".format(dwell_dialog.active_state)
 	rate_type_str = "Rate_type = {}\n".format(model.rate_type)
+
 	if model.rate_type == "Transition Matrix":
 		rate = model.rates[dwell_dialog.active_state]
 		rate_str = "Rates = \n {} \n".format(str(rate))
+
 	elif model.rate_type == "Dwell Analysis":
 		if dwell_dialog.active_state in model.rates:
 			rate = model.rates[dwell_dialog.active_state]
-			rate_str = "Rates = \n {} \n".format(str(rate['ks']))
+			rate_str = "Rates = \n {} \n".format(str(rate['As']))
+			rate_str += "Error = \n {} \n".format(str(rate['error'][0]))
 			rate_str += "Coefficients = \n {} \n".format(str(rate['As']))
+			rate_str += "Error = \n {} \n".format(str(rate['error'][-1]))
 			if 'betas' in rate:
 				rate_str += "Betas = \n {} \n".format(str(rate['betas']))
+				rate_str += "Error = \n {} \n".format(str(rate['error'][1]))
 		else:
 			rate_str = "Rates = N/A"
 	else:
 		rate_str = ""
+
 
 	disp_str =  state_str + rate_type_str + rate_str
 	dwell_dialog.te = QPlainTextEdit(parent=dwell_dialog)
@@ -235,8 +239,10 @@ def dialog_dwell_analysis(gui,model):
 	dwell_dialog.te.setReadOnly(True)
 	grid4.addWidget(dwell_dialog.te, 0,0)
 
+
 	groupbox4.setLayout(grid4)
 	dwell_dialog.grid.addWidget(groupbox4, 0, 1, 3, 1)
+
 	dwell_dialog.state_combo.activated.connect(lambda: dwell_dialog.state_change())
 
 	gui.dwell_dialog = dwell_dialog
@@ -249,3 +255,9 @@ def launch_fret_dwell_analysis(gui):
 		model = gui.maven.modeler.model
 		dialog_dwell_analysis(gui,model)
 		gui.dwell_dialog.start()
+
+class flag_check(QCheckBox):
+	def __init__(self, label, default=False):
+		super(QCheckBox, self).__init__(label)
+		self.setChecked(default)
+
