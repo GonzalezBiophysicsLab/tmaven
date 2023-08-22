@@ -467,34 +467,38 @@ class main_window(QMainWindow):
 			self.default_session()
 			return
 
-		with open(config_file,'r') as f:
-			session = json.load(f)
-		session_str =  ",".join(f"{key}:{value}" for key, value in session.items())
-		logger.info('Loaded session data from {}.\nSession data - {}'.format(config_file,session_str))
-		x = session['window']['x'] if 'x' in session['window'] else None
-		y = session['window']['y'] if 'y' in session['window'] else None
-		w = session['window']['w'] if 'w' in session['window'] else None
-		h = session['window']['h'] if 'h' in session['window'] else None
+		try:
+			with open(config_file,'r') as f:
+				session = json.load(f)
+			session_str =  ",".join(f"{key}:{value}" for key, value in session.items())
+			logger.info('Loaded session data from {}.\nSession data - {}'.format(config_file,session_str))
+			x = session['window']['x'] if 'x' in session['window'] else None
+			y = session['window']['y'] if 'y' in session['window'] else None
+			w = session['window']['w'] if 'w' in session['window'] else None
+			h = session['window']['h'] if 'h' in session['window'] else None
 
-		lightdark_mode = session['lightdark_mode'] if 'lightdark_mode' in session else 'light'
-		if lightdark_mode == 'light':
-			palette = self.light_theme()
-			self.maven.prefs['plot.bg_color'] = '#FFFFFF'
-			self.lightdark_mode = 'light'
-		elif lightdark_mode == 'dark':
-			palette = self.dark_theme()
-			self.maven.prefs['plot.bg_color'] = '#353535'
-			self.lightdark_mode = 'dark'
+			lightdark_mode = session['lightdark_mode'] if 'lightdark_mode' in session else 'light'
+			if lightdark_mode == 'light':
+				palette = self.light_theme()
+				self.maven.prefs['plot.bg_color'] = '#FFFFFF'
+				self.lightdark_mode = 'light'
+			elif lightdark_mode == 'dark':
+				palette = self.dark_theme()
+				self.maven.prefs['plot.bg_color'] = '#353535'
+				self.lightdark_mode = 'dark'
 
-		plot_mode = session['plot_mode'] if 'plot_mode' in session else 'smFRET'
-		self.plot_container.change_mode(plot_mode)
-		self.size_window(x,y,w,h)
-		app = QApplication.instance()
-		app.setPalette(palette)
-		# app.setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }")
-		app.processEvents()
-		self.show()
-		self.plot_container.plot.redrawplot() ## it is necessary to draw/resize after showing the interface, otherwise the DPI is messed up
+			plot_mode = session['plot_mode'] if 'plot_mode' in session else 'smFRET'
+			self.plot_container.change_mode(plot_mode)
+			self.size_window(x,y,w,h)
+			app = QApplication.instance()
+			app.setPalette(palette)
+			# app.setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }")
+			app.processEvents()
+			self.show()
+			self.plot_container.plot.redrawplot() ## it is necessary to draw/resize after showing the interface, otherwise the DPI is messed up
+		except:
+			logger.error('Failed loading previous session.')
+			self.default_session()
 
 	def show_log(self,event=None):
 		w = QMainWindow(parent=self)
