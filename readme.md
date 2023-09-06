@@ -3,7 +3,7 @@
 
 * Visit the [tMAVEN website](https://gonzalezbiophysicslab.github.io/tmaven/)
 * Read the [tMANUAL](https://gonzalezbiophysicslab.github.io/tmaven/tmanual/tMANUAL.pdf)
-* Download the [latest release](https://www.github.com/gonzalezbiophysicslab/releases/latest)
+* Download the [latest release](https://www.github.com/gonzalezbiophysicslab/tmaven/releases/latest)
 
 
 Read the paper: 
