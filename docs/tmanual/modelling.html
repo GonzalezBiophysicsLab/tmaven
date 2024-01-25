@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.3.450">
+<meta name="generator" content="quarto-1.2.335">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -17,15 +17,14 @@ div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
 ul.task-list{list-style: none;}
 ul.task-list li input[type="checkbox"] {
   width: 0.8em;
-  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  margin: 0 0.8em 0.2em -1.6em;
   vertical-align: middle;
 }
-/* CSS for citations */
 div.csl-bib-body { }
 div.csl-entry {
   clear: both;
 }
-.hanging-indent div.csl-entry {
+.hanging div.csl-entry {
   margin-left:2em;
   text-indent:-2em;
 }
@@ -39,7 +38,8 @@ div.csl-right-inline {
 }
 div.csl-indent {
   margin-left: 2em;
-}</style>
+}
+</style>
 
 
 <script src="../site_libs/quarto-nav/quarto-nav.js"></script>
@@ -73,12 +73,10 @@ div.csl-indent {
     "search-more-matches-text": "more matches in this document",
     "search-clear-button-title": "Clear",
     "search-detached-cancel-button-title": "Cancel",
-    "search-submit-button-title": "Submit",
-    "search-label": "Search"
+    "search-submit-button-title": "Submit"
   }
 }</script>
 
-  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
 <link rel="stylesheet" href="../styles.css">
@@ -88,16 +86,11 @@ div.csl-indent {
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
-  <nav class="quarto-secondary-nav">
-    <div class="container-fluid d-flex">
-      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
-        <i class="bi bi-layout-text-sidebar-reverse"></i>
-      </button>
-      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../tmanual/web_intro.html">tMANUAL</a></li><li class="breadcrumb-item"><a href="../tmanual/modelling.html">4. Modelling</a></li></ol></nav>
-      <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
-      </a>
-      <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
-        <i class="bi bi-search"></i>
+  <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+    <div class="container-fluid d-flex justify-content-between">
+      <h1 class="quarto-secondary-nav-title">4. Modelling</h1>
+      <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
+        <i class="bi bi-chevron-right"></i>
       </button>
     </div>
   </nav>
@@ -105,7 +98,7 @@ div.csl-indent {
 <!-- content -->
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
 <!-- sidebar -->
-  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation floating overflow-auto">
+  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation floating overflow-auto">
     <div class="pt-lg-2 mt-2 text-left sidebar-header sidebar-header-stacked">
       <a href="../index.html" class="sidebar-logo-link">
       <img src="../images/logo.png" alt="" class="sidebar-logo py-0 d-lg-inline d-none">
@@ -113,185 +106,161 @@ div.csl-indent {
     <div class="sidebar-title mb-0 py-0">
       <a href="../">(t)ime series (M)odeling, (A)nalysis, and (V)isualization (EN)vironment</a> 
         <div class="sidebar-tools-main tools-wide">
-    <a href="https://www.biorxiv.org" rel="" title="tMAVEN paper" class="quarto-navigation-tool px-1" aria-label="tMAVEN paper"><i class="bi bi-file-earmark-text"></i></a>
-    <a href="https://github.com/GonzalezBiophysicsLab/tmaven" rel="" title="tMAVEN repo" class="quarto-navigation-tool px-1" aria-label="tMAVEN repo"><i class="bi bi-github"></i></a>
-    <a href="https://GonzalezBiophysicsLab.github.io/tmaven" rel="" title="tMAVEN website" class="quarto-navigation-tool px-1" aria-label="tMAVEN website"><i class="bi bi-hexagon"></i></a>
+    <a href="https://doi.org/10.1016/j.bpj.2024.01.022" title="Manuscript" class="sidebar-tool px-1"><i class="bi bi-journal-text"></i></a>
+    <a href="https://www.biorxiv.org/content/10.1101/2023.08.15.553409v2" title="Preprint" class="sidebar-tool px-1"><i class="bi bi-file-earmark-text"></i></a>
+    <a href="https://github.com/GonzalezBiophysicsLab/tmaven" title="Repository" class="sidebar-tool px-1"><i class="bi bi-github"></i></a>
+    <a href="https://github.com/GonzalezBiophysicsLab/tmaven/discussions" title="Discussions" class="sidebar-tool px-1"><i class="bi bi-pen"></i></a>
 </div>
     </div>
       </div>
-        <div class="mt-2 flex-shrink-0 align-items-center">
+      <div class="mt-2 flex-shrink-0 align-items-center">
         <div class="sidebar-search">
         <div id="quarto-search" class="" title="Search"></div>
         </div>
-        </div>
+      </div>
     <div class="sidebar-menu-container"> 
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Home</span></a>
+  <a href="../index.html" class="sidebar-item-text sidebar-link">Home</a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../about.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">About tMAVEN</span></a>
+  <a href="../about.html" class="sidebar-item-text sidebar-link">About tMAVEN</a>
   </div>
 </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="false">
- <span class="menu-text">Get Started</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="false" aria-label="Toggle section">
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="false">Get Started</a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="false">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
       <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../install.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Installing tMAVEN</span></a>
+  <a href="../install.html" class="sidebar-item-text sidebar-link">Installing tMAVEN</a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../tutorial_quickstart.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Quick Tutorial</span></a>
+  <a href="../tutorial_quickstart.html" class="sidebar-item-text sidebar-link">Quick Tutorial</a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../shortcuts.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Shortcut Keys</span></a>
+  <a href="../shortcuts.html" class="sidebar-item-text sidebar-link">Shortcut Keys</a>
   </div>
 </li>
       </ul>
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">
- <span class="menu-text">tMANUAL</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true" aria-label="Toggle section">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">tMANUAL</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
       <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../tmanual/web_intro.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">0. Introduction</span></a>
+  <a href="../tmanual/web_intro.html" class="sidebar-item-text sidebar-link">0. Introduction</a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../tmanual/installing.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">1. Installing</span></a>
+  <a href="../tmanual/installing.html" class="sidebar-item-text sidebar-link">1. Installing</a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../tmanual/navigating.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">2. Navigating</span></a>
+  <a href="../tmanual/navigating.html" class="sidebar-item-text sidebar-link">2. Navigating</a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../tmanual/preprocessing.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">3. Preprocessing</span></a>
+  <a href="../tmanual/preprocessing.html" class="sidebar-item-text sidebar-link">3. Preprocessing</a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../tmanual/modelling.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">4. Modelling</span></a>
+  <a href="../tmanual/modelling.html" class="sidebar-item-text sidebar-link active">4. Modelling</a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../tmanual/plotting.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">5. Plotting</span></a>
+  <a href="../tmanual/plotting.html" class="sidebar-item-text sidebar-link">5. Plotting</a>
   </div>
 </li>
       </ul>
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="false">
- <span class="menu-text">Examples</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="false" aria-label="Toggle section">
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="false">Examples</a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="false">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
       <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../examples/example_defaultprefs.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Lab Default Preferences</span></a>
+  <a href="../examples/example_defaultprefs.html" class="sidebar-item-text sidebar-link">Lab Default Preferences</a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../examples/example_smdload.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Load SMD</span></a>
+  <a href="../examples/example_smdload.html" class="sidebar-item-text sidebar-link">Load SMD</a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../examples/example_script1.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Scripted modeling - no GUI</span></a>
+  <a href="../examples/example_script1.html" class="sidebar-item-text sidebar-link">Scripted modeling - no GUI</a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../examples/example_rastergramplot.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Plot Rastergram</span></a>
+  <a href="../examples/example_rastergramplot.html" class="sidebar-item-text sidebar-link">Plot Rastergram</a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../examples/example_entropyplot.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Plot Entropy</span></a>
+  <a href="../examples/example_entropyplot.html" class="sidebar-item-text sidebar-link">Plot Entropy</a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../examples/example_runhhmm.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Run hHMM in tMAVEN script mode</span></a>
+  <a href="../examples/example_runhhmm.html" class="sidebar-item-text sidebar-link">Run hHMM in tMAVEN script mode</a>
   </div>
 </li>
       </ul>
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="false">
- <span class="menu-text">Information</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="false" aria-label="Toggle section">
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="false">Information</a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="false">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
       <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../info_priors.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Priors</span></a>
+  <a href="../info_priors.html" class="sidebar-item-text sidebar-link">Priors</a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../info_models.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Models</span></a>
+  <a href="../info_models.html" class="sidebar-item-text sidebar-link">Models</a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../info_pysmd.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">SMD Files</span></a>
+  <a href="../info_pysmd.html" class="sidebar-item-text sidebar-link">SMD Files</a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../develop.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Develop</span></a>
+  <a href="../develop.html" class="sidebar-item-text sidebar-link">Develop</a>
   </div>
 </li>
       </ul>
@@ -299,7 +268,6 @@ div.csl-indent {
     </ul>
     </div>
 </nav>
-<div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
         <nav id="TOC" role="doc-toc" class="toc-active">
@@ -321,7 +289,7 @@ div.csl-indent {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">4. Modelling</h1>
+<h1 class="title d-none d-lg-block">4. Modelling</h1>
 </div>
 
 
@@ -340,7 +308,7 @@ div.csl-indent {
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="images/mlHMMex.png" class="img-fluid figure-img"></p>
-<figcaption class="figure-caption">After generating a model (see below) tMAVEN shows the idealized trajectory (black line) also called the Viterbi path in black, indicating the most likely state of a molecule at each time point</figcaption>
+<p></p><figcaption class="figure-caption">After generating a model (see below) tMAVEN shows the idealized trajectory (black line) also called the Viterbi path in black, indicating the most likely state of a molecule at each time point</figcaption><p></p>
 </figure>
 </div>
 <section id="navigating-between-models" class="level1">
@@ -354,7 +322,7 @@ div.csl-indent {
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="images/ModelingSettingsEx.jpg" class="img-fluid figure-img"></p>
-<figcaption class="figure-caption">After selecting a model, tMAVEN prompts users to determine some parameters for the modelling algorithms that inform the prior. In most cases these settings need not be changed aside from number of states. The parameters asked for might change depending on the model type. The algorithms in tMAVEN use a Gaussian gamma function with: a as the shape parameter, b as the rate parameter of the gamma distribution parameters, beta as the Gaussian precision parameter, and alpha as the sole parameter of the Dirichlet distribution <span class="citation" data-cites="Bishop2006Pattern">(<a href="#ref-Bishop2006Pattern" role="doc-biblioref">Bishop 2006</a>)</span>.</figcaption>
+<p></p><figcaption class="figure-caption">After selecting a model, tMAVEN prompts users to determine some parameters for the modelling algorithms that inform the prior. In most cases these settings need not be changed aside from number of states. The parameters asked for might change depending on the model type. The algorithms in tMAVEN use a Gaussian gamma function with: a as the shape parameter, b as the rate parameter of the gamma distribution parameters, beta as the Gaussian precision parameter, and alpha as the sole parameter of the Dirichlet distribution <span class="citation" data-cites="Bishop2006Pattern">(<a href="#ref-Bishop2006Pattern" role="doc-biblioref">Bishop 2006</a>)</span>.</figcaption><p></p>
 </figure>
 </div>
 <p>When running any model, users also have to input some computational settings (see figure). It is recommended to just leave the defaults. The number of restarts corresponds to the number of times the algorithm will restart with different initializations, in order to ensure this state does not affect the final result. The setting for the convergence determines at what relative change in cost function the algorithm will determine convergence has occurred. In case the convergence doesn’t occur, the algorithm will cut off after the max iterations.</p>
@@ -383,13 +351,13 @@ div.csl-indent {
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="images/Run Dwell AnalysisFigure.png" class="img-fluid figure-img"></p>
-<figcaption class="figure-caption">Before hitting calculate, make sure the intended model is used by looking at “Model Type” in the top left.</figcaption>
+<p></p><figcaption class="figure-caption">Before hitting calculate, make sure the intended model is used by looking at “Model Type” in the top left.</figcaption><p></p>
 </figure>
 </div>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="images/DwellTime Plot.png" class="img-fluid figure-img"></p>
-<figcaption class="figure-caption">A dwell time plot with the data in blue and theoretical dwell graph, from model selected as in the preceding figure, as a dotted black line. To change the log scale to linear, search on the left for hist<span class="math inline">\(\_\)</span>log<span class="math inline">\(\_\)</span>y. To toggle the model, search for model<span class="math inline">\(\_\)</span>on. To change which state of the model is displayed, search for dwell<span class="math inline">\(\_\)</span>state and set to the desired.</figcaption>
+<p></p><figcaption class="figure-caption">A dwell time plot with the data in blue and theoretical dwell graph, from model selected as in the preceding figure, as a dotted black line. To change the log scale to linear, search on the left for hist<span class="math inline">\(\_\)</span>log<span class="math inline">\(\_\)</span>y. To toggle the model, search for model<span class="math inline">\(\_\)</span>on. To change which state of the model is displayed, search for dwell<span class="math inline">\(\_\)</span>state and set to the desired.</figcaption><p></p>
 </figure>
 </div>
 <p>Then, either navigate to plots/<strong>Dwell Times</strong> or simply hit <strong>Plot</strong> in the Dwell Times section of Run Dwell Analysis (see figure). Now that the plot is made (see figure), a histogram of the dwell time is displayed, an exponential decay function. The presets show the y axis on a log scale and the model, theoretical dwell, off. Alter these in the preferences on the left (see figure).</p>
@@ -399,20 +367,20 @@ div.csl-indent {
 
 </section>
 
-<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
-<div id="ref-Bishop2006Pattern" class="csl-entry" role="listitem">
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="doc-bibliography">
+<div id="ref-Bishop2006Pattern" class="csl-entry" role="doc-biblioentry">
 Bishop, Christopher. 2006. <em>Pattern Recognition and Machine Learning</em>. Information Science and Statistics. New York: Springer-Verlag. <a href="https://www.springer.com/gp/book/9780387310732">https://www.springer.com/gp/book/9780387310732</a>.
 </div>
-<div id="ref-bronson" class="csl-entry" role="listitem">
+<div id="ref-bronson" class="csl-entry" role="doc-biblioentry">
 Bronson, J. E., Jingyi Fei, Jake M. Hofman, R. L. Gonzalez Jr, and Chris H. Wiggins. 2009. <span>“Learning Rates and States from Biophysical Time Series: A Bayesian Approach to Model Selection and Single-Molecule FRET Data.”</span> <em>Biophysical Journal</em> 97 (12): 3196–3205. <a href="https://doi.org/10.1016/j.bpj.2009.09.031">https://doi.org/10.1016/j.bpj.2009.09.031</a>.
 </div>
-<div id="ref-annurev-biophys" class="csl-entry" role="listitem">
+<div id="ref-annurev-biophys" class="csl-entry" role="doc-biblioentry">
 Kinz-Thompson, C. D., K. K. Ray, and R. L. Gonzalez Jr. 2021. <span>“Bayesian Inference: The Comprehensive Approach to Analyzing Single-Molecule Experiments.”</span> <em>Annual Review of Biophysics</em> 50 (1): 191–208. <a href="https://doi.org/10.1146/annurev-biophys-082120-103921">https://doi.org/10.1146/annurev-biophys-082120-103921</a>.
 </div>
-<div id="ref-MCKINNEY20061941" class="csl-entry" role="listitem">
+<div id="ref-MCKINNEY20061941" class="csl-entry" role="doc-biblioentry">
 McKinney, S. A., C. Joo, and T. Ha. 2006. <span>“Analysis of Single-Molecule FRET Trajectories Using Hidden Markov Modeling.”</span> <em>Biophysical Journal</em> 91 (5): 1941–51. <a href="https://doi.org/10.1529/biophysj.106.082487">https://doi.org/10.1529/biophysj.106.082487</a>.
 </div>
-<div id="ref-van_de_Meent" class="csl-entry" role="listitem">
+<div id="ref-van_de_Meent" class="csl-entry" role="doc-biblioentry">
 Meent, J. W. van de, C. H. Bronson J. E.and Wiggins, and R. L. Gonzalez Jr. 2014. <span>“Empirical Bayes Methods Enable Advanced Population-Level Analyses of Single-Molecule FRET Experiments.”</span> <em>Biophysical Journal</em> 106 (6): 1327–37. <a href="https://doi.org/10.1016/j.bpj.2013.12.055">https://doi.org/10.1016/j.bpj.2013.12.055</a>.
 </div>
 </div></section></div></main> <!-- /main -->
@@ -443,23 +411,9 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     icon: icon
   };
   anchorJS.add('.anchored');
-  const isCodeAnnotation = (el) => {
-    for (const clz of el.classList) {
-      if (clz.startsWith('code-annotation-')) {                     
-        return true;
-      }
-    }
-    return false;
-  }
   const clipboard = new window.ClipboardJS('.code-copy-button', {
-    text: function(trigger) {
-      const codeEl = trigger.previousElementSibling.cloneNode(true);
-      for (const childEl of codeEl.children) {
-        if (isCodeAnnotation(childEl)) {
-          childEl.remove();
-        }
-      }
-      return codeEl.innerText;
+    target: function(trigger) {
+      return trigger.previousElementSibling;
     }
   });
   clipboard.on('success', function(e) {
@@ -524,92 +478,6 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       return note.innerHTML;
     });
   }
-      let selectedAnnoteEl;
-      const selectorForAnnotation = ( cell, annotation) => {
-        let cellAttr = 'data-code-cell="' + cell + '"';
-        let lineAttr = 'data-code-annotation="' +  annotation + '"';
-        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
-        return selector;
-      }
-      const selectCodeLines = (annoteEl) => {
-        const doc = window.document;
-        const targetCell = annoteEl.getAttribute("data-target-cell");
-        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
-        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
-        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
-        const lineIds = lines.map((line) => {
-          return targetCell + "-" + line;
-        })
-        let top = null;
-        let height = null;
-        let parent = null;
-        if (lineIds.length > 0) {
-            //compute the position of the single el (top and bottom and make a div)
-            const el = window.document.getElementById(lineIds[0]);
-            top = el.offsetTop;
-            height = el.offsetHeight;
-            parent = el.parentElement.parentElement;
-          if (lineIds.length > 1) {
-            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
-            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
-            height = bottom - top;
-          }
-          if (top !== null && height !== null && parent !== null) {
-            // cook up a div (if necessary) and position it 
-            let div = window.document.getElementById("code-annotation-line-highlight");
-            if (div === null) {
-              div = window.document.createElement("div");
-              div.setAttribute("id", "code-annotation-line-highlight");
-              div.style.position = 'absolute';
-              parent.appendChild(div);
-            }
-            div.style.top = top - 2 + "px";
-            div.style.height = height + 4 + "px";
-            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
-            if (gutterDiv === null) {
-              gutterDiv = window.document.createElement("div");
-              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
-              gutterDiv.style.position = 'absolute';
-              const codeCell = window.document.getElementById(targetCell);
-              const gutter = codeCell.querySelector('.code-annotation-gutter');
-              gutter.appendChild(gutterDiv);
-            }
-            gutterDiv.style.top = top - 2 + "px";
-            gutterDiv.style.height = height + 4 + "px";
-          }
-          selectedAnnoteEl = annoteEl;
-        }
-      };
-      const unselectCodeLines = () => {
-        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
-        elementsIds.forEach((elId) => {
-          const div = window.document.getElementById(elId);
-          if (div) {
-            div.remove();
-          }
-        });
-        selectedAnnoteEl = undefined;
-      };
-      // Attach click handler to the DT
-      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
-      for (const annoteDlNode of annoteDls) {
-        annoteDlNode.addEventListener('click', (event) => {
-          const clickedEl = event.target;
-          if (clickedEl !== selectedAnnoteEl) {
-            unselectCodeLines();
-            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
-            if (activeEl) {
-              activeEl.classList.remove('code-annotation-active');
-            }
-            selectCodeLines(clickedEl);
-            clickedEl.classList.add('code-annotation-active');
-          } else {
-            // Unselect the line
-            unselectCodeLines();
-            clickedEl.classList.remove('code-annotation-active');
-          }
-        });
-      }
   const findCites = (el) => {
     const parentEl = el.parentElement;
     if (parentEl) {

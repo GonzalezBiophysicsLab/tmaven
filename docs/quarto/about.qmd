@@ -12,14 +12,13 @@ tMAVEN is a program for analyzing time series data from single-molecule experime
 * immutable data -- you only work on a copy of it!
 * power-user coding *via* scripts (see Examples pages)
 
+# Learn more
+Check out the [tMANUAL](https://gonzalezbiophysicslab.github.io/tmaven/tmanual/web_intro.html) pages on this site, view some of the examples (links in the side bar), or join in on the [discussions on Github](https://github.com/GonzalezBiophysicsLab/tmaven/discussions)
+
 # Who and Where
-tMAVEN is a development that came out of the [Gonzalez Biophysics Lab](https://github.com/GonzalezBiophysicsLab) from the [Gonzalez lab at Columbia University](http://www.columbia.edu/cu/chemistry/groups/gonzalez/index.html)  from about 2015-present.
-
-
+tMAVEN is a development that came out of the [Gonzalez lab](https://github.com/GonzalezBiophysicsLab) at [Columbia University](http://www.columbia.edu/cu/chemistry/groups/gonzalez/index.html) from about 2015-present.
 
 # Citing tMAVEN
 If you use tMAVEN in your work, please cite the associated paper:
 
-Verma, A.R., Ray, K., Bodick, M., Kinz-Thompson, C.D., Gonzalez, Jr., R.L. (2023) *Accurately Capturing Heterogeneity in Single-molecule Experiments with tMAVEN*. In preparation. [[Link](https://www.biorxiv.org)]
-
-
+Verma, A.R., Ray, K., Bodick, M., Kinz-Thompson, C.D., Gonzalez, Jr., R.L. (2024) *Increasing the accuracy of single-molecule data analysis using tMAVEN*. Biophysical Journal. *In press*,  [DOI:10.1016/j.bpj.2024.01.022](https://doi.org/10.1016/j.bpj.2024.01.022). bioRxiv Preprint: [DOI:10.1101/2023.08.15.553409](https://www.biorxiv.org/content/10.1101/2023.08.15.553409v2).
