@@ -199,7 +199,7 @@ def outer_loop(xind,xdata,mu,var,tm,maxiters,threshold,priors):
 	return r,a,b,m,beta,pik,tm,E_lnlam,E_lnpi,E_lntm,ll,iteration
 
 
-def consensus_vb_em_hmm(x,nstates,maxiters=1000,threshold=1e-10,nrestarts=1,priors=None,init_kmeans=False,mu_mode=False):
+def consensus_vb_em_hmm(x,nstates,maxiters=1000,threshold=1e-10,nrestarts=1,priors=None,init_kmeans=False,mu_mode=False, set_init=None):
 	'''
 	Data convention is NxTxK
 	'''
@@ -219,6 +219,11 @@ def consensus_vb_em_hmm(x,nstates,maxiters=1000,threshold=1e-10,nrestarts=1,prio
 
 	mu,var,ppi = initialize_gmm(xdata,nstates,init_kmeans)
 	tmatrix = initialize_tmatrix(nstates)
+
+	if set_init is not None:
+		mu, var, ppi, tm = set_init
+		if tm is not None:
+			tmatrix = tm.copy()
 
 	## Priors - beta, a, b, pi, alpha... mu is from GMM
 	if priors is None:
