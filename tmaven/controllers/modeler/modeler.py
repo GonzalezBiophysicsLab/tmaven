@@ -318,7 +318,12 @@ class controller_modeler(object):
 
 		if not model.tmatrix is None:
 			tmatrix = model.tmatrix
-			norm_tmatrix = model.norm_tmatrix
+			try:
+				norm_tmatrix = model.norm_tmatrix
+			except:
+				from .fxns.hmm import normalize_tmatrix
+				model.norm_tmatrix = normalize_tmatrix(tmatrix)
+				norm_tmatrix = model.norm_tmatrix
 			s += 'tmatrix = \n{}\n'.format(tmatrix)
 			s += 'tmatrix normalized = \n{}\n'.format(norm_tmatrix)
 
