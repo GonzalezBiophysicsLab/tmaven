@@ -19,15 +19,21 @@ website:
     pinned: true
     tools:
 
+      - icon: journal-text
+        href: https://doi.org/10.1016/j.bpj.2024.01.022
+        text: "Manuscript"
       - icon: file-earmark-text
-        href: https://www.biorxiv.org
-        text: "tMAVEN paper"
+        href: https://www.biorxiv.org/content/10.1101/2023.08.15.553409v2
+        text: "Preprint"
       - icon: github
         href: https://github.com/GonzalezBiophysicsLab/tmaven
-        text: "tMAVEN repo"
-      - icon: hexagon
-        href: https://GonzalezBiophysicsLab.github.io/tmaven
-        text: "tMAVEN website"
+        text: "Repository"
+      # - icon: hexagon
+      #   href: https://GonzalezBiophysicsLab.github.io/tmaven
+      #   text: "tMAVEN website"
+      - icon: pen
+        href: https://github.com/GonzalezBiophysicsLab/tmaven/discussions
+        text: "Discussions"
 
 
     style: "floating"
