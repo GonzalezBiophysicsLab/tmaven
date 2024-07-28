@@ -116,12 +116,13 @@ class controller_io(object):
 		return None
 
 	def load_raw_hdf5(self,fname,dataset):
-		success = False
 		try:
 			with h5py.File(fname,'r') as f:
 				dat = f[dataset][:]
 			logger.info('loaded HDF5 {}. dataset {}'.format(fname, dataset))
 			smd = self.convert_to_smd(dat,dataset)
+			if smd is None:
+				raise Exception()
 			smd.source_names[0] = '{}:{}'.format(fname,dataset)
 			self.add_data(smd, None)
 			self.maven.emit_data_update()
@@ -222,19 +223,23 @@ class controller_io(object):
 		decollate = self.maven.prefs['io.decollate']
 		decollate_axis = self.maven.prefs['io.decollate_axis']
 
-
 		d,success = self.fix_decollate(d,decollate,decollate_axis)
 		if not success:
 			logger.error('Dataset load failed {} because of bad decollating'.format(dname))
-			return None
+			return self.blank_smd()
 		d,success = self.fix_missing_dimensions(d,missing)
 		if not success:
 			logger.error('Dataset load failed {} because of bad missing dimension'.format(dname))
-			return None
+			return self.blank_smd()
 		d,success = self.fix_axis_order(d,order)
 		if not success:
 			logger.error('Dataset load failed {} because of bad ordering'.format(dname))
-			return None
+			return self.blank_smd()
+		
+		ds = np.array(d.shape)
+		if ds.argmin() != 2:
+			logger.error(f'Do you really have {ds[2]} colors, but {ds[0]} molecules and {ds[1]} time points? ???\nTry changing the io.axis_order preference.')
+			return self.blank_smd()
 
 		smd = self.blank_smd()
 		smd.initialize_data(d)
@@ -262,6 +267,7 @@ class controller_io(object):
 			success = True
 		else:
 			success = True
+
 		return d,success
 
 	def fix_axis_order(self,d,order):

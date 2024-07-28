@@ -4,8 +4,6 @@ import numpy as np
 import h5py
 import os
 
-
-
 def build_menu(gui):
 	from PyQt5.QtWidgets import QMenu, QAction
 
@@ -14,7 +12,7 @@ def build_menu(gui):
 
 	### Load
 	menu_load.addAction('SMD',lambda : load_interactive(gui),shortcut='Ctrl+O')
-
+	menu_load.addSeparator()
 	menu_hdf5 = menu_load.addMenu('HDF5 Dataset')
 	menu_hdf5.addAction('Raw',lambda : load_raw_hdf5dataset(gui), shortcut='Ctrl+Shift+O')
 	menu_hdf5.addAction('All tMAVEN',lambda : load_tmaven_dataset_hdf5(gui, "all"))
@@ -94,9 +92,11 @@ def build_menu(gui):
 
 def get_filenames(gui):
 	from PyQt5.QtWidgets import QFileDialog
-	fnames = QFileDialog.getOpenFileNames(gui,'Choose one or more files to load data','./')[0]
+	fnames = QFileDialog.getOpenFileNames(gui,'Choose one or more files to load data',gui.lwd)[0]
+	if len(fnames) > 0:
+		lwd = os.path.dirname(fnames[-1])
+		gui.lwd_update(lwd)
 	return fnames
-
 
 def get_items_dialog(gui,items,title,subtitle,flag_select_multiple):
 	from PyQt5.QtWidgets import QDialog, QListWidget,QVBoxLayout,QHBoxLayout,QPushButton,QWidget,QAbstractItemView, QStyleFactory, QSizePolicy, QLabel
@@ -192,6 +192,10 @@ def load_interactive(gui):
 		smd_group_keys = gui.maven.io.find_smds_in_hdf5(fnames[i])
 		if len(smd_group_keys) == 0:
 			logger.info('No SMDs detected in %s'%(fnames[i]))
+			if h5py.is_hdf5(fnames[i]):
+				if len(gui.maven.io.find_smds_in_hdf5(fnames[i])) == 0:
+					success, dataset_name = get_datasetname_hdf5(gui,fnames[i], "Raw traces")
+					gui.maven.io.load_raw_hdf5(fnames[i],dataset_name)
 			continue
 		elif len(smd_group_keys) == 1:
 			to_load = smd_group_keys
@@ -224,10 +228,12 @@ def load_interactive(gui):
 
 def load_raw_hdf5dataset(gui):
 	from PyQt5.QtWidgets import QFileDialog
-	fname = QFileDialog.getOpenFileName(gui,'Choose one HDF5 file to load dataset from','./')[0]
+	fname = QFileDialog.getOpenFileName(gui,'Choose one HDF5 file to load dataset from',gui.lwd)[0]
 	if fname == "":
 		logger.info('No file to load')
 		return
+	lwd = os.path.dirname(fname)
+	gui.lwd_update(lwd)
 
 	try:
 		logger.info('Trying to load %s'%(fname))
@@ -241,10 +247,12 @@ def load_raw_hdf5dataset(gui):
 
 def load_raw_text(gui):
 	from PyQt5.QtWidgets import QFileDialog
-	fname = QFileDialog.getOpenFileName(gui,'Choose .dat ASCII file to load dataset from','./')[0]
+	fname = QFileDialog.getOpenFileName(gui,'Choose .dat ASCII file to load dataset from',gui.lwd)[0]
 	if fname == "":
 		logger.info('No file to load')
 		return
+	lwd = os.path.dirname(fname)
+	gui.lwd_update(lwd)
 
 	logger.info('Trying to load %s'%(fname))
 	skiprows = gui.maven.prefs['io.skiprows']
@@ -283,24 +291,28 @@ def raw_presets(gui,ordering,ncolors,collated_axis):
 
 def load_raw_numpy(gui):
 	from PyQt5.QtWidgets import QFileDialog
-	fname = QFileDialog.getOpenFileName(gui,'Choose .npy binary file to load dataset from','./')[0]
+	fname = QFileDialog.getOpenFileName(gui,'Choose .npy binary file to load dataset from',gui.lwd)[0]
 	if fname == "":
 		logger.info('No file to load')
 		return
+	lwd = os.path.dirname(fname)
+	gui.lwd_update(lwd)
 
 	try:
 		logger.info('Trying to load %s'%(fname))
-		gui.maven.io.load_smd_numpy(fname)
+		gui.maven.io.load_raw_numpy(fname)
 	except Exception as e:
 		logging.error('failed to load %s\n%s'%(fname,str(e)))
 		return
 
 def load_raw_spartan(gui):
 	from PyQt5.QtWidgets import QFileDialog
-	fname = QFileDialog.getOpenFileName(gui,'Choose .traces spartan file to load dataset from','./')[0]
+	fname = QFileDialog.getOpenFileName(gui,'Choose .traces spartan file to load dataset from',gui.lwd)[0]
 	if fname == "":
 		logger.info('No file to load')
 		return
+	lwd = os.path.dirname(fname)
+	gui.lwd_update(lwd)
 
 	try:
 		logger.info('Trying to load %s'%(fname))
@@ -311,10 +323,12 @@ def load_raw_spartan(gui):
 
 def load_tmaven_dataset_hdf5(gui,d_name):
 	from PyQt5.QtWidgets import QFileDialog
-	fname = QFileDialog.getOpenFileName(gui,'Choose one HDF5 file to load dataset from','./')[0]
+	fname = QFileDialog.getOpenFileName(gui,'Choose one HDF5 file to load dataset from',gui.lwd)[0]
 	if fname == "":
 		logger.info('No file to load')
 		return
+	lwd = os.path.dirname(fname)
+	gui.lwd_update(lwd)
 
 	try:
 		logger.info('Trying to load %s'%(fname))
@@ -343,10 +357,12 @@ def load_tmaven_dataset_hdf5(gui,d_name):
 
 def load_tmaven_dataset_txt(gui,d_name):
 	from PyQt5.QtWidgets import QFileDialog
-	fname = QFileDialog.getOpenFileName(gui,'Choose .dat ASCII file to load from','./')[0]
+	fname = QFileDialog.getOpenFileName(gui,'Choose .dat ASCII file to load from',gui.lwd)[0]
 	if fname == "":
 		logger.info('No file to load')
 		return
+	lwd = os.path.dirname(fname)
+	gui.lwd_update(lwd)
 
 	try:
 		logger.info('Trying to load %s'%(fname))
@@ -358,12 +374,12 @@ def load_tmaven_dataset_txt(gui,d_name):
 		logging.error('failed to load %s\n%s'%(fname,str(e)))
 		return
 
-
-
 def export_smd(gui):
 	from PyQt5.QtWidgets import QFileDialog,QInputDialog
-	oname = QFileDialog.getSaveFileName(gui, 'Export Data', '_.hdf5','*.hdf5')[0]
+	oname = QFileDialog.getSaveFileName(gui, 'Export Data', os.path.join(gui.lwd,'traces.hdf5'), '*.hdf5')[0]
 	if not oname == "":
+		lwd = os.path.dirname(oname)
+		gui.lwd_update(lwd)
 		try:
 			with h5py.File(oname,'r') as f:
 				keys = list(f.keys())
@@ -374,20 +390,22 @@ def export_smd(gui):
 			gui.maven.io.export_smd_hdf5(oname,gname)
 		gui.maven.io.export_tmaven_hdf5(oname,gname)
 
-
 def export_numpy(gui):
 	from PyQt5.QtWidgets import QFileDialog
-	oname = QFileDialog.getSaveFileName(gui, 'Export data (numpy)', '_.npy','*.npy')[0]
+	oname = QFileDialog.getSaveFileName(gui, 'Export data (numpy)', os.path.join(gui.lwd,'traces.npy'), '*.npy')[0]
 	if oname != "":
+		lwd = os.path.dirname(oname)
+		gui.lwd_update(lwd)
 		gui.maven.io.export_raw_numpy(oname)
 		cname = '{}_classes{}'.format(*os.path.splitext(oname))
 		gui.maven.io.export_class_numpy(cname)
 
-
 def export_text(gui):
 	from PyQt5.QtWidgets import QFileDialog
-	oname = QFileDialog.getSaveFileName(gui, 'Export classes (txt)', '_.txt','*.txt')[0]
+	oname = QFileDialog.getSaveFileName(gui, 'Export classes (txt)', os.path.join(gui.lwd,'traces.txt'), '*.txt')[0]
 	if oname != "":
+		lwd = os.path.dirname(oname)
+		gui.lwd_update(lwd)
 		# gui.maven.io.export_raw_txt(oname)
 		# cname = '{}_classes{}'.format(*os.path.splitext(oname))
 		gui.maven.io.export_class_txt(oname)

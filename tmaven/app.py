@@ -62,9 +62,9 @@ def run_app(args=[]):
 
 	# Restore the previous session?
 	if not '--safe_mode' in args:
-		gui.restore_session()
+		gui.session_restore()
 	else:
-		gui.default_session()
+		gui.session_default()
 
 	for a in args:
 		if a.startswith('--startup='):

@@ -67,7 +67,7 @@ class controller_fret_hist2d(controller_base_analysisplot):
 
 			# 'time_min':0,
 			# 'time_max':200,
-			'time_nbins':200,
+			'time_nbins':100,
 			'time_shift':0.0,
 			'time_nticks':5,
 			'time_dt':1.,
@@ -155,12 +155,8 @@ class controller_fret_hist2d(controller_base_analysisplot):
 		'''
 		try:
 			fpb = self.get_plot_fret()[:,:,1].copy()
-			flag = False
 
-			if (not self.maven.modeler.model is None) and self.prefs['sync_postsync']:
-				flag = True
-
-			if flag: ## postsync time
+			if (not self.maven.modeler.model is None) and self.prefs['sync_postsync']: ## postsync time
 				viterbis = self.get_idealized_data()
 				chains = self.get_chain_data()
 				vi = self.prefs['sync_hmmstate_1']
@@ -212,7 +208,7 @@ class controller_fret_hist2d(controller_base_analysisplot):
 
 		## imshow is backwards
 		tau = self.prefs['time_dt']
-		if self.prefs['sync_postsync']:
+		if (not self.maven.modeler.model is None) and self.prefs['sync_postsync']:
 			tmin = (0-self.prefs['sync_preframe'])*tau + self.prefs['time_shift']
 			tmax = (self.prefs['time_nbins']-self.prefs['sync_preframe'])*tau + self.prefs['time_shift']
 		else:

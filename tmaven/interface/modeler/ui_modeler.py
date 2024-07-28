@@ -1,6 +1,7 @@
 import logging
 logger = logging.getLogger(__name__)
 import numpy as np
+import os
 
 def build_menu(gui):
 	from . import launchers
@@ -179,20 +180,26 @@ def export(gui):
 	if len(gui.maven.modeler.models) == 0:
 		return
 	from PyQt5.QtWidgets import QFileDialog
-	oname = QFileDialog.getSaveFileName(gui, 'Export Data', 'result.hdf5','*.hdf5')[0]
+	oname = QFileDialog.getSaveFileName(gui, 'Export Data', os.path.join(gui.lwd,'result.hdf5'),'*.hdf5')[0]
 	if oname == "":
 		return
 	success = gui.maven.modeler.export_result_to_hdf5(oname)
-	if not success:
+	if success:
+		lwd = os.path.dirname(oname)
+		gui.lwd_update(lwd)
+	else:
 		logger.error("Failed to export model to {}".format(oname))
 
 def load(gui):
 	from PyQt5.QtWidgets import QFileDialog
-	oname = QFileDialog.getOpenFileName(gui, 'Load Data', '','*.hdf5')[0]
+	oname = QFileDialog.getOpenFileName(gui, 'Load Data', gui.lwd, '*.hdf5')[0]
 	if oname == "":
 		return
 	success = gui.maven.modeler.load_result_from_hdf5(oname)
-	if not success:
+	if success:
+		lwd = os.path.dirname(oname)
+		gui.lwd_update(lwd)
+	else:
 		logger.error("Failed to export model to {}".format(oname))
 
 def close_dialog(gui):

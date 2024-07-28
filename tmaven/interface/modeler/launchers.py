@@ -27,7 +27,6 @@ def launch_fret_kmeans_mlhmm(gui):
 
 def launch_fret_mlhmm_one(gui):
 	keep = gui.maven.modeler.get_traces()
-	print(keep)
 	if keep.sum() != 1:
 		from PyQt5.QtWidgets import QMessageBox
 		QMessageBox.warning(gui,"Error: Run all, Apply all","You have more than one molecule turned on")
