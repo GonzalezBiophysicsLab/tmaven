@@ -180,10 +180,10 @@ class fret_canvas(FigureCanvas):
 		self.figure.set_figheight(self.gui.maven.prefs['plot.fig_height'])
 
 		## Make it so that certain plots zoom together
-		self.ax[0][0].get_shared_y_axes().join(self.ax[0][0],self.ax[0][1])
-		self.ax[1][0].get_shared_y_axes().join(self.ax[1][0],self.ax[1][1])
-		self.ax[0][0].get_shared_x_axes().join(self.ax[0][0],self.ax[1][0])
-		self.ax[0][1].get_shared_x_axes().join(self.ax[0][1],self.ax[1][1])
+		self.ax[0,0].sharey(self.ax[0,1])
+		self.ax[1,0].sharey(self.ax[1,1])
+		self.ax[0,0].sharex(self.ax[1,0])
+		self.ax[0,1].sharex(self.ax[1,1])
 
 		## Redraw everything
 		self.set_ticks()
@@ -428,12 +428,12 @@ class fret_canvas(FigureCanvas):
 			ntime = 1000
 		self.ax[1,0].set_xticks(self.best_ticks(p['plot.time_min'],ntime*p['plot.time_dt'],p['plot.time_nticks']))
 
-		plt.setp(self.ax[0][0].get_xticklabels(), visible=False)
+		plt.setp(self.ax[0,0].get_xticklabels(), visible=False)
 		for aa in [self.ax[0][1],self.ax[1][1]]:
 			plt.setp(aa.get_yticklabels(),visible=False)
 			plt.setp(aa.get_xticklabels(),visible=False)
-			aa.set_xticks(())
-			aa.set_yticks(())
+			aa.tick_params(axis='y', which='both', left=False, right=False)
+			aa.tick_params(axis='x', which='both', top=False, bottom=False)
 		self.ax[0,0].tick_params(axis='x', which='both',length=0)
 
 	## Add axis labels to plots

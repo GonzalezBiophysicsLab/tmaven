@@ -168,10 +168,7 @@ class nd_canvas(FigureCanvas):
 		self.figure.set_figheight(self.gui.maven.prefs['plot.fig_height'])
 
 		## Make it so that certain plots zoom together
-		self.ax[0][0].get_shared_y_axes().join(self.ax[0][0],self.ax[0][1])
-		# self.ax[1][0].get_shared_y_axes().join(self.ax[1][0],self.ax[1][1])
-		# self.ax[0][0].get_shared_x_axes().join(self.ax[0][0],self.ax[1][0])
-		# self.ax[0][1].get_shared_x_axes().join(self.ax[0][1],self.ax[1][1])
+		self.ax[0,0].sharey(self.ax[0,1])
 
 		## Redraw everything
 		self.set_ticks()
@@ -394,13 +391,11 @@ class nd_canvas(FigureCanvas):
 		self.pretty_plot()
 		p = self.gui.maven.prefs
 
-		# plt.setp(self.ax[0,0].get_xticklabels(), visible=False)
 		for aa in [self.ax[0,1]]:
 			plt.setp(aa.get_yticklabels(),visible=False)
 			plt.setp(aa.get_xticklabels(),visible=False)
-			aa.set_xticks(())
-			aa.set_yticks(())
-		# self.ax[0,0].tick_params(axis='x', which='both',length=0)
+			aa.tick_params(axis='y', which='both', left=False, right=False)
+			aa.tick_params(axis='x', which='both', top=False, bottom=False)
 
 		self.ax[0,0].set_yticks(self.best_ticks(p['plot.intensity_min'],p['plot.intensity_max'],p['plot.intensity_nticks']))
 		# self.ax[1,0].set_yticks(self.best_ticks(p['plot.fret_min'],p['plot.fret_max'],p['plot.fret_nticks']))
