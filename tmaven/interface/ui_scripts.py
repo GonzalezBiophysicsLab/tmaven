@@ -2,9 +2,8 @@ import logging
 logger = logging.getLogger(__name__)
 
 from PyQt5.QtWidgets import QToolBar, QAction, QFileDialog
+from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt
-import appdirs
-import json
 import os 
 
 def run(gui):
@@ -40,16 +39,29 @@ class scripts_toolbar(QToolBar):
 		super().__init__("Scripts Toolbar", parent=gui)
 		self.gui = gui
 
-		self.toggle_toolbar_action = QAction("Hide", self)
+		tooltip_stylesheet = """
+		QToolTip {
+			background-color: none;
+			color: none;
+			border: 1px solid none;
+		}
+		"""
+		self.setStyleSheet(tooltip_stylesheet)
+
+		self.toggle_toolbar_action = QAction(QIcon(),"Hide", self)
 		self.toggle_toolbar_action.triggered.connect(self._toggle)
+		# self.toggle_toolbar_action.setToolTip('')
 		self.addAction(self.toggle_toolbar_action)
 
-		self.clear_action = QAction("Clear", self)
+		self.clear_action = QAction(QIcon(),"Clear", self)
 		self.clear_action.triggered.connect(self.clear_actions)
+		self.clear_action.setToolTip('')
 		self.addAction(self.clear_action)
 
-		self.add_action = QAction("+", self)
+		self.add_action = QAction(QIcon(),"+", self)
 		self.add_action.triggered.connect(self.add_file_action)
+		self.add_action.setToolTip(r"")
+		self.add_action.setStatusTip(r"")
 		self.addAction(self.add_action)
 		
 		self.addSeparator()

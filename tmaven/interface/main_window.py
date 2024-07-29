@@ -89,7 +89,7 @@ class main_window(QMainWindow):
 		from .ui_scripts import scripts_toolbar
 		self.scripts_toolbar = scripts_toolbar(self)
 		self.addToolBar(Qt.TopToolBarArea, self.scripts_toolbar)
-		self.scripts_toolbar.hide()
+		# self.scripts_toolbar.hide()
 		
 		# #### smd info
 		# from .viewer_smd_info import smd_info_viewer
