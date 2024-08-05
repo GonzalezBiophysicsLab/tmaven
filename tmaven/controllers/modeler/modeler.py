@@ -159,9 +159,9 @@ class controller_modeler(object):
 		import time
 
 		result = self.model
-		# print(result.type)
+		print(result.type)
 		model_dict = result.convert_to_dict()
-		# print(result.type)
+		print(result.type)
 
 
 		with h.File(fn,'a') as f:
@@ -185,7 +185,7 @@ class controller_modeler(object):
 			f.close()
 
 		logger.info('saved result in {}'.format(fn))
-		# print(result)
+		print(result)
 		return True
 
 	def load_result_from_hdf5(self,fn):
@@ -260,10 +260,10 @@ class controller_modeler(object):
 		pre,post = self.get_prepost()
 		notshort = post-pre > 2
 		keep = keep[notshort]
-		# print(len(keep))
+		print(len(keep))
 		y = [self.maven.calc_fret(i)[pre[i]:post[i],1].astype('double').flatten() for i in range(keep.size) if keep[i]]
 		y = self.clip_traces(y,-1,2)
-		# print(len(y))
+		print(len(y))
 		return True,keep,y
 
 	def get_prepost(self):
@@ -353,7 +353,7 @@ class controller_modeler(object):
 		rs = result.r
 		result.r = np.zeros((N,T,result.nstates)) + np.nan
 		for i,ii in enumerate(result.ran):
-			# print(i,ii)
+			print(i,ii)
 			pre = self.maven.data.pre_list[ii]
 			post = self.maven.data.post_list[ii]
 			result.r[ii,pre:post] = rs[i]
@@ -486,7 +486,7 @@ class controller_modeler(object):
 
 		result = self.cached_kmeans(np.concatenate(y),nstates)
 		result.ran = np.nonzero(keep)[0].tolist()
-		# print(result.ran)
+		print(result.ran)
 		result.idealize = lambda : self.idealize_fret_kmeans(result)
 		result.idealize()
 		self.recast_rs(result)
@@ -1463,8 +1463,9 @@ class controller_modeler(object):
 
 		model.rates[state] = {}
 		model.rates[state]['ks'] = rates[0]
-		model.rates[state]['As'] = rates[-2]
-		model.rates[state]['error'] = rates[-1]
+		model.rates[state]['As'] = rates[-3]
+		model.rates[state]['error'] = rates[-2]
+		model.rates[state]['R2'] = rates[-1]
 
 		if type == "Stretched Exponential":
 			model.rates[state]["betas"] = rates[1]

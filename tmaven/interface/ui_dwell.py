@@ -99,6 +99,7 @@ class _dwell_dialog(QDialog):
 				if 'betas' in rate:
 					rate_str += "Betas = \n {} \n".format(str(rate['betas']))
 					rate_str += "Error = \n {} \n".format(str(rate['error'][1]))
+				rate_str += "R2 of fit = \n {} \n".format(str(rate['R2']))
 			else:
 				rate_str = "Rates = N/A"
 		else:
@@ -226,6 +227,7 @@ def dialog_dwell_analysis(gui,model):
 			if 'betas' in rate:
 				rate_str += "Betas = \n {} \n".format(str(rate['betas']))
 				rate_str += "Error = \n {} \n".format(str(rate['error'][1]))
+			rate_str += "R2 of fit = \n {} \n".format(str(rate['R2']))
 		else:
 			rate_str = "Rates = N/A"
 	else:

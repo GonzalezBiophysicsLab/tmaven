@@ -61,8 +61,12 @@ def optimize_single_surv(tau, surv, fix_A = False):
 		popt, pcov = sopt.curve_fit(single_exp_surv, tau, surv, bounds = (0,np.inf))
 		k, A = popt
 		error = np.sqrt(np.diag(pcov)).reshape(2,1)
-
-	return np.array([k]),np.array([A]), error
+	
+	ss_res = np.sum((surv - single_exp_surv(tau, k, A))**2)
+	ss_tot = np.sum((surv-np.mean(surv))**2)
+	R2 = 1 - ss_res/ss_tot
+	
+	return np.array([k]), np.array([A]), error, R2
 
 def optimize_double_surv(tau, surv, fix_A = False):
 	if fix_A:
@@ -83,8 +87,12 @@ def optimize_double_surv(tau, surv, fix_A = False):
 	As = np.array([A,B])
 	As = As[x]
 	error = np.array([error_k, error_A])
+
+	ss_res = np.sum((surv - double_exp_surv(tau, k1, k2, A, B))**2)
+	ss_tot = np.sum((surv-np.mean(surv))**2)
+	R2 = 1 - ss_res/ss_tot
 	
-	return ks,As, error
+	return ks, As, error, R2
 
 def optimize_triple_surv(tau, surv, fix_A = False):
 	if fix_A:
@@ -106,7 +114,12 @@ def optimize_triple_surv(tau, surv, fix_A = False):
 	As = np.array([A,B,C])
 	As = As[x]
 	error = np.array([error_k, error_A])
-	return ks,As,error
+
+	ss_res = np.sum((surv - triple_exp_surv(tau, k1, k2, k3, A, B, C))**2)
+	ss_tot = np.sum((surv-np.mean(surv))**2)
+	R2 = 1 - ss_res/ss_tot
+	
+	return ks, As, error, R2
 
 def optimize_stretch_surv(tau, surv, fix_A = False):
 	if fix_A:
@@ -119,4 +132,8 @@ def optimize_stretch_surv(tau, surv, fix_A = False):
 		k,beta,A = popt
 		error = np.sqrt(np.diag(pcov)).reshape(3,1)
 
-	return np.array([k]),np.array([beta]),np.array([A]),error
+	ss_res = np.sum((surv - stretched_exp_surv(tau, k, beta, A))**2)
+	ss_tot = np.sum((surv-np.mean(surv))**2)
+	R2 = 1 - ss_res/ss_tot
+
+	return np.array([k]), np.array([beta]), np.array([A]), error, R2
