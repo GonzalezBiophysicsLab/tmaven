@@ -221,6 +221,7 @@ class main_window(QMainWindow):
 
 		self.menu_traj = self.menu_view.addMenu('Plot Type')
 		self.menu_traj.addAction('ND',lambda : self.plot_container.change_mode('ND'))
+		self.menu_traj.addAction('Relative',lambda : self.plot_container.change_mode('Relative'))
 		self.menu_traj.addAction('smFRET',lambda : self.plot_container.change_mode('smFRET'))
 		self.menu_theme = self.menu_view.addMenu('Theme')
 		self.menu_theme.addAction('Light',self.change_theme_light)
@@ -347,7 +348,7 @@ class main_window(QMainWindow):
 		if self.index >= self.maven.data.nmol:
 			self.index = 0
 		###
-		if not self.plot_mode is None:
+		if not self.plot_container.plot.plot_mode is None:
 			self.plot_container.plot.update_data(self.index)
 		self.update_mol_label()
 		self.slider_select.blockSignals(True)
@@ -494,7 +495,7 @@ class main_window(QMainWindow):
 				"w": self.width(),
 				"h": self.height(),
 			},
-			"plot_mode": self.plot_mode,
+			"plot_mode": self.plot_container.plot.plot_mode,
 			"lightdark_mode" : self.lightdark_mode,
 		}
 		self.config_file_overwrite('tmaven_config.json',session)

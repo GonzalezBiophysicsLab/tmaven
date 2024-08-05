@@ -23,8 +23,8 @@ class colors(object):
 	fret_red = "#EE0000"
 	fret_blue = '#023bf9'
 
+class multi_canvas(FigureCanvas):
 
-class nd_canvas(FigureCanvas):
 	def __init__(self,gui):
 		self.gui = gui
 
@@ -40,10 +40,12 @@ class nd_canvas(FigureCanvas):
 		matplotlib.rcParams['figure.facecolor'] = 'white'
 		matplotlib.rcParams['savefig.dpi'] = self.dpi*self.dpr
 		matplotlib.rcParams['figure.dpi'] = self.dpi*self.dpr
+
 		p = self.gui.maven.prefs
-		fig,self.ax = plt.subplots(1,2,gridspec_kw={'width_ratios':[6,1]})
+		fig,self.ax = plt.subplots(2,2,gridspec_kw={'width_ratios':[6,1]})
 		super().__init__(fig)
-		plt.close(self.figure)
+
+		self.plot_mode = 'Relative'
 
 		defpref = self.default_prefs()
 		if self.gui.lightdark_mode == 'light':
@@ -53,16 +55,16 @@ class nd_canvas(FigureCanvas):
 		self.gui.maven.prefs.add_dictionary(defpref)
 		self.gui.preferences_viewer.prefs_model.layoutChanged.emit()
 
+		plt.close(self.figure)
 		self.setSizePolicy(QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed))
 		self.figure.set_dpi(self.dpi*self.dpr)
 		self.figure.set_figwidth(p['plot.fig_width'])
 		self.figure.set_figheight(p['plot.fig_height'])
-		self.ax = self.ax.reshape((1,2))
-
+		self.ax = self.ax.reshape((2,2))
+		
 		self.toolbar = NavigationToolbar(self,None)
 		self.toolbar.setIconSize(QSize(24,24))
 		self.toolbar.setSizePolicy(QSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Fixed))
-		# self.draw()
 		self.flag_drawing = False
 
 		self.initialize_plots()
@@ -74,6 +76,10 @@ class nd_canvas(FigureCanvas):
 		self.gui.wheelEvent = self.gui.slider_select.wheelEvent
 		# self.resize_figure()
 		# self.setGeometry(0,0,int(p['plot.fig_width']*self.dpi),int(p['plot.fig_height']*self.dpi))
+
+		# self.resize_figure()
+		# self.update_plots(-1)
+
 
 	def default_prefs(self):
 		default_prefs = {
@@ -89,17 +95,21 @@ class nd_canvas(FigureCanvas):
 
 			'plot.subplots_left':0.12,
 			'plot.subplots_right':0.99,
-			'plot.subplots_top':0.97,
-			'plot.subplots_bottom':0.2,
+			'plot.subplots_top':0.98,
+			'plot.subplots_bottom':0.12,
 			'plot.subplots_hspace':0.04,
 			'plot.subplots_wspace':0.03,
 
 			'plot.fig_width':5.0,
-			'plot.fig_height':2.0,
+			'plot.fig_height':3.5,
 
+			'plot.fret_min':float(-.25),
+			'plot.fret_max':float(1.25),
 			'plot.intensity_min':float(-1000.0),
 			'plot.intensity_max':float(10000.0),
 			'plot.channel_colors':[colors.fret_green,colors.fret_red,"cyan","purple"],
+			'plot.relative_colors':[colors.fret_green,colors.fret_red,"cyan","purple"],
+			# 'plot.fret_color':colors.fret_blue,
 			'plot.line_linewidth':0.4,
 			'draw_hist_linewidth':1.0,
 			'draw_hist_show':True,
@@ -116,6 +126,9 @@ class nd_canvas(FigureCanvas):
 			'plot.xlabel_text1':'Time (s)',
 			'plot.xlabel_text2':'Probability',
 			'plot.ylabel_text1':r'Intensity (a.u.)',
+			'plot.ylabel_text2':r'Relative',
+			'plot.fret_pbzero':True,
+			'plot.fret_nticks':7,
 			'plot.intensity_nticks':6,
 			'plot.time_rotate':0.0,
 			'plot.time_min':0.0,
@@ -124,9 +137,32 @@ class nd_canvas(FigureCanvas):
 			'plot.time_offset':0.0,
 			'plot.time_decimals':0,
 			'plot.intensity_decimals':0,
+			'plot.fret_decimals':2,
+			'normalize_intensities':False,
 			'plot.bg_color':'white'
 		}
 		return default_prefs
+	
+	def smFRET_prefs(self):
+		self.gui.maven.prefs['plot.channel_colors'] = [colors.fret_green,colors.fret_red,"cyan","purple"]
+		self.gui.maven.prefs['plot.relative_colors'] = ["none",colors.fret_blue,"none","none"]
+		self.gui.maven.prefs['plot.ylabel_text1'] = r'Intensity (A.U.)'
+		self.gui.maven.prefs['plot.ylabel_text2'] = r'E$_{\rm{FRET}}$'
+		self.update_plots(self.gui.index)
+
+	def relative_prefs(self):
+		self.gui.maven.prefs['plot.channel_colors'] = [colors.fret_green,colors.fret_red,"cyan","purple"]
+		self.gui.maven.prefs['plot.relative_colors'] = [colors.fret_green,colors.fret_red,"cyan","purple"]
+		self.gui.maven.prefs['plot.ylabel_text1'] = r'Intensity (A.U.)'
+		self.gui.maven.prefs['plot.ylabel_text2'] = r'Relative'
+		self.update_plots(self.gui.index)
+	
+	def nd_prefs(self):
+		self.gui.maven.prefs['plot.channel_colors'] = [colors.fret_green,colors.fret_red,"cyan","purple"]
+		self.gui.maven.prefs['plot.relative_colors'] = ["none","none","none","none"]
+		self.gui.maven.prefs['plot.ylabel_text1'] = r'Intensity (A.U.)'
+		self.gui.maven.prefs['plot.ylabel_text2'] = r''
+		self.gui.maven.prefs['plot.fig_height'] /= 2.
 
 	def sizeHint(self):
 		qs = QSize(int(self.gui.maven.prefs['plot.fig_width']*self.dpi), int(self.gui.maven.prefs['plot.fig_height']*self.dpi))
@@ -154,7 +190,10 @@ class nd_canvas(FigureCanvas):
 		Also creates blank lines for set data
 		'''
 
-		grid_on = self.ax[0,0].yaxis._major_tick_kw['gridOn']
+		int_ind,rel_ind = self.get_axis_inds()
+
+
+		grid_on = self.ax[int_ind,0].yaxis._major_tick_kw['gridOn']
 
 		## clear everything
 		[[aaa.cla() for aaa in aa] for aa in self.ax]
@@ -168,7 +207,10 @@ class nd_canvas(FigureCanvas):
 		self.figure.set_figheight(self.gui.maven.prefs['plot.fig_height'])
 
 		## Make it so that certain plots zoom together
-		self.ax[0,0].sharey(self.ax[0,1])
+		self.ax[int_ind,0].sharey(self.ax[int_ind,1])
+		self.ax[rel_ind,0].sharey(self.ax[rel_ind,1])
+		self.ax[int_ind,0].sharex(self.ax[rel_ind,0])
+		self.ax[int_ind,1].sharex(self.ax[rel_ind,1])
 
 		## Redraw everything
 		self.set_ticks()
@@ -178,16 +220,22 @@ class nd_canvas(FigureCanvas):
 
 		for i in range(self.gui.maven.data.ncolors):
 			for ls in [':','-',':']:
-				self.ax[0,0].plot(np.random.rand(self.gui.maven.data.ntime), ls=ls)
+				self.ax[int_ind,0].plot(np.random.rand(self.gui.maven.data.ntime), ls=ls)
+				self.ax[rel_ind,0].plot(np.random.rand(self.gui.maven.data.ntime), ls=ls)
+
+		for i in range(self.gui.maven.data.ncolors): ## Idealized Relatives.... e.g., for vbFRET idealized
+			self.ax[rel_ind,0].plot(np.zeros(self.gui.maven.data.ntime)+np.nan)
 
 		for i in range(self.gui.maven.data.ncolors):
-			self.ax[0,1].plot(np.random.rand(100))
+			self.ax[int_ind,1].plot(np.random.rand(100))
+			self.ax[rel_ind,1].plot(np.random.rand(100))
 
 		self.set_linestyles()
 
 		if grid_on:
-			self.ax[0,0].grid(True)
-
+			self.ax[int_ind,0].grid(True)
+			self.ax[rel_ind,0].grid(True)
+		
 		# self.draw()
 		# self.redrawplot()
 
@@ -197,9 +245,14 @@ class nd_canvas(FigureCanvas):
 
 	def redrawplot(self,*args,**kwargs):
 		''' convenience function to redraw figure '''
-		self.update_plots(self.gui.index)
-		self.resize_figure()
-
+		if not self.gui.maven.data is None:
+			self.update_plots(self.gui.index)
+			self.resize_figure()
+	#
+	# def redrawplot2(self,*args,**kwargs):
+	# 	''' convenience function to redraw figure '''
+	# 	self.update_plots(self.gui.index)
+	# 	self.resize_figure()
 	def softredraw(self):
 		self.update_plots(self.gui.index)
 
@@ -212,6 +265,7 @@ class nd_canvas(FigureCanvas):
 		self.figure.set_dpi(self.dpi*self.dpr)
 		self.figure.set_figwidth(self.gui.maven.prefs['plot.fig_width'])
 		self.figure.set_figheight(self.gui.maven.prefs['plot.fig_height'])
+
 		self.updateGeometry()
 		self.update_axis_geometry()
 
@@ -221,6 +275,7 @@ class nd_canvas(FigureCanvas):
 		logger.info('resized plot - {}  {}'.format(self.figure.get_size_inches(),self.figure.get_dpi()))
 		if self.figure.get_dpi() != self.dpi*self.dpr:
 			self.resize_figure()
+
 
 	def best_ticks(self,ymin,ymax,nticks):
 		''' Determine the best tick values to use
@@ -333,7 +388,19 @@ class nd_canvas(FigureCanvas):
 		basically matplotlib.pyplot.subplots_adjust
 		'''
 		p = self.gui.maven.prefs
-		self.figure.subplots_adjust(left=p['plot.subplots_left'],right=p['plot.subplots_right'],top=p['plot.subplots_top'],bottom=p['plot.subplots_bottom'],hspace=p['plot.subplots_hspace'],wspace=p['plot.subplots_wspace'])
+		self.figure.subplots_adjust(left=p['plot.subplots_left'],right=p['plot.subplots_right'],top=p['plot.subplots_top'],bottom=p['plot.subplots_bottom'],hspace=p['plot.subplots_hspace'],wspace=p['plot.subplots_wspace'])		
+		if self.plot_mode == 'ND':
+			[aa.set_visible(False) for aa in self.ax[0]]
+			for i in range(2):
+				pos0 = np.array(self.ax[0,i].get_position().get_points())
+				pos1 = np.array(self.ax[1,i].get_position().get_points())
+				x0 = pos1[0,0]
+				y0 = pos1[0,1]
+				width = pos1[1,0] - pos1[0,0]
+				height = pos0[1,1] - pos1[0,1]
+				bbox = [x0,y0,width,height]
+				self.ax[1,i].set_position(bbox)
+
 
 	def update_blits(self):
 		''' Updates blitted regions of plots
@@ -366,47 +433,60 @@ class nd_canvas(FigureCanvas):
 		self.figure.canvas.flush_events()
 		self.figure.canvas.update()
 
+	def get_axis_inds(self):
+		int_ind = 1 if self.plot_mode == 'ND' else 0
+		rel_ind = int(not int_ind)
+		return int_ind,rel_ind
 
 	def set_axis_limits(self):
 		''' set xlim and ylim of self.ax'''
+		int_ind,rel_ind = self.get_axis_inds()
+
 		if self.gui.maven.prefs['plot.time_min'] < self.gui.maven.data.ntime*self.gui.maven.prefs['plot.time_dt']:
-			self.ax[0,0].set_xlim(self.gui.maven.prefs['plot.time_min'],self.gui.maven.data.ntime*self.gui.maven.prefs['plot.time_dt'])
+			self.ax[rel_ind,0].set_xlim(self.gui.maven.prefs['plot.time_min'],self.gui.maven.data.ntime*self.gui.maven.prefs['plot.time_dt'])
 		else:
-			xt = self.ax[0,0].get_xticks()
-			self.ax[0,0].set_xlim(xt[0],xt[-1])
-			# self.ax[0,0].set_xlim(self.gui.maven.prefs['plot.time_min'],self.gui.maven.prefs['plot.time_min']+1)
-		self.ax[0,0].set_ylim(self.gui.maven.prefs['plot.intensity_min'],self.gui.maven.prefs['plot.intensity_max'])
-		# self.ax[0,1].set_ylim(self.gui.maven.prefs['plot.intensity_min'],self.gui.maven.prefs['plot.intensity_max'])
-		self.ax[0,1].set_xlim(-0.01, 1.1)
-		# self.ax[1,0].set_ylim(self.gui.maven.prefs['plot.fret_min'],self.gui.maven.prefs['plot.fret_max'])
-		# self.ax[1,1].set_xlim(self.ax[0,1].get_xlim())
+			xt = self.ax[rel_ind,0].get_xticks()
+			self.ax[rel_ind,0].set_xlim(xt[0],xt[-1])
+			# self.ax[rel_ind,0].set_xlim(self.gui.maven.prefs['plot.time_min'],self.gui.maven.prefs['plot.time_min']+1)
+		self.ax[int_ind,0].set_ylim(self.gui.maven.prefs['plot.intensity_min'],self.gui.maven.prefs['plot.intensity_max'])
+		self.ax[int_ind,1].set_xlim(-0.01,1.1)#(0.01, 1.25)
+		self.ax[rel_ind,0].set_ylim(self.gui.maven.prefs['plot.fret_min'],self.gui.maven.prefs['plot.fret_max'])
+		self.ax[rel_ind,1].set_xlim(self.ax[int_ind,1].get_xlim())
 
 		p = self.gui.maven.prefs
 		ha = 'right' if p['plot.time_rotate'] != 0 else 'center'
-		self.update_tick_decimals(self.ax[0,0],'x',p['plot.time_decimals'],p['plot.time_rotate'],ha)
-		self.update_tick_decimals(self.ax[0,0],'y',p['plot.intensity_decimals'],0,'right')
+		self.update_tick_decimals(self.ax[rel_ind,0],'x',p['plot.time_decimals'],p['plot.time_rotate'],ha)
+		self.update_tick_decimals(self.ax[rel_ind,0],'y',p['plot.fret_decimals'],0,'right')
+		self.update_tick_decimals(self.ax[int_ind,0],'y',p['plot.intensity_decimals'],0,'right')
 
 	def set_ticks(self):
 		''' fix the ticks of self.ax '''
+		int_ind,rel_ind = self.get_axis_inds()
 		self.pretty_plot()
-		p = self.gui.maven.prefs
 
-		for aa in [self.ax[0,1]]:
+		p = self.gui.maven.prefs
+		self.ax[int_ind,0].set_yticks(self.best_ticks(p['plot.intensity_min'],p['plot.intensity_max'],p['plot.intensity_nticks']))
+		self.ax[rel_ind,0].set_yticks(self.best_ticks(p['plot.fret_min'],p['plot.fret_max'],p['plot.fret_nticks']))
+		ntime = self.gui.maven.data.ntime
+		if ntime == 0:
+			ntime = 1000
+		self.ax[rel_ind,0].set_xticks(self.best_ticks(p['plot.time_min'],ntime*p['plot.time_dt'],p['plot.time_nticks']))
+
+		plt.setp(self.ax[0,0].get_xticklabels(), visible=False)
+		for aa in [self.ax[int_ind,1],self.ax[rel_ind,1]]:
 			plt.setp(aa.get_yticklabels(),visible=False)
 			plt.setp(aa.get_xticklabels(),visible=False)
 			aa.tick_params(axis='y', which='both', left=False, right=False)
 			aa.tick_params(axis='x', which='both', top=False, bottom=False)
-
-		self.ax[0,0].set_yticks(self.best_ticks(p['plot.intensity_min'],p['plot.intensity_max'],p['plot.intensity_nticks']))
-		# self.ax[1,0].set_yticks(self.best_ticks(p['plot.fret_min'],p['plot.fret_max'],p['plot.fret_nticks']))
-		ntime = self.gui.maven.data.ntime
-		if ntime == 0:
-			ntime = 1000
-		self.ax[0,0].set_xticks(self.best_ticks(p['plot.time_min'],ntime*p['plot.time_dt'],p['plot.time_nticks']))
+		
+		self.ax[0,0].tick_params(axis='x', which='both',length=0)
 
 	## Add axis labels to plots
 	def set_axis_labels(self):
 		''' add the correct axis labels to self.ax'''
+
+		int_ind,rel_ind = self.get_axis_inds()
+
 		p = self.gui.maven.prefs
 		fs = p['plot.label_fontsize']
 		font = {
@@ -415,15 +495,15 @@ class nd_canvas(FigureCanvas):
 			'va':'top'
 		}
 
-		self.ax[0,0].set_ylabel(p['plot.ylabel_text1'],fontdict=font)
-		# self.ax[1,0].set_ylabel(p['plot.ylabel_text2'],fontdict=font)
-		self.ax[0,0].set_xlabel(p['plot.xlabel_text1'],fontdict=font)
-		self.ax[0,1].set_xlabel(p['plot.xlabel_text2'],fontdict=font)
+		self.ax[int_ind,0].set_ylabel(p['plot.ylabel_text1'],fontdict=font)
+		self.ax[rel_ind,0].set_ylabel(p['plot.ylabel_text2'],fontdict=font)
+		self.ax[rel_ind,0].set_xlabel(p['plot.xlabel_text1'],fontdict=font)
+		self.ax[rel_ind,1].set_xlabel(p['plot.xlabel_text2'],fontdict=font)
 
-		self.ax[0,0].yaxis.set_label_coords(p['plot.ylabel_offset'], 0.5)
-		# self.ax[1,0].yaxis.set_label_coords(p['plot.ylabel_offset'], 0.5)
-		self.ax[0,0].xaxis.set_label_coords(0.5, p['plot.xlabel_offset'])
-		self.ax[0,1].xaxis.set_label_coords(0.5, p['plot.xlabel_offset'])
+		self.ax[int_ind,0].yaxis.set_label_coords(p['plot.ylabel_offset'], 0.5)
+		self.ax[rel_ind,0].yaxis.set_label_coords(p['plot.ylabel_offset'], 0.5)
+		self.ax[rel_ind,0].xaxis.set_label_coords(0.5, p['plot.xlabel_offset'])
+		self.ax[rel_ind,1].xaxis.set_label_coords(0.5, p['plot.xlabel_offset'])
 
 	def set_linestyle(self,l,color,alpha,linewidth):
 		'''helper for self.set_linestyles'''
@@ -433,6 +513,8 @@ class nd_canvas(FigureCanvas):
 
 	def set_linestyles(self):
 		'''Make the lines the right style'''
+		int_ind,rel_ind = self.get_axis_inds()
+
 		p = self.gui.maven.prefs
 		lw = p['plot.line_linewidth']
 		hw = p['draw_hist_linewidth']
@@ -445,25 +527,22 @@ class nd_canvas(FigureCanvas):
 		for i in range(self.gui.maven.data.ncolors):
 			color = p['plot.channel_colors'][i]
 			for j,alpha in zip(list(range(3)),alphas):
-				self.set_linestyle(self.ax[0,0].lines[3*i+j], color, alpha, lw)
-			self.set_linestyle(self.ax[0,1].lines[i], color, p['plot.line_alpha'], hw)
+				self.set_linestyle(self.ax[int_ind,0].lines[3*i+j], color, alpha, lw)
+			self.set_linestyle(self.ax[int_ind,1].lines[i], color, p['plot.line_alpha'], hw)
 
-		# ## Rel. Intensities
-		# for i in range(self.gui.maven.data.ncolors-1):
-		# 	if self.gui.maven.data.ncolors == 2:
-		# 		color = self.gui.maven.prefs['plot.fret_color']
-		# 	else:
-		# 		color = self.gui.maven.prefs['plot.channel_colors'][i+1]
-		# 	for j,alpha in zip(list(range(3)),alphas):
-		# 		self.set_linestyle(self.ax[1][0].lines[3*i+j], color, alpha, lw)
-		# 	self.set_linestyle(self.ax[1][1].lines[i], color, p['plot.line_alpha'], hw)
+		## Rel. Intensities
+		for i in range(self.gui.maven.data.ncolors):
+			color = self.gui.maven.prefs['plot.relative_colors'][i]
+			for j,alpha in zip(list(range(3)),alphas):
+				self.set_linestyle(self.ax[rel_ind,0].lines[3*i+j], color, alpha, lw)
+			self.set_linestyle(self.ax[rel_ind,1].lines[i], color, p['plot.line_alpha'], hw)
 
-		if len(self.ax[0,0].lines)%4==0:
-			for i in range(self.gui.maven.data.ncolors-1):
+		if len(self.ax[rel_ind,0].lines) > 3*self.gui.maven.data.ncolors:
+			for i in range(self.gui.maven.data.ncolors):
 				color = p['plot.idealized_color']
 				alpha = p['plot.idealized_alpha']
 				lw = p['plot.idealized_linewidth']
-				self.set_linestyle(self.ax[0,0].lines[-(1+i)], color, alpha, lw)
+				self.set_linestyle(self.ax[rel_ind,0].lines[-(1+i)], color, alpha, lw)
 
 	def update_data(self,index):
 		''' Replot only the lines on the plot for one trace
@@ -485,8 +564,8 @@ class nd_canvas(FigureCanvas):
 			if self.gui.maven.data.ncolor != len(self.ax[0,0].lines)//3:
 				self.initialize_plots()
 
-			t,intensities,pretime,pbtime = self.calc_trajectory(index)
-			self.draw_traj(t,intensities,pretime,pbtime)
+			t,intensities,rel,pretime,pbtime = self.calc_trajectory(index)
+			self.draw_traj(t,intensities,rel,pretime,pbtime)
 
 			if not self.gui.maven.modeler.model is None:
 				idealized = self.calc_model_traj(index)
@@ -495,9 +574,14 @@ class nd_canvas(FigureCanvas):
 				else:
 					self.draw_model(t,idealized,pretime,pbtime)
 
-			intensity_hists = self.calc_histograms(intensities,pretime,pbtime)
+			intensity_hists,fret_hists = self.calc_histograms(intensities,rel,pretime,pbtime)
 			for i in range(len(intensity_hists)):
 				self.draw_hist(i,*intensity_hists[i])
+			for i in range(len(fret_hists)):
+				self.draw_fret_hist(i,*fret_hists[i])
+
+			if self.plot_mode == 'ND':
+				[aa.set_visible(False) for aa in self.ax[0]]
 
 			self.restore_blits()
 			self.flag_drawing = False
@@ -506,8 +590,11 @@ class nd_canvas(FigureCanvas):
 		self.flag_drawing = True
 		for l in self.ax[0,0].lines:
 			l.set_ydata(l.get_ydata()*0.)
-		for l in self.ax[0,1].lines:
-			l.set_xdata(l.get_xdata()*0.)
+		for l in self.ax[1,0].lines:
+			l.set_ydata(l.get_ydata()*0.)
+		for aa in [self.ax[0,1],self.ax[1,1]]:
+			for l in aa.lines:
+				l.set_xdata(l.get_xdata()*0.)
 		self.restore_blits()
 		self.flag_drawing = False
 
@@ -531,7 +618,7 @@ class nd_canvas(FigureCanvas):
 		# if self.gui.maven.data.nmol == 0:
 		# 	return
 		if self.gui.maven.data.ncolor != len(self.ax[0,0].lines)//3:
-			self.plot_container.plot.initialize_plots()
+			self.initialize_plots()
 		## fix fonts if not good font entered
 		try: floc = matplotlib.font_manager.findfont(self.gui.maven.prefs['plot.font']) ## MPL 3.3
 		except: floc = matplotlib.font_manager.find_font(self.gui.maven.prefs['plot.font']) ## MPL<3.3
@@ -556,7 +643,8 @@ class nd_canvas(FigureCanvas):
 
 		# ## probably should remove this. turns off histograms
 		# if type(self.gui.maven.prefs['draw_hist_show']) is bool:
-		# 	self.ax[0,1].set_visible(self.gui.maven.prefs['draw_hist_show'])
+		# 	for i in range(2):
+		# 		self.ax[i][1].set_visible(self.gui.maven.prefs['draw_hist_show'])
 
 		## draws the non-trace stuff
 		self.set_ticks()
@@ -588,10 +676,13 @@ class nd_canvas(FigureCanvas):
 		If not toolbar buttons are active, then
 			* Right click - sets post point (gui.maven.data.post_list)
 			* Left click - sets pre point (gui.maven.data.pre_list)
-			* Middle click - calculate the photobleaching point `fret_plot.photobleaching.photobleaching.get_point_pbtime`
+			* Middle click - calculate the photobleaching point `tmaven.photobleaching.photobleaching.get_point_pbtime`
 
 		'''
-		if (event.inaxes == self.ax[0,0]):
+		if self.gui.flag_locked:
+			return
+		
+		if (event.inaxes == self.ax[0,0]) or (event.inaxes == self.ax[1,0]):
 			try:
 				if event.button == 3 and self.toolbar.mode == "": ## Right click - set photobleaching point
 					self.gui.maven.data.post_list[self.gui.index] = int(np.round(event.xdata/self.gui.maven.prefs['plot.time_dt']))
@@ -625,25 +716,46 @@ class nd_canvas(FigureCanvas):
 
 	def draw_hist(self,i,hx,hy):
 		'''Draw intensity histograms'''
-		self.ax[0,1].lines[i].set_data(hy,hx)
+		int_ind,rel_ind = self.get_axis_inds()
+		self.ax[int_ind,1].lines[i].set_data(hy,hx)
+
+	def draw_fret_hist(self,i,hx,hy):
+		'''Draw fret histograms'''
+		int_ind,rel_ind = self.get_axis_inds()
+		self.ax[rel_ind,1].lines[i].set_data(hy,hx)
 
 	def draw_no_model(self):
 		'''Hide the model lines'''
-		for i in range(1,self.gui.maven.data.ncolors):
-			self.ax[0,0].lines[-i].set_visible(False)
+		int_ind,rel_ind = self.get_axis_inds()
+		# for i in range(self.gui.maven.data.ncolors):
+		# 	self.ax[rel_ind,0].lines[-i-1].set_visible(False)
 
 	def draw_model(self,t,idealized,pretime,pbtime):
 		'''Draw idealized fret lines and show them'''
-		for i in range(1,self.gui.maven.data.ncolors):
-			self.ax[0,0].lines[-i].set_data(t[pretime:pbtime],idealized[pretime:pbtime])
-			self.ax[0,0].lines[-i].set_visible(True)
-
-	def draw_traj(self,t,intensities,pretime,pbtime):
-		''' draw intensity lines and rel. intensity lines '''
+		int_ind,rel_ind = self.get_axis_inds()
+		# if remove_idealized:
+		# 	d = self.ax[1,0].lines[-3].get_data()
+		# 	self.ax[1,0].lines[-3].set_data(t[pretime:pbtime],d[1]-state_means[vitpath])
 		for i in range(self.gui.maven.data.ncolors):
-			self.ax[0,0].lines[3*i+0].set_data(t[:pretime],intensities[:pretime,i])
-			self.ax[0,0].lines[3*i+1].set_data(t[pretime:pbtime],intensities[pretime:pbtime,i])
-			self.ax[0,0].lines[3*i+2].set_data(t[pbtime:],intensities[pbtime:,i])
+			self.ax[rel_ind,0].lines[-i-1].set_data(t[pretime:pbtime],idealized[pretime:pbtime])
+			self.ax[rel_ind,0].lines[-i-1].set_visible(True)
+
+	def draw_traj(self,t,intensities,rel,pretime,pbtime):
+		''' draw intensity lines and rel. intensity lines '''
+		int_ind,rel_ind = self.get_axis_inds()
+
+		for i in range(self.gui.maven.data.ncolors):
+			self.ax[int_ind,0].lines[3*i+0].set_data(t[:pretime],intensities[:pretime,i])
+			self.ax[int_ind,0].lines[3*i+1].set_data(t[pretime:pbtime],intensities[pretime:pbtime,i])
+			self.ax[int_ind,0].lines[3*i+2].set_data(t[pbtime:],intensities[pbtime:,i])
+
+		for i in range(self.gui.maven.data.ncolors):
+			self.ax[rel_ind,0].lines[3*i+0].set_data(t[:pretime],rel[:pretime,i])
+			self.ax[rel_ind,0].lines[3*i+1].set_data(t[pretime:pbtime],rel[pretime:pbtime,i])
+			if not self.gui.maven.prefs['plot.fret_pbzero']:
+				self.ax[rel_ind,0].lines[3*i+2].set_data(t[pbtime:],rel[pbtime:,i])
+			else:
+				self.ax[rel_ind,0].lines[3*i+2].set_data(t[pbtime:],np.zeros_like(rel[pbtime:,i]))
 
 	def calc_trajectory(self,index):
 		''' get data for current trajectory '''
@@ -653,11 +765,13 @@ class nd_canvas(FigureCanvas):
 		pbtime = int(self.gui.maven.data.post_list[index])
 		pretime = int(self.gui.maven.data.pre_list[index])
 
-		return t,intensities,pretime,pbtime
+		rel = self.gui.maven.calc_fret(index).copy()
+		return t,intensities,rel,pretime,pbtime
 
-	def calc_histograms(self,intensities,pretime,pbtime):
+	def calc_histograms(self,intensities,rel,pretime,pbtime):
 		''' get data for histogram of current trajectory '''
 		intensity_hists = []
+		fret_hists = []
 		hymaxes = []
 		yminmax = np.array((self.gui.maven.prefs['plot.intensity_min'],self.gui.maven.prefs['plot.intensity_max']))
 		for i in range(self.gui.maven.data.ncolors):
@@ -672,14 +786,28 @@ class nd_canvas(FigureCanvas):
 			hymaxes.append(hy.max())
 			intensity_hists.append([hx,hy])
 
+		for i in range(self.gui.maven.data.ncolors):
+			if pretime < pbtime:
+				hy,hx = np.histogram(rel[pretime:pbtime,i],range=(self.gui.maven.prefs['plot.fret_min'],self.gui.maven.prefs['plot.fret_max']),bins=int(np.sqrt(pbtime-pretime)))
+			else:
+				hy = np.zeros(100)
+				hx = np.linspace(self.gui.maven.prefs['plot.intensity_min'],self.gui.maven.prefs['plot.intensity_max'],101)
+			hy = np.append(np.append(0.,hy),0.)
+			hx = np.append(np.append(hx[0],.5*(hx[1:]+hx[:-1])),hx[-1])
+			hymaxes.append(hy.max())
+			fret_hists.append([hx,hy])
+
 		hymax = np.max(hymaxes)
 		for i in range(len(intensity_hists)):
 			intensity_hists[i][1] /= hymax
-		return intensity_hists
+		for i in range(len(fret_hists)):
+			fret_hists[i][1] /= hymax
+
+		return intensity_hists,fret_hists
 
 	def calc_model_traj(self,index):
 		''' get data for idealized current trajectory '''
-		try: ## if a model doesn't have a .mu, then this should crash and fxn will return None,None
+		try: ## if a model doesn't have a corresponding idealized, then this should crash and fxn will return None,None
 			idealized = self.gui.maven.modeler.model.idealized[index]
 		except:
 			idealized = None
