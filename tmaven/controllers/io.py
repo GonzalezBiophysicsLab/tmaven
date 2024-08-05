@@ -25,7 +25,7 @@ class controller_io(object):
 	Parameters
 	# ----------
 	# gui : plotter_gui
-	# 	instance of the `fret_plot` GUI
+	# 	instance of the `tmaven` GUI
 
 	Attributes
 	----------
@@ -335,7 +335,7 @@ class controller_io(object):
 
 		Notes
 		-----
-		Format is documented in `fret_plot/data/smd.py` and `fret_plot/data/fret.py`
+		Format is documented in `tmaven/data/smd.py` and `tmaven/data/fret.py`
 
 		'''
 		if not self.maven.smd.nmol == 0:

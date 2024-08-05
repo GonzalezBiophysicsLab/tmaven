@@ -67,7 +67,7 @@ class controller_trace_filter(object):
 	def calculate_model(self):
 		''' Perform SBR model selection calculation
 
-		Calculation details in `fret_plot/selection/model_selection.py` in `model_select_many`
+		Calculation details in `tmaven/selection/model_selection.py` in `model_select_many`
 		Takes the max model selection probability as assignment. Plots histograms of assigned data on `self.ax`.
 
 		Notes

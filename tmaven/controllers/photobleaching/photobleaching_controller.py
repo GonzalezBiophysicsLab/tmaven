@@ -30,7 +30,7 @@ class controller_photobleaching(object):
 	def calc_single_photobleach(self,index):
 		''' Photobleach calculation for one trace
 
-		Calculates photobleaching point for trace `gui.index`. Uses function `get_point_pbtime` from `fret_plot/photobleaching/photobleaching.py`
+		Calculates photobleaching point for trace `gui.index`. Uses function `get_point_pbtime` from `tmaven/photobleaching/photobleaching.py`
 
 		Notes
 		-----
@@ -80,7 +80,7 @@ class controller_photobleaching(object):
 	def photobleach_sum(self):
 		''' Photobleach calculation all of the data
 
-		Calculates photobleaching point for trace `gui.index`. Uses function `pb_ensemble` from `fret_plot/photobleaching/photobleaching.py`
+		Calculates photobleaching point for trace `gui.index`. Uses function `pb_ensemble` from `tmaven/photobleaching/photobleaching.py`
 
 		Notes
 		-----

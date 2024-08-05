@@ -149,7 +149,7 @@ class controller_corrections(object):
 	def filter_chungkennedy(self):
 		''' Bayesian-ish Chung-Kennedy filter data.corrected
 
-		Applies the Chung-Kennedy filter to data.corrected using p = prefs['correction.filterwidth']. More information on the filter in `fret_plot/corrections/ck_filter.py`
+		Applies the Chung-Kennedy filter to data.corrected using p = prefs['correction.filterwidth']. More information on the filter in `tmaven/corrections/ck_filter.py`
 
 		'''
 		width = self.maven.prefs['correction.filterwidth']
