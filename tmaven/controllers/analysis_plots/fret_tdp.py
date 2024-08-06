@@ -87,9 +87,10 @@ class controller_fret_tdp(controller_base_analysisplot):
 		vmin = self.prefs['color_floor']
 		vmax = self.prefs['color_ceiling']
 
+
 		if self.prefs['hist_log']:
 			from matplotlib.colors import LogNorm
-			pc = ax.imshow(z.T, cmap=cm, origin='lower',interpolation='none',extent=[x.min(),x.max(),x.min(),x.max()],norm = LogNorm(vmin=np.max((1./d1.size,vmin)),vmax=vmax))
+			pc = ax.imshow(z.T, cmap=cm, origin='lower',interpolation='none',extent=[x.min(),x.max(),x.min(),x.max()],norm = LogNorm(vmin=np.max((1./(1+d1.size),vmin)),vmax=vmax))
 		else:
 			pc = ax.imshow(z.T, cmap=cm, origin='lower',interpolation='none',extent=[x.min(),x.max(),x.min(),x.max()],vmin=vmin,vmax=vmax)
 

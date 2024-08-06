@@ -43,6 +43,8 @@ class controller_fret_hist1d(controller_base_analysisplot):
 	def __init__(self,maven):
 		super().__init__(maven)
 		self.defaults()
+		self.hist_x = np.array((0.,.5,1.))
+		self.hist_y = np.array((0.,0.,0.))
 
 	def defaults(self):
 		self.prefs.add_dictionary({
@@ -138,15 +140,18 @@ class controller_fret_hist1d(controller_base_analysisplot):
 
 	def garnish(self,fig,ax):
 		## Fix up the plot
-		# ylim = ax.get_ylim()
+		# ymin,ymax = ax.get_ylim()
 		ax.set_xlim(self.prefs['fret_min'], self.prefs['fret_max'])
 		# ax.set_ylim(*ylim) ## incase modeling gave crazy results
-		if not self.prefs['hist_auto_ylim']:
-			ax.set_ylim(self.prefs['hist_ymin'], self.prefs['hist_ymax'])
-		else:
-			ax.set_ylim(self.hist_y[self.hist_y>0].min(),self.hist_y.max()*1.1)
+		if self.hist_y.sum() > 0:
+			if not self.prefs['hist_auto_ylim']:
+				ax.set_ylim(self.prefs['hist_ymin'], self.prefs['hist_ymax'])
+			else:
+				ymin = self.hist_y[self.hist_y>0].min() if np.sum(self.hist_y>0) > 0 else 0
+				ymax = self.hist_y.max()*1.1 +1e-6
+				ax.set_ylim(ymin,ymax)
 		if not self.prefs['hist_log_y']:
-			if self.prefs['hist_auto_ylim']:
+			if not self.prefs['hist_auto_ylim']:
 				ticks = self.best_ticks(self.prefs['hist_ymin'], self.prefs['hist_ymax'], self.prefs['hist_nticks'])
 			else:
 				ticks = self.best_ticks(0,ax.get_ylim()[1], self.prefs['hist_nticks'])

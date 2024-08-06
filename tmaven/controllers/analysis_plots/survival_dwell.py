@@ -76,6 +76,7 @@ class controller_survival_dwell(controller_base_analysisplot):
 		if self.maven.modeler.model is None:
 			logger.error('No model')
 			error_dwell = True
+		
 		elif self.maven.modeler.model.dwells is None:
 			logger.error('Incorrect model')
 			error_dwell = True
@@ -101,7 +102,6 @@ class controller_survival_dwell(controller_base_analysisplot):
 			[aa.remove() for aa in fig.axes[1:]]
 		ax.cla()
 		self.fix_ax(fig,ax)
-
 
 		self.d = d
 		self.surv = surv
@@ -130,7 +130,7 @@ class controller_survival_dwell(controller_base_analysisplot):
 				hist_range=(d.min(), d.max())
 			except:
 				hist_range = (0.,100.)
-			bin_height, bin_edge = ax.hist(d,bins=self.prefs['dwell_nbins'],
+			bin_height, bin_edge = ax.hist(d, bins=self.prefs['dwell_nbins'],
 				range=hist_range, #(d.min(), d.max()),
 				histtype=self.prefs['hist_type'], alpha=.8, density=True,
 				color=color, edgecolor=ecolor, log=self.prefs['hist_log_y'])[:2]
@@ -138,59 +138,62 @@ class controller_survival_dwell(controller_base_analysisplot):
 			self.hist_x = bin_edge[1:] - 0.5*(bin_edge[1] - bin_edge[0])
 			self.hist_y = bin_height.astype('double')
 
-		if self.prefs['model_on'] and not self.maven.modeler.model.rates is None:
-			if self.maven.modeler.model.rate_type == "Transition Matrix":
-				k = self.maven.modeler.model.rates[self.prefs['dwell_state']].sum()
-				k = k/dt
-				self.k = k
-				self.a = 1
-				self.beta = None
-
-				decay_surv = np.exp(-k*tau)
-				decay_hist = k*np.exp(-self.hist_x*k)
-
-			elif self.maven.modeler.model.rate_type == "Dwell Analysis":
-				
-				rate = self.maven.modeler.model.rates[self.prefs['dwell_state']]
-				k = rate['ks']
-				k = k/dt
-				self.k = k
-				self.a = rate['As']
-				
-				if 'betas' in rate:
-					self.beta = rate['betas']
-					
-					decay_surv = stretched_exp_surv(tau, self.k, self.beta, self.a)
-					decay_hist = stretched_exp_hist(self.hist_x, self.k, self.beta, self.a)
-
-				elif len(self.k) == 1:
+		try:
+			if self.prefs['model_on'] and not self.maven.modeler.model.rates is None:
+				if self.maven.modeler.model.rate_type == "Transition Matrix":
+					k = self.maven.modeler.model.rates[self.prefs['dwell_state']].sum()
+					k = k/dt
+					self.k = k
+					self.a = 1
 					self.beta = None
-					
-					decay_surv = single_exp_surv(tau, self.k, self.a)
-					decay_hist = single_exp_hist(self.hist_x, self.k, self.a)
 
-				elif len(self.k) == 2:
-					self.beta = None
-					
-					decay_surv = double_exp_surv(tau, self.k[0], self.k[1], self.a[0], self.a[1])
-					decay_hist = double_exp_hist(self.hist_x, self.k[0], self.k[1], self.a[0], self.a[1])
+					decay_surv = np.exp(-k*tau)
+					decay_hist = k*np.exp(-self.hist_x*k)
 
-				elif len(self.k) == 3:
-					self.beta = None
+				elif self.maven.modeler.model.rate_type == "Dwell Analysis":
 					
-					decay_surv = triple_exp_surv(tau, self.k[0], self.k[1], self.k[2], self.a[0], self.a[1],self.a[2])
-					decay_hist = triple_exp_hist(self.hist_x, self.k[0], self.k[1], self.k[2], self.a[0], self.a[1],self.a[2])
+					rate = self.maven.modeler.model.rates[self.prefs['dwell_state']]
+					k = rate['ks']
+					k = k/dt
+					self.k = k
+					self.a = rate['As']
+					
+					if 'betas' in rate:
+						self.beta = rate['betas']
+						
+						decay_surv = stretched_exp_surv(tau, self.k, self.beta, self.a)
+						decay_hist = stretched_exp_hist(self.hist_x, self.k, self.beta, self.a)
 
-			color = self.prefs['model_color']
-			if not colors.is_color_like(color):
-				color = 'black'
-				
-			if self.prefs['survival_on']:
-				self.model = decay_surv
-				ax.plot(tau,decay_surv,color=color,ls =self.prefs['model_ls'])
-			elif self.prefs['hist_on']:
-				self.model = decay_hist
-				ax.plot(self.hist_x,decay_hist,color=color,ls =self.prefs['model_ls'])
+					elif len(self.k) == 1:
+						self.beta = None
+						
+						decay_surv = single_exp_surv(tau, self.k, self.a)
+						decay_hist = single_exp_hist(self.hist_x, self.k, self.a)
+
+					elif len(self.k) == 2:
+						self.beta = None
+						
+						decay_surv = double_exp_surv(tau, self.k[0], self.k[1], self.a[0], self.a[1])
+						decay_hist = double_exp_hist(self.hist_x, self.k[0], self.k[1], self.a[0], self.a[1])
+
+					elif len(self.k) == 3:
+						self.beta = None
+						
+						decay_surv = triple_exp_surv(tau, self.k[0], self.k[1], self.k[2], self.a[0], self.a[1],self.a[2])
+						decay_hist = triple_exp_hist(self.hist_x, self.k[0], self.k[1], self.k[2], self.a[0], self.a[1],self.a[2])
+
+				color = self.prefs['model_color']
+				if not colors.is_color_like(color):
+					color = 'black'
+					
+				if self.prefs['survival_on']:
+					self.model = decay_surv
+					ax.plot(tau,decay_surv,color=color,ls =self.prefs['model_ls'])
+				elif self.prefs['hist_on']:
+					self.model = decay_hist
+					ax.plot(self.hist_x,decay_hist,color=color,ls =self.prefs['model_ls'])
+		except:
+			pass
 
 		if self.prefs['hist_log_y']:
 			ax.set_yscale('log')
@@ -297,12 +300,15 @@ class controller_survival_dwell(controller_base_analysisplot):
 			bbox=bbox_props, fontsize=self.prefs['textbox_fontsize']/dpr,
 			family=self.prefs['font'])
 
-		if self.prefs['model_on'] and not self.maven.modeler.model.rates is None:
-			if not self.beta is None:
-				lstr2 ='A = {} \nk = {}\n'.format(np.around(self.a, decimals = 3),np.around(self.k, decimals = 3)) + r'$\beta$ = {}'.format(np.around(self.beta, decimals = 3))
-			else:
-				lstr2 = 'A = {} \nk = {}'.format(np.around(self.a, decimals = 3), np.around(self.k, decimals = 3))
-			ax.annotate(lstr2,xy=(self.prefs['textbox_x'], self.prefs['textbox_y'] - self.prefs['textbox_offset']),
-				xycoords='axes fraction', ha='right', color='k',
-				bbox=bbox_props, fontsize=self.prefs['textbox_fontsize']/dpr,
-				family=self.prefs['font'])
+		try:
+			if self.prefs['model_on'] and not self.maven.modeler.model.rates is None:
+				if not self.beta is None:
+					lstr2 ='A = {} \nk = {}\n'.format(np.around(self.a, decimals = 3),np.around(self.k, decimals = 3)) + r'$\beta$ = {}'.format(np.around(self.beta, decimals = 3))
+				else:
+					lstr2 = 'A = {} \nk = {}'.format(np.around(self.a, decimals = 3), np.around(self.k, decimals = 3))
+				ax.annotate(lstr2,xy=(self.prefs['textbox_x'], self.prefs['textbox_y'] - self.prefs['textbox_offset']),
+					xycoords='axes fraction', ha='right', color='k',
+					bbox=bbox_props, fontsize=self.prefs['textbox_fontsize']/dpr,
+					family=self.prefs['font'])
+		except:
+			pass
