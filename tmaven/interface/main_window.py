@@ -246,13 +246,13 @@ class main_window(QMainWindow):
 		self.menu_tools.addMenu(self.menu_photobleaching)
 		self.menu_tools.addAction('Filter Traces',self.trace_filter.launch,shortcut='Ctrl+F')
 
-		from .ui_analysisplots import popplot_container
-		self.menu_plots.addAction('FRET Hist 1D',lambda : popplot_container(self,self.maven.plots.fret_hist1d))
-		self.menu_plots.addAction('FRET Hist 2D',lambda : popplot_container(self,self.maven.plots.fret_hist2d))
-		self.menu_plots.addAction('FRET TDP',lambda : popplot_container(self,self.maven.plots.fret_tdp))
-		self.menu_plots.addAction('Transition Prob Hist', lambda: popplot_container(self,self.maven.plots.tm_hist))
-		self.menu_plots.addAction('vb Model States',lambda : popplot_container(self,self.maven.plots.model_vbstates))
-		self.menu_plots.addAction('Dwell Times',lambda : popplot_container(self,self.maven.plots.survival_dwell))
+		self.popplots = {'1D':None,'2D':None,'TDP':None,'TM':None,'VB':None,'Dwell':None}
+		self.menu_plots.addAction('FRET Hist 1D',lambda : self.popplot_launch('1D'))
+		self.menu_plots.addAction('FRET Hist 2D',lambda : self.popplot_launch('2D'))
+		self.menu_plots.addAction('FRET TDP',lambda : self.popplot_launch('TDP'))
+		self.menu_plots.addAction('Transition Prob Hist',lambda : self.popplot_launch('TM'))
+		self.menu_plots.addAction('vb Model States',lambda : self.popplot_launch('VB'))
+		self.menu_plots.addAction('Dwell Times',lambda : self.popplot_launch('Dwell'))
 
 		# for menu in [self.menu_file,self.menu_tools,self.menu_other,self.menu_view,self.menu_prefs,self.menu_scripts,self.menu_plots]:
 			# menu.setStyleSheet(stylesheet.ss_qmenu)
@@ -266,6 +266,25 @@ class main_window(QMainWindow):
 		self.menubar.addMenu(self.menu_scripts)
 		self.menubar.addMenu(self.menu_view)
 
+	def popplot_launch(self,popplottype):
+		from .ui_analysisplots import popplot_container
+		if self.popplots[popplottype] is None:
+			if popplottype == '1D':
+				self.popplots[popplottype] = popplot_container(self,self.maven.plots.fret_hist1d)
+			elif popplottype == '2D':
+				self.popplots[popplottype] = popplot_container(self,self.maven.plots.fret_hist2d)
+			elif popplottype == 'TDP':
+				self.popplots[popplottype] = popplot_container(self,self.maven.plots.fret_tdp)
+			elif popplottype == 'TM':
+				self.popplots[popplottype] = popplot_container(self,self.maven.plots.tm_hist)
+			elif popplottype == 'VB':
+				self.popplots[popplottype] = popplot_container(self,self.maven.plots.model_vbstates)
+			elif popplottype == 'Dwell':
+				self.popplots[popplottype] = popplot_container(self,self.maven.plots.survival_dwell)
+		else:
+			self.popplots[popplottype].plot()
+			self.popplots[popplottype].show()
+			self.popplots[popplottype].raise_()
 
 	def clear_data(self):
 		from PyQt5.QtWidgets import QMessageBox

@@ -93,7 +93,10 @@ class popplot_container(QMainWindow):
 		self.prefs_widget.proxy_model.layoutChanged.emit()
 
 	def keyPressEvent(self,event):
-		if event.key() == Qt.Key_Escape and not self.prefs_widget.le_filter.hasFocus():
+		if event.key() == Qt.Key_W and event.modifiers() == Qt.ControlModifier:
+			self.close()
+			return
+		elif event.key() == Qt.Key_Escape and not self.prefs_widget.le_filter.hasFocus():
 			self.prefs_widget.le_filter.setFocus()
 			return
 		super().keyPressEvent(event)
