@@ -74,7 +74,7 @@ if __name__ == "__main__":
 		keywords=KEYWORDS,
 		long_description=read("readme.md"),
 		long_description_content_type='text/markdown',
-		packages=setuptools.find_packages(where="."),
+		packages=setuptools.find_packages(where=".")+ ["tmaven.bin"],
 		package_dir={"": "."},
 		package_data={
 			"": ["*.png","*.svg"],
