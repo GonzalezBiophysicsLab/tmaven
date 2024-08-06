@@ -1,261 +1,428 @@
 [
   {
-    "objectID": "info_pysmd.html",
-    "href": "info_pysmd.html",
-    "title": "SMD Files",
-    "section": "",
-    "text": "Data from a single-molecule experiment are stored in an SMD. These exist in files (HDF5 format) or in memory as an object. This format is slighty different than originally described in: Greenfeld, M., van de Meent, JW., Pavlichin, D.S. et al. Single-molecule dataset (SMD): a generalized storage format for raw and processed single-molecule data. BMC Bioinformatics 16, 3 (2015). https://doi.org/10.1186/s12859-014-0429-4.\n\n\n\nHDF5 file based instead of JSON\nMultiple SMDs can live in the same HDF5 file; each lives as a group within the HDF5 file\nFlexible WRT analysis: results from any analysis should be saved as a sub-group within the particular SMD.\nWhen molecules from different data sources can be combined into the same SMD, the original source is remembered.\nClassifying/grouping molecules is very important for many methods; each molecule in the SMD has an integer to specify the class to which it belongs.\n\n\n\n\nNotes/Non-standard points are put in angle brackets.\n\n\nIn tMAVEN, each maven instance has an maven.smd SMD object, even if there is no data in it. There can only be one at a time in tMAVEN. The parameters in each object are\nmaven.smd.raw : ndarray(NxTxD...) - the data\nmaven.smd.source_index : ndarray(N) - integers specifying the source each molecule came from\nmaven.smd.source_names : list - the names of each sources\nmaven.smd.source_dicts : list - dictionaries with metadata entries for each source\nmaven.smd.smd_dict : dictionary - metadata entries describing smd file\n\nmaven.smd.nmol : int - the value of dataset.raw.shape[0]\nmaven.smd.nt : int - the value of dataset.raw.shape[1]\nmaven.smd.ntime : int - the value of dataset.raw.shape[1]\nmaven.smd.ncolor : int - the value of dataset.raw.shape[2]\nmaven.smd.ncolors : int - the value of dataset.raw.shape[2]\nmaven.smd.ndata - : int - the value of dataset.raw.shape[2:]\n\n\n\nWe save SMD data in HDF5 files. Assume you have an HDF5 file with handle f that contains an SMD entry called ‘my_smd_expt7’. The raw data is stored in the SMD specified places. Any tMAVEN-specific data (e.g., classes, pre- or post-times) are stores in the a separate groupd within the SMD called tmaven.\nf['my_smd_expt7'] : group - this is the SMD2 entry\nf['my_smd_expt7'].attrs['format'] = \"SMD\"\nf['my_smd_expt7'].attrs['date_created'] = <time.ctime() upon creation>\nf['my_smd_expt7'].attrs['date_modified'] = <time.ctime() upon last save>\nf['my_smd_expt7'].attrs['description'] = \"Description of the dataset goes here\"\n\nf['my_smd_expt7/data'] : group - this holds the data\nf['my_smd_expt7/data/raw'] : dataset[int/float/double (nmol,ntime,ndata)] - this is the data for each molecule\nf['my_smd_expt7/data/source_index'] : dataset[int (nmol)] - specifies the source for each molecule\n\nf['my_smd_expt7/sources'] : group - This holds the information about the origin of each molecule (e.g., separate movies)\nf['my_smd_expt7/sources/0'] : group - Information about source 0 in the source_index list\nf['my_smd_expt7/sources/0'] : group - Information about the Nth source in the source_index list\nf['my_smd_expt7/sources/0'].attrs['source_name'] = \"<Description of this source, e.g. movie 12\">\nf['my_smd_expt7/sources/0'].attrs['<Name for a bit of metadata for this source>'] = \"<the metadata itself>\"\nf['my_smd_expt7/sources/0'].attrs['<Name for another bit of metadata for this source>'] = \"<the metadata itself>\"\n...... more metadata for source 0\nf['my_smd_expt7/sources/1'] : group - information about source 1 in the source_index list\n.... entries for source 1\n.. more sources\n\nf['my_smd_expt7/analysisA'] : group  - this is an example of how you would save an analysis (i.e., within this hdf5 group)\nf['my_smd_expt7/program7result'] : group - each program is responsible for the format/specification beyond this point..."
-  },
-  {
-    "objectID": "info_priors.html",
-    "href": "info_priors.html",
-    "title": "Priors",
-    "section": "",
-    "text": "Priors is shorthand for Prior Probability Distribution. In the Bayesian interpretation of probability, the prior is what you know about your model before you perform the experiment. For instance, you might only know that your rate constants/transition probabilities are faster than once per year and slower than once per femtosecond, but ignoring this in your analysis means you’re not properly handling probabilities."
-  },
-  {
-    "objectID": "info_priors.html#gmm",
-    "href": "info_priors.html#gmm",
-    "title": "Priors",
-    "section": "GMM",
-    "text": "GMM\nThese are the default prior values for a variational Bayes GMM. They are for a joint Normal-Gamma distribution and values are taken from the vbFRET emissions. Mixture coefficients are Dirichlet.\n\n\n\nParameter\nValue\n\n\n\n\n\\(a\\) (Gamma)\n0.1\n\n\n\\(b\\) (Gamma)\n0.01\n\n\n\\(\\beta\\) (Normal)\n0.25\n\n\n\\(\\pi\\) (Mixture)\n1.0"
-  },
-  {
-    "objectID": "info_priors.html#hmm",
-    "href": "info_priors.html#hmm",
-    "title": "Priors",
-    "section": "HMM",
-    "text": "HMM\nThese are thedefault prior values for ebhmm (i.e., ebFRET), vbconhmm (i.e., global vbFRET), and vbhmm (i.e., vbFRET). Emissions are Normal-Gamma, first data-point is Dirichlet, and transition probability for each state is Dirichlet.\n\n\n\nParameter\nValue\n\n\n\n\n\\(a\\) (Gamma)\n0.1\n\n\n\\(b\\) (Gamma)\n0.01\n\n\n\\(\\beta\\) (Normal)\n0.25\n\n\n\\(\\alpha\\) (Transition probability)\n1.0\n\n\n\\(\\pi\\) (First datapoint)\n1.0"
-  },
-  {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "Welcome to tMAVEN",
-    "section": "",
-    "text": "Learn how use the tMAVEN modeling, analysis, and visualization environment"
-  },
-  {
-    "objectID": "install.html",
-    "href": "install.html",
-    "title": "Installing tMAVEN",
-    "section": "",
-    "text": "There are two ways you can install tMAVEN:\n\nInstall it as a standalone program (Binary)\nInstall it as a Python package (Code)\n\nUnless you have a reason (e.g., you want to make significant changes to the code), you should probably just install tMAVEN as a standalone program.\n\nStandalone binary\n\nGo to the latest binary release on Github.\nDownload\n\nThe .dmg file (Mac).\nThe .msi file (Windows).\n\nDouble click on the file and follow the directions to install tMAVEN.\n\nHere are video directions for Mac:\n\n\n\n\n\n\n\nNote\n\n\n\nMac security issue. If you try to install on a Mac, you may encounter a security issue that won’t allow you to launch tMAVEN because the OS cannot verify that it isn’t malware. You need to do the following:\n\nGo to the Apple menu item\nOpen System Settings\nGo to the Privacy & Security tab on the side.\nScroll down past the Privacy section, and into the Security section\nFind the section that says tMAVEN was blocked from use becasue it is not from an identified developer.\nClick Open Anyway\n\n\n\n\n\nPython package\n\n[Optional] Create a new conda environment, conda create -n tmaven python==3.9\n[Optional] Activate your conda environment, conda activate tmaven\n[Optional] Make sure you have pip, conda install pip\nVisit the tMAVEN repository on Github and download/clone the repository, or simply clone it from in your terminal with git clone https://github.com/GonzalezBiophysicsLab/tmaven\nNavigate to the tmaven folder, cd /the/path/to/the/folder/tmaven\nInstall the package in place using pip by running pip install -e ./\nTo open tMAVEN, run tmaven from any folder, or you can launch it in the tmaven folder as python -m tmaven\n\n\n\n\n\n\n\nNote\n\n\n\nApple silicon workaround. Note, if you are on a Mac with an Apple silicon chip, you may need to emulate x86_64 architecture for some libraries that tMAVEN relies on; this means that everything, including you Python, needs to be emulated. Any easy way to do this is add the following line to your RC file (e.g., .bashrc, .zshrc):\nalias intel=\"env /usr/bin/arch -x86_64 /bin/zsh --login\"\nClose and reopen your terminal (or source your editted RC file). Then run intel in your terminal window. Now you can make an new conda environment and install tMAVEN."
-  },
-  {
-    "objectID": "shortcuts.html",
-    "href": "shortcuts.html",
-    "title": "Shortcut Keys",
-    "section": "",
-    "text": "Note: Most keys are locked when the lock button (bottom left of the window) is activated.\n\nCommands\nUse command (⌘; Mac) or control (Windows, Linux)\n\n\n\nCommand\nKey\n\n\n\n\nShow Preferences\n⌘ + p\n\n\nShow Molecule Table\n⌘ + t\n\n\nRun Script\n⌘ + r\n\n\nOpen SMD\n⌘ + o\n\n\nSave SMD\n⌘ + s\n\n\nQuit\n⌘ + q\n\n\n\n\n\nHot-keys\nNote: If these aren’t working, a tab might have the focus, and you might need to give the focus back to the main window (e.g., click on the ticks).\n\n\n\nCommand\nKey\n\n\n\n\nToggle grid\ng\n\n\nGo to next molecule\nright arrow, down arrow\n\n\nGo to previous molecule\nleft arrow, up arrow\n\n\nJog pre-time backwards by one point\n-\n\n\nJog pre-time forwards by one point\n+\n\n\nJog post-time backwards by one point\n[\n\n\nJog post-time forwards by one point\n]\n\n\nReset pre- and post-time\nr\n\n\nSplit trace at post-time location\nc\n\n\nRecombine all split of this trace\nv\n\n\nAuto-detect photobleaching point\np\n\n\nAssign class\n1, 2, …, 9, 0"
-  },
-  {
-    "objectID": "about.html",
-    "href": "about.html",
-    "title": "About tMAVEN",
-    "section": "",
-    "text": "tMAVEN is a program for analyzing time series data from single-molecule experiments. It is fine-tuned for single-molecule fluorescence resonance energy transfer (smFRET) experiments. The major design goals are to allow for:\n\nextremely fast pre-processing\nperfectly reproducible figures (e.g., tick locations)\na one-stop-shop for kinetic modeling\nimmutable data – you only work on a copy of it!\npower-user coding via scripts (see Examples pages)\n\n\nLearn more\nCheck out the tMANUAL pages on this site, view some of the examples (links in the side bar), or join in on the discussions on Github\n\n\nWho and Where\ntMAVEN is a development that came out of the Gonzalez lab at Columbia University from about 2015-present.\n\n\nCiting tMAVEN\nIf you use tMAVEN in your work, please cite the associated paper:\nVerma, A.R., Ray, K., Bodick, M., Kinz-Thompson, C.D., Gonzalez, Jr., R.L. (2024) Increasing the accuracy of single-molecule data analysis using tMAVEN. Biophysical Journal. In press, DOI:10.1016/j.bpj.2024.01.022. bioRxiv Preprint: DOI:10.1101/2023.08.15.553409."
-  },
-  {
-    "objectID": "examples/example_rastergramplot.html",
-    "href": "examples/example_rastergramplot.html",
-    "title": "Plot Rastergram",
-    "section": "",
-    "text": "Here’s a full script that you can use to plot the (ordered) set of all events in your trajectories. For instance, if you have a three state model, where state 0 is unbound, and state 1 and state 2 are bound but different conformations, you can change the inds variable (line 3, below) to show when state 1 and state 2 are happening.\ninds = [1,2]\nNote that you must have a model first. In general, you should save this as a .py file, and use the Scripts >> Run Scripts menu option to run that file. You can edit it as you go if you want to change something, and then re-run it. Note that it use’s the current activate model for the calculation.\nSave the code below in a file as plot_rastergram.py\n\nimport numpy as np\nimport matplotlib.pyplot as plt\n\ninds = [0,]\n\nm = maven.modeler.model\nnt = maven.data.nt\nnk = m.nstates\nkb = 1.\n\nvits = m.chain\nnmol,nt = vits.shape\n\npre = maven.data.pre_list\npost = maven.data.post_list\n\ndata = np.zeros((nmol,nt)) + np.nan\nfor i in range(nmol):\n    if post[i]-pre[i] > 1:\n        data[i,0:post[i]-pre[i]] = np.isin(vits[i][pre[i]:post[i]],inds).astype('float')\n\n\nfirst = np.nanargmax(data,axis=1)\norder = first.argsort()\ndata = data[order]\n\ndt = maven.prefs['plot.time_dt']\ndesc = m.description()\ndesc = desc.split('] ')[1]\ndesc = ''.join(desc.split(' -')[:-1])\n\nfig,ax = plt.subplots(1,figsize=(3,3))\nax.pcolormesh(np.arange(nt)*dt,np.arange(nmol),data,cmap='Greys')\nax.set_ylabel('Molecules')\nax.set_yticks(())\nax.set_xlabel('Time (s)')\nax.set_title(desc)\nfig.tight_layout()\nplt.show()"
-  },
-  {
-    "objectID": "examples/example_runhhmm.html",
-    "href": "examples/example_runhhmm.html",
-    "title": "Run hHMM in tMAVEN script mode",
-    "section": "",
-    "text": "The following is a script example for apply a hierarchical HMM (hHMM) in tMAVEN. The algorithm used is translated into Python from the MATLAB version described in: Hon, J., and Gonzalez, R.L., Jr., Bayesian-estimated hierarchical HMMs enable robust analysis of single-molecule kinetic heterogeneity. Biophysical Journal. 116, 1790-1802 (2019).\nfrom tmaven.app import setup_maven\n\n#### Analyze data with hHMM\n## Make a new MAVEN instance\nmaven  = setup_maven(['--log_stdout'])\n\n## Load data\nmaven.io.load_smdtmaven_hdf5('example_smd.hdf5','L1-tRNA')\n\n## Turn on only the first 10 trajectorys\nmaven.data.flag_ons*=False\nmaven.data.flag_ons[:10]+=True\n\n# Specify the model parameters\nmaven.prefs['modeler.hhmm.restarts'] = 4\nmaven.prefs['modeler.hhmm.maxiters'] = 100\nmaven.prefs['modeler.hhmm.tolerance'] = 1e-4\n\n\n## Run 2xw hHMM\nmaven.modeler.run_fret_hhmm()\n\n\n# Export\noname = 'result_hhmm.hdf5'\nmaven.modeler.export_result_to_hdf5(oname)\nThis script runs a two-level two-state hHMM. Integrating this into the tMAVEN GUI, along with interface options to specify and customize the tree structure of the hHMM applied to the data, is currently a work in progress."
-  },
-  {
-    "objectID": "examples/example_script1.html",
-    "href": "examples/example_script1.html",
-    "title": "Scripted modeling - no GUI",
-    "section": "",
-    "text": "Process some data with a kinetic model and then plot it all without using the GUI\nfrom tmaven.app import setup_maven\n\n#### Analyze some data\n## Make a new MAVEN instance\nmaven  = setup_maven(['--log_stdout'])\n\n## Load data\nmaven.io.load_smdtmaven_hdf5('./notes/example_smd.hdf5','L1-tRNA')\n\n## Turn on only the first 10 trajectorys\nmaven.data.flag_ons*=False\nmaven.data.flag_ons[:10]+=True\n\n## Run vbFRET model selection with 1 through 6 states\nmaven.modeler.run_fret_vbhmm_modelselection(1,6)\n\n\n\n#### Make some plots\nimport matplotlib.pyplot as plt\nfig,ax =plt.subplots(2)\n\n## Plot a 1D histogram in the first plots using the raw data instead of the Viterbi data\nmaven.plots.fret_hist1d.prefs['idealized'] = False\nmaven.plots.fret_hist1d.plot(fig,ax[0])\n\n## Plot a trajectory in the second plot\nax[1].plot(maven.data.corrected[0,:,0],'g')\nax[1].plot(maven.data.corrected[0,:,1],'r')\n\nplt.show()"
-  },
-  {
-    "objectID": "examples/example_entropyplot.html",
-    "href": "examples/example_entropyplot.html",
-    "title": "Plot Entropy",
-    "section": "",
-    "text": "Here’s a full script that you can use to plot the entropy of your trajectories. Note that you must have a model first (otherwise you cannot know the probabilities). In general, you should save this as a .py file, and use the Scripts >> Run Scripts menu option to run that file. You can edit it as you go if you want to change something, and then re-run it. Note that it use’s the current activate model for the calculation.\n\nSave the code below in a file as plot_entropy.py\n\nimport numpy as np\nimport matplotlib.pyplot as plt\n\ndef calc_entropy_expected(A,pi):\n    Hxavg = -np.sum(pi[:,None]*A*np.log(A))\n    H_expected = Hxavg\n    return H_expected\n\nfig,ax = plt.subplots(1,figsize=(3,3),dpi=300)\n\nm = maven.modeler.model\nnt = maven.data.nt\nnk = m.nstates\nkb = 1.\n\nTmc = m.tmatrix\nA = Tmc.copy()\nfor i in range(A.shape[0]):\n    A[i] /= A[i].sum()\n\n# pi = m.frac\n# pi /= pi.sum()\n\nw,v = np.linalg.eig(A.T)\nind = np.where(w==w.max())[0][0]\nss = v[:,ind]\nss /= ss.sum()\npi = ss\n\nvits = m.chain\nnmol,nt = vits.shape\nss = np.zeros((nmol,nt)) + np.nan\npre = maven.data.pre_list\npost = maven.data.post_list\ndp = post-pre\n\nfor nmoli in range(nmol):\n    v = vits[nmoli]\n    if dp[nmoli] > 1:\n        ri = m.r[nmoli].copy()\n\n        # ## use viterbi instead of the full chain\n        # v = v[pre[nmoli]:post[nmoli]].copy()\n        # pij = pi[v[0]]*np.concatenate(([1.],np.exp(np.cumsum(np.log(A[v[:-1],v[1:]])))))\n        # sij = -kb*np.log(pij)\n\n        ## use full gamma treatment\n        pij = np.zeros((dp[nmoli]))\n        pij[0] = np.log(np.sum(pi*ri[pre[nmoli]+0]))\n        for t in range(1,dp[nmoli]):\n            pij[t] = np.log(np.sum(A*(ri[pre[nmoli]+t-1][:,None]*ri[pre[nmoli]+t][None,:])))\n        sij = -kb*(np.cumsum(pij))\n        sij[np.isinf(sij)] = np.log(np.finfo(np.float64).max)\n        sij[np.bitwise_not(np.isfinite(sij))] = np.nanmax(sij[np.isfinite(sij)])\n        ss[nmoli,pre[nmoli]:post[nmoli]] = sij\n\ndt = maven.prefs['plot.time_dt']\nx = np.arange(nt) \n\nfor nmoli in range(nmol):\n    ax.plot(x*dt,ss[nmoli],color='k',lw=1,alpha=.05,zorder=1)\n\n\nsexp = calc_entropy_expected(A,pi)\ntheory = x*sexp-kb*np.sum(pi*np.log(pi))\nax.plot(x*dt,theory,color='tab:red',ls='-',lw=1.2,zorder=1)\ndesc = m.description()\ndesc = desc.split('] ')[1]\ndesc = ''.join(desc.split(' -')[:-1])\n\nlow,med,high = np.nanpercentile(ss,[2.5,50.,97.5],0)\nstd = np.nanstd(ss,axis=0)\nmean = np.nanmean(ss,axis=0)\nax.plot(x*dt,mean-std,color=\"tab:blue\",label ='%s'%(desc),ls='-',lw=1.2,zorder=2)\nax.plot(x*dt,mean,color=\"tab:blue\",label ='%s'%(desc),ls='-',lw=1.2,zorder=2)\nax.plot(x*dt,mean+std,color=\"tab:blue\",label ='%s'%(desc),ls='-',lw=1.2,zorder=2)\n\n\n#### order the traces. This destroys the matching w the HMM viterbis so... annoying\n# order = np.nanmax(ss,axis=1)\n# print(ss.shape,order.shape)\n# order[np.isnan(order)] = 0.\n# order = np.argsort(order)[::-1]\n# print(order)\n# maven.data.order(order)\n# maven.emit_data_update()\n\n\nax.set_ylim(0,np.log(np.finfo(np.float64).max))\nax.set_ylabel('Entropy')\nax.set_xlabel('Time')\nax.set_title(desc)\nax.set_xlim(0,x.max()*dt)\nfig.tight_layout()\nplt.show()"
-  },
-  {
-    "objectID": "examples/example_smdload.html",
-    "href": "examples/example_smdload.html",
-    "title": "Load SMD",
-    "section": "",
-    "text": "Here’s a code example\nmaven.io.load_smdtmaven_hdf5('./docs/examples/example_smd.hdf5','L1-tRNA')"
-  },
-  {
-    "objectID": "examples/example_defaultprefs.html",
-    "href": "examples/example_defaultprefs.html",
-    "title": "Lab Default Preferences",
-    "section": "",
-    "text": "If you want to have the same, reproducible figures for publication, you should make a script to change the preferences to your default values. The script will just be a python script that only needs to contain lines like:\nmaven.prefs['plot.fig_width'] = 6.0\nmaven.prefs['plot.fig_height'] = 3.0\nmaven.prefs['plot.intensity_max' ] =500.0\nmaven.prefs['plot.intensity_min'] = -50.0\nIt doesn’t even need any imports! To run this, you can use the Scripts >> Run Scripts menu option. Alternatively, you can use the --script command line option if running from a terminal."
-  },
-  {
-    "objectID": "tutorial_quickstart.html",
-    "href": "tutorial_quickstart.html",
-    "title": "Quick Tutorial",
-    "section": "",
-    "text": "Download the example data here, and then follow the steps in this video to model the data using a two-state global HMM.\nThis HDF5 file contains two smFRET datasets in the single-molecule dataset (SMD) format. They are two different smFRET signals (L1-L9 and L1-tRNA) on the same bacterial ribosome complex with deactylated tRNA\\(^{Phe}\\) in the P-site at 25. These data are published in a recent paper 1.\n\n\n\n\n\nFootnotes\n\n\nRay, K., Kinz-Thompson, C.D., Fei, J., Wang, B., Lin, Q., Gonzalez, Jr., R.L. (2023) Entropic control of the free-energy landscape of an archetypal biomolecular machine. Proc. Natl. Acad. Sci. USA, 120(21), e2220591120. DOI: 10.1073/pnas.2220591120.↩︎"
-  },
-  {
-    "objectID": "tmanual/modelling.html",
-    "href": "tmanual/modelling.html",
-    "title": "4. Modelling",
-    "section": "",
-    "text": "Possibly the most important feature of tMAVEN is its ability to generate models using various algorithms. Users can also use a variety of plots to assess the performance of those models. For more information on Bayesian inference and use of Hidden Markov Models (HMMs) to model single-molecule data (see Kinz-Thompson, Ray, and Gonzalez 2021). A majority of tMAVEN’s algorithms use HMMs which model a time series as transitioning between discrete states hidden by noise.\n\n\n\nAfter generating a model (see below) tMAVEN shows the idealized trajectory (black line) also called the Viterbi path in black, indicating the most likely state of a molecule at each time point\n\n\n\nNavigating Between Models\nIn running any of these algorithms, it may be useful to also check the log, by navigating to View/Show Log. The parameters of a model can be found here, for example: number of determined states, transition matrix, or state means. When generating a model, tMAVEN will only use “on” traces. Viewing the molecule table (section 2) and using the selection tool (section 3) makes toggling molecules on and off much easier.\nAdditionally, which model is displayed through idealized trajectories may be selected under Modeling/. An individual model can be removed with Modeling/Clear Active or all can be removed with Modeling/Remove Models. Models can be exported or imported as hdf5s with Modeling/Export Active and Modeling/Load Active. If users wish to update the idealized trajectories shown, either after changing pre/post times or including/excluding certain traces, they should click Modeling/Update idealized. Note that this will not update the existing model parameters.\n\n\nGenerating Models\nThere are many models to choose from under Modeling/FRET Modeling. One important aspect of these models is whether or not Model Selection is utilized. Without model selection, the user must know and input the number of states, however, if that number is unknown, some algorithms may determine it themselves (see figure). These papers elaborate on that selection: For vbFRET (Bronson et al. 2009) and ebFRET (Meent, Bronson, and Gonzalez 2014)\n\n\n\nAfter selecting a model, tMAVEN prompts users to determine some parameters for the modelling algorithms that inform the prior. In most cases these settings need not be changed aside from number of states. The parameters asked for might change depending on the model type. The algorithms in tMAVEN use a Gaussian gamma function with: a as the shape parameter, b as the rate parameter of the gamma distribution parameters, beta as the Gaussian precision parameter, and alpha as the sole parameter of the Dirichlet distribution (Bishop 2006).\n\n\nWhen running any model, users also have to input some computational settings (see figure). It is recommended to just leave the defaults. The number of restarts corresponds to the number of times the algorithm will restart with different initializations, in order to ensure this state does not affect the final result. The setting for the convergence determines at what relative change in cost function the algorithm will determine convergence has occurred. In case the convergence doesn’t occur, the algorithm will cut off after the max iterations.\n\n\nGenerating a Threshold Model\nUnder Modeling/FRET Modeling/Threshold is the simplest Model. The threshold model assigns every data point to one of two states dependent on whether it is greater than or less than a user-specified threshold. Threshold models calculate average emission values, means, variances, and fractions of the two states visible in the log.\n\n\nGenerating a Mixture model\nUnder Modeling/FRET/Mixtures are various models that simply cluster the data from all traces either by K-means or by a Gaussian mixture model (GMM) with either a maximum likelihood (mlGMM) or a variational Bayesian (vbGMM) technique (Bishop 2006). If the number of states is unknown, users can also choose to use model selection (see above) with variational Bayesian (vbGMM + Model Selection). Mixture models calculate average emission values, means, variances, and fractions of k states visible in the log.\n\n\nGenerating a Composite HMM Model\nComposite models under Modeling/FRET Modeling/Composite HMMs create a hidden Markov model (HMM) for each trace and then cluster them in various ways. This single clustered model is then used for the idealized paths shown on each trace.\nTo generate the HMMs, users can choose either a maximum likelihood algorithm (mlHMM, McKinney, Joo, and Ha 2006) or variational Bayesian algorithm (vbHMM, Bronson et al. 2009). If the number of states is unknown, users can also choose to use model selection (see above).\nOnce HMMs have been generated, they are clustered in various ways: K-means, vbGMM and Threshold which have been elaborated above. The means, variances and fractions of the states from the clustered model can be found in the log.\n\n\nGenerating Global HMMs\nvbConsensus (variational Bayesian, TMAVENPAPER?) and ebHMM (empirical Bayesian, Meent, Bronson, and Gonzalez 2014) are both consensus methods, in that they generate one HMM from the entire data set. In addition to means, variances, and fractions, the consensus methods yield a transition matrix, which may be found in the log or under Analyze Dwell Times as discussed below.\n\n\nDwell Time Plots and Analysis\nOnce a model is run and the number states and their means and transition matrices are calculated, tMAVEN can analyze a data set in terms of dwell times. Before analyzing, go to modeling/Analyze Dwell Times, select your model with Change Active and hit calculate (see figure). To look at a graph for the dwell of a specific state, choose the desired state under rate analysis and input whether it is expected to be a single, double, or triple exponential and hit run. Under results, the “Rate type” will read “Dwell Analysis”, and rates and coefficients will be shown according to the form of the equation selected. For instance a double exponential will show two rates and two coefficients according to the equation \\(y=A_1e^{-r_1t}+A_2e^{-r_2t}\\).\n\n\n\nBefore hitting calculate, make sure the intended model is used by looking at “Model Type” in the top left.\n\n\n\n\n\nA dwell time plot with the data in blue and theoretical dwell graph, from model selected as in the preceding figure, as a dotted black line. To change the log scale to linear, search on the left for hist\\(\\_\\)log\\(\\_\\)y. To toggle the model, search for model\\(\\_\\)on. To change which state of the model is displayed, search for dwell\\(\\_\\)state and set to the desired.\n\n\nThen, either navigate to plots/Dwell Times or simply hit Plot in the Dwell Times section of Run Dwell Analysis (see figure). Now that the plot is made (see figure), a histogram of the dwell time is displayed, an exponential decay function. The presets show the y axis on a log scale and the model, theoretical dwell, off. Alter these in the preferences on the left (see figure).\nIf any series do not appear, or do not update when dwell\\(\\_\\)state is changed, navigate back to modeling/analyze dwell times and hit calculate again, turn off and on the active model, or hit refresh in the top left corner of the dwell time plot (see figure).\n\n\n\n\n\nReferences\n\nBishop, Christopher. 2006. Pattern Recognition and Machine Learning. Information Science and Statistics. New York: Springer-Verlag. https://www.springer.com/gp/book/9780387310732.\n\n\nBronson, J. E., Jingyi Fei, Jake M. Hofman, R. L. Gonzalez Jr, and Chris H. Wiggins. 2009. “Learning Rates and States from Biophysical Time Series: A Bayesian Approach to Model Selection and Single-Molecule FRET Data.” Biophysical Journal 97 (12): 3196–3205. https://doi.org/10.1016/j.bpj.2009.09.031.\n\n\nKinz-Thompson, C. D., K. K. Ray, and R. L. Gonzalez Jr. 2021. “Bayesian Inference: The Comprehensive Approach to Analyzing Single-Molecule Experiments.” Annual Review of Biophysics 50 (1): 191–208. https://doi.org/10.1146/annurev-biophys-082120-103921.\n\n\nMcKinney, S. A., C. Joo, and T. Ha. 2006. “Analysis of Single-Molecule FRET Trajectories Using Hidden Markov Modeling.” Biophysical Journal 91 (5): 1941–51. https://doi.org/10.1529/biophysj.106.082487.\n\n\nMeent, J. W. van de, C. H. Bronson J. E.and Wiggins, and R. L. Gonzalez Jr. 2014. “Empirical Bayes Methods Enable Advanced Population-Level Analyses of Single-Molecule FRET Experiments.” Biophysical Journal 106 (6): 1327–37. https://doi.org/10.1016/j.bpj.2013.12.055."
-  },
-  {
-    "objectID": "tmanual/navigating.html",
-    "href": "tmanual/navigating.html",
-    "title": "2. Navigating",
-    "section": "",
-    "text": "Loading Data\ntMAVEN can support ASCII, SMD (Greenfeld et al. 2015 , HDF5 based), raw HDF5, and SPARTAN files. Load data by hitting File/Load, select file type, and then the file itself. Note that class, pre/post etc. files may be uploaded separately. The default upload settings are for SMD format, so if using ASCII files, the upload setting must be chosen through the menus File/Load/Text files (ASCII/UTF)/Raw/[user’s format]. In this section, N refers to number of traces, T to number of time points and C to number of color channels for some N by T by C format. C,T,N is most common format such as in vbFRET (Bronson et al. 2009) and ebFRET (Meent, Bronson, and Gonzalez 2014). Alternatively, if using Raw, users can manually alter settings for uploading under “io.” preferences: Namely, io.axis_order for which [0,1,2] corresponds to [N,T,C]. Decollate_axis (0 or 1) refers to how the text separates individual traces, and the delimiter may be inputed under io.delimiter.\n \nNote that any preferences using True/False are case sensitive. There is also an HDF5 viewer tool under View/ that the user may find useful.\n\n\nThe Molecule Table\nNavigate to the molecule table View/Molecule Table or hit command T to bring up the molecule table. Notice the columns:\n\nClass: the class of the trace, change a trace’s class by clicking its row in the molecule table and inputing a number, or simply by clicking around the plot and keying a number.\nOn/Off: Whether the trace is turned on. By toggling a trace one can easily choose which traces are included in modeling and plotting features, see section 4. It will also toggle whether the trace is subject to actions like save.\nPre/Post: The range of time each cut trace covers\nSource: If modeling from different datasets, the origin of each trace can be seen here. Note that the class can be assigned separately from the source.\n\n\n\n\nMolecule Table Sample\n\n\nClassifying traces is one of the most powerful aspects of tMAVEN.\n\n\nUsing the UI and Cutting a Trace\nNavigate between traces by scrolling while graph window is selected or by using the scroll underneath the graphs (see Figure). Notice trace number and class of the graph displayed in the bottom right corner. Aspects of the graph can be adjusted in the graph settings and figure options (see Figure), or in preferences. Most of these settings are plot.[aspect] and include settings for the axes, subdivision ticks, time scale, and more. The user can always use the View/reset GUI command to set all these settings to default.\n\n\n\nlabeled UI after loading a dataset\n\n\nMost actions in tMAVEN do not alter the raw data of a trace, such as gamma and bleed-through corrections. Only cutting traces actually alters the pre and post times which can be seen in the molecule table or on the traces themselves. The user can set the post time by right clicking at the desired point on a graph or left clicking for the pre time. Notice that once a section has been cut out, it appears much fainter on the graph. Reset the pre and post times for a single trace by hitting R. Users can also use the square brackets to increase and decrease the post time by 1 point.\nOther tools include the pan and zoom features (see Figure). Use the zoom tool to select a section of the graph to enlarge and to allow more precise selection of pre/post time. Additionally, hit G to toggle viewing subdivisions on the graph (settings for these can be altered in preferences as described earlier). Another useful tool is single photobleach detection, which finds and cuts out photobleaching for only the trace shown. Hit P to apply this tool to the shown trace. Photobleach for all traces is also available and is discussed in section 3.5. \nBut before any manual trace picking is done, it is highly recommended that the user employ the preprocessing tools described in section 3.\n\n\n\n\n\nReferences\n\nBronson, J. E., Jingyi Fei, Jake M. Hofman, R. L. Gonzalez Jr, and Chris H. Wiggins. 2009. “Learning Rates and States from Biophysical Time Series: A Bayesian Approach to Model Selection and Single-Molecule FRET Data.” Biophysical Journal 97 (12): 3196–3205. https://doi.org/10.1016/j.bpj.2009.09.031.\n\n\nGreenfeld, M., J. W. van de Meent, D. S. Pavlichin, H. Mabuchi, C. H. Wiggins, R. L. Gonzalez Jr, and D. Herschlag. 2015. “Single-Molecule Dataset (SMD): A Generalized Storage Format for Raw and Processed Single-Molecule Data.” BMC Bioinformatics 16 (3). https://doi.org/10.1186/s12859-014-0429-4.\n\n\nMeent, J. W. van de, C. H. Bronson J. E.and Wiggins, and R. L. Gonzalez Jr. 2014. “Empirical Bayes Methods Enable Advanced Population-Level Analyses of Single-Molecule FRET Experiments.” Biophysical Journal 106 (6): 1327–37. https://doi.org/10.1016/j.bpj.2013.12.055."
-  },
-  {
-    "objectID": "tmanual/web_intro.html",
-    "href": "tmanual/web_intro.html",
-    "title": "0. Introduction",
-    "section": "",
-    "text": "tMANUAL\nLast update 2023/05/31\nThis is a guide to using tMAVEN to process your data.\nA full PDF form is available here"
-  },
-  {
-    "objectID": "tmanual/installing.html",
-    "href": "tmanual/installing.html",
-    "title": "1. Installing",
-    "section": "",
-    "text": "Installing tMAVEN\ntMAVEN is a free open-source software available to anyone looking to comparatively analyze single molecule time-series data. The easiest way to install tMAVEN is to download the latest release from the Github. Choose your installer (.dmg for Mac or .msi for Windows).\nOtherwise, users can also do a manual installation (oulined here). Note, this requires a Python installation. We recommend using miniconda, which may be installed from here."
-  },
-  {
-    "objectID": "tmanual/index.html",
-    "href": "tmanual/index.html",
-    "title": "tMAVEN Documentation",
-    "section": "",
-    "text": "Preface\ntMANUAL is a guide to using tMAVEN.\nFor more information visit:\n\n[Website] https://gonzalezbiophysicslab.github.io/tmaven/\n[Github] https://github.com/GonzalezBiophysicsLab/tmaven"
-  },
-  {
-    "objectID": "tmanual/readme.html",
-    "href": "tmanual/readme.html",
-    "title": "tMAVEN Documentation",
-    "section": "",
-    "text": "How to update\nIn this tMANUAL folder:\nquarto render\nThis will fail if you don’t have xelatex installed. If you use tectonic (brew install tectonic), you can then:\nmv index.tex tMANUAL.tex\ntectonic tMANUAL.tex\nrm tMANUAL.tex\n\n\nNotes\nYou MUST use index.qmd as a file in your contents. See https://github.com/quarto-dev/quarto-cli/discussions/3759. The web version of tMANUAL uses web_intro.qmd as the first page instead"
-  },
-  {
-    "objectID": "tmanual/references.html",
-    "href": "tmanual/references.html",
-    "title": "tMAVEN Documentation",
-    "section": "",
-    "text": "References"
-  },
-  {
-    "objectID": "tmanual/preprocessing.html",
-    "href": "tmanual/preprocessing.html",
-    "title": "3. Preprocessing",
-    "section": "",
-    "text": "The tMAVEN tools allow users to skip a lot of the painful preprocessing by culling bad traces, reordering traces by viability, and adjusting the presentation of those traces without altering the raw data, all of which makes data sets easier to process. These features can be found under “tools”, and all should be considered before trace picking to optimize the process.\n\nSelection\nBefore going through traces users should navigate to tools/ selection/order by/cross-correlation to order traces by cross-correlation since good FRET data corresponds to cross correlated jumps of the donor and acceptor emissions. Notice also the options to order by and Turn on/off by class. One of the greatest strengths of tMAVEN is the ease of classifying and viewing traces with the molecule table (refer to section 2). The power to classify traces greatly enhances use of the algorithms discussed in section 4 by the ease with which one may experiment with inclusion of groups of traces. In this case the user is not forced to go through the whole data set repeatedly. \n\n\nFilter Traces\nThe Filter Traces command, found under tools, allows the user to filter traces by signal to background ratio (SBR). An algorithm that identifies photobleaching (see section 3: Photobleaching) is used to determine the parameters of background. Filter Traces then sorts traces by SBR and allows the user to classify or cull those groups.\n\n\n\nA graph like this is generated once calculate is hit. The actual culling/classifying is not completed until the user hits process (see next figure). The graph enables the user a comprehensive view of their data set\n\n\nCulling in Filter Traces:\n\nOnce calculate is hit and the graph is made, the user can choose what to do with each type of trace (previous figure): ones with low SBR and bleaching, ones with high SBR and bleaching, ones with low SBR and no bleaching, ones with high SBR and no bleaching, and dead traces (traces that bleach before the “minimum frames dead”). Users can repeat the process of filtering and culling until satisfied.\n\n\nCull\nThe Cull function under tools is relatively intuitive and allows users to discard traces according to class or a maximum/minimum data point value. The latter functions should be used only after photobleach detection (see section 3: Photobleaching) lest good traces be culled. The data searched for this function includes only Emissions and not E\\(_{FRET}\\) values.\n\n\nCorrections\nIn this group there are many useful tools such as bleedthrough, gamma, and background correction. As discussed earlier, the actual data is not altered. The program stores a copy of the given data, and the copy is altered by corrections and displayed. For this reason, the corrections should be applied just once for each time a data set is loaded into tMAVEN.\n\n[Bleedthrough corrections] The default bleedthrough correction is set to 5% and can be adjusted in preferences under correction.bleedthrough.\n[Gamma Corrections] The default gamma correction is set to 1 and can be adjusted in preferences under correction.gamma.\n[Background] Background is determined for each trace by the last x frames, alterable in preferences under correction.backgroundframes, and subtracted from the red emission value.\n\n\n\nSignal Filters\nAlso found under tools/corrections are various signal filters that can make traces much easier to read. All smooth the graphs according to different methods, making the E\\(_{FRET}\\) states easier to discern. The filters are found under Tools/Corrections/Signal Filters, and can be removed by resetting corrections under corrections/reset. Reset corrections before switching between signal filters. The width of the filter window’s can also be adjusted in preferences by correction.filterwidth which is automatically set to 2. See figure below for a look at these filters.\n\nGaussian\nWiener\nMedian\n8-pole Bessel\nChung–Kennedy (Chung and Kennedy 1991)\n\n\n\n\nThe visual effect of the signal filters offered by tMAVEN on the same trace (top left). The benefits of different filters and level of smoothing can be seen here. The Chung-Kennedy filter best maintains the sharp transitions while also reducing noise well. In comparison the Gaussian filter is much more rounded, which makes determining transition times harder.\n\n\n\n\nPhotobleaching\nBy navigating to tools/photobleach/photobleach detection, the user can run an algorithm that checks each trace for photobleaching and cuts the trace there. Alternatively, users can hit P and cut only the trace they are looking at. The algorithm essentially identifies transitions by maximizing the evidence of a Gaussian between sections of data and placing transitions between those. Photobleaches are then transitions to mean 0 states.\n\n\n\n\n\nReferences\n\nChung, S. H., and R. A. Kennedy. 1991. “Forward-Backward Non-Linear Filtering Technique for Extracting Small Biological Signals from Noise.” Journal of Neuroscience Methods 40 (1): 71–86. https://doi.org/10.1016/0165-0270(91)90118-j."
-  },
-  {
-    "objectID": "tmanual/plotting.html",
-    "href": "tmanual/plotting.html",
-    "title": "5. Plotting",
-    "section": "",
-    "text": "One-Dimensional Histograms\nThe histogram feature of tMAVEN is primarily useful for visualization of data and not diagnostics. Navigate to Plots/FRET hist 1D to generate a one-dimensional histogram of all E\\(_{fret}\\) emission data, the peaks represent states and should look like K gaussians.\n\n\n\nA typical one dimensional histogram. Note the number of traces used N in the top right. If a model has been calculated, a population-weighted set of emission distributions is plotted as the solid black with the dotted lines as the individual populations. These lines are not a Gaussian fit of the data, but come directly from the models. Theoretically, better models/processing will result in a better fit of the histogram.\n\n\nNotable preferences the user might want to change include:\n\nhist_force_y to force the y axis value\nhist_log_y puts the y-axis in log scale\nmodel_on will toggle the model as described in Figure\nhist_false toggles the histogram itself, blue in the figure\nhist_color will change the color of the histogram\n\nThe save icon below the graph can be used to export the figure.\n\n\nTwo-Dimensional Histograms\nThe two-dimensional histograms in tMAVEN also have the axis of time. Generate by navigating Plots/FRET hist 2D The histogram is automatically smoothed by a median filter which setting can be changed (see below). One of the most useful capabilities is the choice of using post-synchronization. In this case, t=0 represents the time of transition from one specified state to another, see below. Note that post-synch can only operate once a model is run and transitions have been detected.\n\n\n\nA two dimensional histogram with post-sync on using the het color map.\n\n\nUseful preferences:\n\ncolor_ceiling sets the ceiling for the color mapping\ncolor_dbl enables two floors\ncolor_floor_color is the lower floor\ncolor_cmap determines the color map, all matplotlib maps are supported\nhist_smooth_med toggles the use of a median filter on the graph and hist_smoothx/y determine the widths of this filter\ntime_dt changes the time ticks, set to acquisition time to yield the same axis as traces while time_nbins changes the length of time shown.\nhist_normalizeframe will normalize the histogram to mitigate photobleaching or additional transition at different times, see Figure\n\nFor post synchronization, tMAVEN will use the existing model which has identified transitions so users can essentially monitor all traces after a specific transition in a data set. Notice that N, number of traces used, will likely change since not all traces have all transitions. Small n represents the number of transitions measured not number of traces.\n\nsync_postsync toggles post synchronization\nsync_singledwell set to true shows only the dwell before and after transition. In other words, a false setting will also show future transitions.\nsync_hmmstate_1 shows the pretransition state while sync_hmmstate_2 shows the post transition state, input “-1” for any other state\n\n\n\n\nThe same graph as previous figure with normalization on."
-  },
-  {
-    "objectID": "info_models.html",
-    "href": "info_models.html",
-    "title": "Models",
-    "section": "",
-    "text": "tMAVEN provides many built-in models that you can run on your data. Generally, they are divided into several categories. On this page, we discuss each model, and then provide timings for how long they take to run on a typical dataset."
-  },
-  {
-    "objectID": "info_models.html#mixture-models",
-    "href": "info_models.html#mixture-models",
-    "title": "Models",
-    "section": "Mixture Models",
-    "text": "Mixture Models\n\nthreshold\nA threshold is applied and datapoints on each side of the threshold are clustered together.\n\n\nkmeans\nThe K-means clustering algorithm is use to cluster the datapoints into \\(N_{states}\\).\n\n\nmlgmm\nA maximum likelihood Gaussian mixture model (GMM) clustering algorithm is use to cluster the datapoints into \\(N_{states}\\).\n\n\nvbgmm\nA variational Bayes Gaussian mixture model (GMM) clustering algorithm is use to cluster the datapoints into \\(N_{states}\\)."
-  },
-  {
-    "objectID": "info_models.html#individual-hmms",
-    "href": "info_models.html#individual-hmms",
-    "title": "Models",
-    "section": "Individual HMMs",
-    "text": "Individual HMMs\n\nmlhmm\nThis is a separate maximum likelihood HMM for each trajectory. No ensemble model is generated, therefore no statistics are provided and much of the plotting functionality cannot be performed.\n\n\nvbhmm\nThis is a separate variational Bayes HMM (i.e., vbFRET) for each trajectory. No ensemble model is generated, therefore no statistics are provided and much of the plotting functionality cannot be performed."
-  },
-  {
-    "objectID": "info_models.html#composite-hmms",
-    "href": "info_models.html#composite-hmms",
-    "title": "Models",
-    "section": "Composite HMMs",
-    "text": "Composite HMMs\nComposite HMMs created by modeling each trajectory with its own HMM. We do this by using model selection (where appropriate; see below). Thus we run the one through \\(N_{states}\\) models for each trajectory, select the best (max evidence) of those models, and then do some version of clustering of the individual states found across all of the trajectories using \\(N_{states}\\) number of clusters. After assigning the individual states to the clustered global states, HMM parameters are assembled to create a composite HMM.\n\nkmeans_mlhmm\nA maximum likelihood HMM is run on each trajectory using \\(N_{states}\\), and then K-means with \\(N_{states}\\) is used to cluster the emission states. No model selection is performed, so the individual trajectory models often have spurious states – especially when kinetics are relatively slow.\n\n\nkmeans_vbhmm\nA variational Bayes HMM (i.e., vbFRET) is run on each trajectory using model selection from one to \\(N_{states}\\), and then K-means with \\(N_{states}\\) is used to cluster the emission states.\n\n\nvbgmm_vbhmm\nA variational Bayes HMM (i.e., vbFRET) is run on each trajectory using model selection from one to \\(N_{states}\\), and then a variational Bayes GMM is used with model selection from one to \\(N_{states}\\) to cluster the emission states.\n\n\nthreshold_vbhmm\nA variational Bayes HMM (i.e., vbFRET) is run on each trajectory using model selection from one to \\(N_{states}\\), and then a threshold is applied to the emission states to cluster them into two groups.\n\n\nthreshold_vbconhmm\nA global variational Bayes HMM is run on all trajectories using \\(N_{states}\\), and then a threshold is applied to the emission states to cluster them into two groups."
-  },
-  {
-    "objectID": "info_models.html#global-hmms",
-    "href": "info_models.html#global-hmms",
-    "title": "Models",
-    "section": "Global HMMs",
-    "text": "Global HMMs"
-  },
-  {
-    "objectID": "info_models.html#vbconhmm",
-    "href": "info_models.html#vbconhmm",
-    "title": "Models",
-    "section": "vbconhmm",
-    "text": "vbconhmm\nThis is a global variational Bayes HMM. It is conceptually similar to vbFRET, but all of the trajectories and assumed to be idependent and identically distributed (IID). This means that they will all obey the same HMM."
-  },
-  {
-    "objectID": "info_models.html#ebhmm",
-    "href": "info_models.html#ebhmm",
-    "title": "Models",
-    "section": "ebhmm",
-    "text": "ebhmm\nThis is an empirical Bayes HMM (i.e., ebFRET). The model provided in the empirical prior. This is a pseudo-global method in that it also models each trajectory individually. The idealized (Viterbi) paths in the plot are from the individual posteriors. Parameters are from the empirical prior."
-  },
-  {
-    "objectID": "info_models.html#model-selection",
-    "href": "info_models.html#model-selection",
-    "title": "Models",
-    "section": "Model Selection",
-    "text": "Model Selection\nThese are variations of several models discussed above. Specifically for the Bayesian-based methods, we use the maximum evidence or evidence lower bound (ELBO) to identify the optimal number of states. This works by running the same type of model, each time using a different number of states. The variation with the largest evidence/ELBO is chosen as the best model. Generally, you want to run the one state through at least the six state model.\n\nvbgmm_modelselection\nThis is a variational Bayes GMM (mixture model) with model selection from one to \\(N_{states}\\).\n\n\nvbhmm_modelselection\nThis is a variational Bayes HMM (i.e., vbFRET) with model selection from one to \\(N_{states}\\).\n\n\nvbconhmm_modelselection\nThis is a global variational Bayes HMM (i.e., global vbFRET) with model selection from one to \\(N_{states}\\).\n\n\nvbgmm_vbhmm_modelselection\nThis is a composite variational Bayes HMM (i.e., composite vbFRET). Model selection with the vbhmm is performed from one to \\(N_{states}\\), and then model selection for the number of cluster states in the GMM is performed from one to \\(N_{states}\\)"
-  },
-  {
-    "objectID": "info_models.html#apple-m2-pro",
-    "href": "info_models.html#apple-m2-pro",
-    "title": "Models",
-    "section": "Apple M2 Pro",
-    "text": "Apple M2 Pro\n\n\n\nMixture\nTime (s)\n\n\n\n\nthreshold\n0.107\n\n\nkmeans\n0.167\n\n\nmlgmm\n1.024\n\n\nvbgmm\n0.287\n\n\n\n\n\n\nHMM\nTime (s)\n\n\n\n\nmlhmm\n0.453\n\n\nvbhmm\n0.508\n\n\n\n\n\n\nComposite\nTime (s)\n\n\n\n\nvbconhmm\n8.230\n\n\nebhmm\n6.479\n\n\n\n\n\n\nGlobal\nTime (s)\n\n\n\n\nkmeans_mlhmm\n0.529\n\n\nkmeans_vbhmm\n1.783\n\n\nvbgmm_vbhmm\n1.913\n\n\nthreshold_vbhmm\n1.671\n\n\nthreshold_vbconhmm\n14.339\n\n\n\n\n\n\nw/ Model Selection(1-6)\nTime (s)\n\n\n\n\nvbgmm_modelselection\n3.663\n\n\nvbhmm_modelselection\n13.550\n\n\nvbconhmm_modelselection\n101.481\n\n\nvbgmm_vbhmm_modelselection\n41.001"
-  },
-  {
     "objectID": "develop.html",
     "href": "develop.html",
     "title": "Develop",
     "section": "",
-    "text": "Make a new virtual environment and activate it, then setup\ngit clone [tmaven URL here]\ncd tMAVEN\npython -m venv env --clear\nWhen you are ready to develop,\nsource env/bin/activate\nIf you want to install,\npip install -e ./ --use-feature=2020-resolver\nthen you can run the app with\ntmaven"
+    "text": "Make a new virtual environment and activate it, then setup\ngit clone [tmaven URL here]\ncd tMAVEN\npython -m venv env --clear\nWhen you are ready to develop,\nsource env/bin/activate\nIf you want to install,\npip install -e ./ --use-feature=2020-resolver\nthen you can run the app with\ntmaven",
+    "crumbs": [
+      "Information",
+      "Develop"
+    ]
   },
   {
     "objectID": "develop.html#the-.maven",
     "href": "develop.html#the-.maven",
     "title": "Develop",
     "section": "The .maven",
-    "text": "The .maven\nThe class for the .maven lives in /tmaven/maven.py, and many of the objects within .maven that hold different functionalities are located in the files in /tmaven/controllers.\nWhenever you modify anything (specifically data) in .maven, you will probably want to tell the .gui, but technically the .maven doesn’t know about the .gui. The solution is to execute the .maven.emit_data_update() function after any such operation. By default, that function does nothing. However, when a .gui is hooked up to a .maven, the .gui overrides this function with one of its own. This is all automatically handled by the .gui, so all you have to do is call the .maven fxn where your update is complete.\n\n.maven.prefs\nThis is basically a special python dictionary. The big difference is that it maintains the original type of the value for each key. All .maven functions with any user adjustable options should be stored in here.\n\n\n.maven.io\nThis handles all of the loading, saving functions that ultimately go into .maven.smd and .maven.data\n\n\n.maven.smd\nThis object holds all of the ‘raw’ smd format data loaded into .maven. The .maven can only hold one of these. The format is explained a little more in /tmaven/pysmd/readme.md. Largely, after loading data into the smd, you shouldn’t be touching it. Instead you should be using things in .maven.data.\n\n\n.maven.data\nThis object has a maven.data.corrected, which is the main source of data you will be interacting with; it is reset to the .maven.smd.raw. Also, .classes lives in here, and .flag_ons is bool for whether a molecule should be included in an analysis step or not (accessed via .maven.selection.get_toggled_mask)\n\n\n.maven.corrections\nMostly just some helper functions\n\n\n.maven.cull\nMostly just some helper functions\n\n\n.maven.modeler\nThis object holds/manages all the models of the data. It also provides the functionality to make new models and holds onto cached versions of numba JITd functions for later.\nFunctions with the prefix cached_ are generally just models, with no interaction with the .maven. They are called by functions prefixed with run_, which might, for instance, gather the proper traces and collect the EFRET values to model.\nModels are stored in a model_container. These are largely undefined, but have a few requirements to make it worthwhile to switch between them. Basically, they’ll have a .type (identifying string to distinguish the type of model), and them an .idealize function that will be able to idealize the data in .maven.data.corrected. [wait, is this broken?]\n\n\n.maven.scripts\nExecute python scripts. You have a local variable called maven which is the .maven object, so you can operate on anything there.\n\n\n.maven.selection\nMostly just some helper functions. Also, .maven.selection.get_toggled_mask is useful.\n\n\n.maven.trace_filter\nSort of like a stand-alone program that operates by itself\n\n\n.maven.photobleaching\nSort of like a stand-alone program that operates by itself\n\n\n.maven.plots\nThis holds the analysis plots that live in /tmaven/controllers/analysis_plots. These functions take a mpl figure and axis, and work on them to plot the data."
+    "text": "The .maven\nThe class for the .maven lives in /tmaven/maven.py, and many of the objects within .maven that hold different functionalities are located in the files in /tmaven/controllers.\nWhenever you modify anything (specifically data) in .maven, you will probably want to tell the .gui, but technically the .maven doesn’t know about the .gui. The solution is to execute the .maven.emit_data_update() function after any such operation. By default, that function does nothing. However, when a .gui is hooked up to a .maven, the .gui overrides this function with one of its own. This is all automatically handled by the .gui, so all you have to do is call the .maven fxn where your update is complete.\n\n.maven.prefs\nThis is basically a special python dictionary. The big difference is that it maintains the original type of the value for each key. All .maven functions with any user adjustable options should be stored in here.\n\n\n.maven.io\nThis handles all of the loading, saving functions that ultimately go into .maven.smd and .maven.data\n\n\n.maven.smd\nThis object holds all of the ‘raw’ smd format data loaded into .maven. The .maven can only hold one of these. The format is explained a little more in /tmaven/pysmd/readme.md. Largely, after loading data into the smd, you shouldn’t be touching it. Instead you should be using things in .maven.data.\n\n\n.maven.data\nThis object has a maven.data.corrected, which is the main source of data you will be interacting with; it is reset to the .maven.smd.raw. Also, .classes lives in here, and .flag_ons is bool for whether a molecule should be included in an analysis step or not (accessed via .maven.selection.get_toggled_mask)\n\n\n.maven.corrections\nMostly just some helper functions\n\n\n.maven.cull\nMostly just some helper functions\n\n\n.maven.modeler\nThis object holds/manages all the models of the data. It also provides the functionality to make new models and holds onto cached versions of numba JITd functions for later.\nFunctions with the prefix cached_ are generally just models, with no interaction with the .maven. They are called by functions prefixed with run_, which might, for instance, gather the proper traces and collect the EFRET values to model.\nModels are stored in a model_container. These are largely undefined, but have a few requirements to make it worthwhile to switch between them. Basically, they’ll have a .type (identifying string to distinguish the type of model), and them an .idealize function that will be able to idealize the data in .maven.data.corrected. [wait, is this broken?]\n\n\n.maven.scripts\nExecute python scripts. You have a local variable called maven which is the .maven object, so you can operate on anything there.\n\n\n.maven.selection\nMostly just some helper functions. Also, .maven.selection.get_toggled_mask is useful.\n\n\n.maven.trace_filter\nSort of like a stand-alone program that operates by itself\n\n\n.maven.photobleaching\nSort of like a stand-alone program that operates by itself\n\n\n.maven.plots\nThis holds the analysis plots that live in /tmaven/controllers/analysis_plots. These functions take a mpl figure and axis, and work on them to plot the data.",
+    "crumbs": [
+      "Information",
+      "Develop"
+    ]
   },
   {
     "objectID": "develop.html#the-.gui",
     "href": "develop.html#the-.gui",
     "title": "Develop",
     "section": "The .gui",
-    "text": "The .gui\nThe .gui object is located in /tmaven/interface/main_window.py. It contains maybe objects that hold different things (to keep them organized), that are also found in the /tmaven/interface folder. Generally, the files with a ui_ prefix contain wrapping functions over their .maven counterparts, while the viewer_ prefix files contain unique functionality. For instance, the molecule table in /tmaven/interface/viewer_molecules.py allows you to see a lot of the information in the .maven.data object in a table form, but it’s not operating any (read: much) .maven functionality. Simiarily, the preference viewer in /tmaven/interface/viewer_prefs.py allows you to see the preferences in .maven.prefs (and allows you to change them …). These are in contrast to, say, the functions in ui_cull, which mostly just gather and execute the functions in .maven.cull.\n.gui has access to .maven, because it stores a pointer in .gui.maven\nIt automatically remembers you last mode (ND or smFRET), window size and location, and light or dark mode.\nThere is a trick played to speed up scrolling (using a timer). If you want to change the trace (.gui.index) using the .gui.change_index function to play nice with this trick.\n\n.gui.plot_container\n.gui.plot_container.plot is the mpl canvas for the trace plot the .gui.plot_container controls which canvas is shown (e.g., ND or smFRET) swapping modes in the menu_view also changes some preferences\n\n\n.gui.index\ndenotes the current trace displayed/acted upon\n\n\nmolecule table (command/ctrl + T)\nyou can select things and then use some of the menu items to change things about those traces. the selection menu items will change the selection on this table. For instance, you can select all, and then change the class of the selected.\n\n\npreferences (command/ctrl + P)\nsearch box at the top to narrow it down double click the second column to edit the preference value. After doing so, the .maven should emit a .maven.prefs.emit_changed signal that tells the .gui to update stuff like the plots. This is done automatically and you probably don’t need to worry about it.\n\n\ngui keys\n\n[: descrease post point by one\n]: increase post point by one\nr: reset photobleach of this trace\ng: toggle grid\np: auto photobleach this trace (when sum drops to zero)\nright arrow/down arrow: increase .gui.index\nleft arrow/up arrow: decrease .gui.index\nnumber keys: assigns class to .gui.index trace"
+    "text": "The .gui\nThe .gui object is located in /tmaven/interface/main_window.py. It contains maybe objects that hold different things (to keep them organized), that are also found in the /tmaven/interface folder. Generally, the files with a ui_ prefix contain wrapping functions over their .maven counterparts, while the viewer_ prefix files contain unique functionality. For instance, the molecule table in /tmaven/interface/viewer_molecules.py allows you to see a lot of the information in the .maven.data object in a table form, but it’s not operating any (read: much) .maven functionality. Simiarily, the preference viewer in /tmaven/interface/viewer_prefs.py allows you to see the preferences in .maven.prefs (and allows you to change them …). These are in contrast to, say, the functions in ui_cull, which mostly just gather and execute the functions in .maven.cull.\n.gui has access to .maven, because it stores a pointer in .gui.maven\nIt automatically remembers you last mode (ND or smFRET), window size and location, and light or dark mode.\nThere is a trick played to speed up scrolling (using a timer). If you want to change the trace (.gui.index) using the .gui.change_index function to play nice with this trick.\n\n.gui.plot_container\n.gui.plot_container.plot is the mpl canvas for the trace plot the .gui.plot_container controls which canvas is shown (e.g., ND or smFRET) swapping modes in the menu_view also changes some preferences\n\n\n.gui.index\ndenotes the current trace displayed/acted upon\n\n\nmolecule table (command/ctrl + T)\nyou can select things and then use some of the menu items to change things about those traces. the selection menu items will change the selection on this table. For instance, you can select all, and then change the class of the selected.\n\n\npreferences (command/ctrl + P)\nsearch box at the top to narrow it down double click the second column to edit the preference value. After doing so, the .maven should emit a .maven.prefs.emit_changed signal that tells the .gui to update stuff like the plots. This is done automatically and you probably don’t need to worry about it.\n\n\ngui keys\n\n[: descrease post point by one\n]: increase post point by one\nr: reset photobleach of this trace\ng: toggle grid\np: auto photobleach this trace (when sum drops to zero)\nright arrow/down arrow: increase .gui.index\nleft arrow/up arrow: decrease .gui.index\nnumber keys: assigns class to .gui.index trace",
+    "crumbs": [
+      "Information",
+      "Develop"
+    ]
   },
   {
     "objectID": "develop.html#publish-changes.",
     "href": "develop.html#publish-changes.",
     "title": "Develop",
     "section": "Publish changes.",
-    "text": "Publish changes.\n\nMake your changes. Use the quarto preview to make sure they’re good.\nRender the site using quarto render docs_src.\nUse git to add and commit the changes (including the .html files etc that get generated in the docs folder\ngithub actions will update and deploy the site in about one minute"
+    "text": "Publish changes.\n\nMake your changes. Use the quarto preview to make sure they’re good.\nRender the site using quarto render docs_src.\nUse git to add and commit the changes (including the .html files etc that get generated in the docs folder\ngithub actions will update and deploy the site in about one minute",
+    "crumbs": [
+      "Information",
+      "Develop"
+    ]
+  },
+  {
+    "objectID": "tmanual/plotting.html",
+    "href": "tmanual/plotting.html",
+    "title": "5. Plotting",
+    "section": "",
+    "text": "One-Dimensional Histograms\nThe histogram feature of tMAVEN is primarily useful for visualization of data and not diagnostics. Navigate to Plots/FRET hist 1D to generate a one-dimensional histogram of all E\\(_{fret}\\) emission data, the peaks represent states and should look like K gaussians.\n\n\n\nA typical one dimensional histogram. Note the number of traces used N in the top right. If a model has been calculated, a population-weighted set of emission distributions is plotted as the solid black with the dotted lines as the individual populations. These lines are not a Gaussian fit of the data, but come directly from the models. Theoretically, better models/processing will result in a better fit of the histogram.\n\n\nNotable preferences the user might want to change include:\n\nhist_force_y to force the y axis value\nhist_log_y puts the y-axis in log scale\nmodel_on will toggle the model as described in Figure\nhist_false toggles the histogram itself, blue in the figure\nhist_color will change the color of the histogram\n\nThe save icon below the graph can be used to export the figure.\n\n\nTwo-Dimensional Histograms\nThe two-dimensional histograms in tMAVEN also have the axis of time. Generate by navigating Plots/FRET hist 2D The histogram is automatically smoothed by a median filter which setting can be changed (see below). One of the most useful capabilities is the choice of using post-synchronization. In this case, t=0 represents the time of transition from one specified state to another, see below. Note that post-synch can only operate once a model is run and transitions have been detected.\n\n\n\nA two dimensional histogram with post-sync on using the het color map.\n\n\nUseful preferences:\n\ncolor_ceiling sets the ceiling for the color mapping\ncolor_dbl enables two floors\ncolor_floor_color is the lower floor\ncolor_cmap determines the color map, all matplotlib maps are supported\nhist_smooth_med toggles the use of a median filter on the graph and hist_smoothx/y determine the widths of this filter\ntime_dt changes the time ticks, set to acquisition time to yield the same axis as traces while time_nbins changes the length of time shown.\nhist_normalizeframe will normalize the histogram to mitigate photobleaching or additional transition at different times, see Figure\n\nFor post synchronization, tMAVEN will use the existing model which has identified transitions so users can essentially monitor all traces after a specific transition in a data set. Notice that N, number of traces used, will likely change since not all traces have all transitions. Small n represents the number of transitions measured not number of traces.\n\nsync_postsync toggles post synchronization\nsync_singledwell set to true shows only the dwell before and after transition. In other words, a false setting will also show future transitions.\nsync_hmmstate_1 shows the pretransition state while sync_hmmstate_2 shows the post transition state, input “-1” for any other state\n\n\n\n\nThe same graph as previous figure with normalization on.",
+    "crumbs": [
+      "tMANUAL",
+      "5. Plotting"
+    ]
+  },
+  {
+    "objectID": "tmanual/references.html",
+    "href": "tmanual/references.html",
+    "title": "References",
+    "section": "",
+    "text": "References"
+  },
+  {
+    "objectID": "tmanual/index.html",
+    "href": "tmanual/index.html",
+    "title": "Preface",
+    "section": "",
+    "text": "Preface\ntMANUAL is a guide to using tMAVEN.\nFor more information visit:\n\n[Website] https://gonzalezbiophysicslab.github.io/tmaven/\n[Github] https://github.com/GonzalezBiophysicsLab/tmaven"
+  },
+  {
+    "objectID": "tmanual/web_intro.html",
+    "href": "tmanual/web_intro.html",
+    "title": "0. Introduction",
+    "section": "",
+    "text": "tMANUAL\nLast update 2023/05/31\nThis is a guide to using tMAVEN to process your data.\nA full PDF form is available here",
+    "crumbs": [
+      "tMANUAL",
+      "0. Introduction"
+    ]
+  },
+  {
+    "objectID": "tmanual/modelling.html",
+    "href": "tmanual/modelling.html",
+    "title": "4. Modelling",
+    "section": "",
+    "text": "Possibly the most important feature of tMAVEN is its ability to generate models using various algorithms. Users can also use a variety of plots to assess the performance of those models. For more information on Bayesian inference and use of Hidden Markov Models (HMMs) to model single-molecule data (see Kinz-Thompson, Ray, and Gonzalez 2021). A majority of tMAVEN’s algorithms use HMMs which model a time series as transitioning between discrete states hidden by noise.\n\n\n\nAfter generating a model (see below) tMAVEN shows the idealized trajectory (black line) also called the Viterbi path in black, indicating the most likely state of a molecule at each time point\n\n\n\nNavigating Between Models\nIn running any of these algorithms, it may be useful to also check the log, by navigating to View/Show Log. The parameters of a model can be found here, for example: number of determined states, transition matrix, or state means. When generating a model, tMAVEN will only use “on” traces. Viewing the molecule table (section 2) and using the selection tool (section 3) makes toggling molecules on and off much easier.\nAdditionally, which model is displayed through idealized trajectories may be selected under Modeling/. An individual model can be removed with Modeling/Clear Active or all can be removed with Modeling/Remove Models. Models can be exported or imported as hdf5s with Modeling/Export Active and Modeling/Load Active. If users wish to update the idealized trajectories shown, either after changing pre/post times or including/excluding certain traces, they should click Modeling/Update idealized. Note that this will not update the existing model parameters.\n\n\nGenerating Models\nThere are many models to choose from under Modeling/FRET Modeling. One important aspect of these models is whether or not Model Selection is utilized. Without model selection, the user must know and input the number of states, however, if that number is unknown, some algorithms may determine it themselves (see figure). These papers elaborate on that selection: For vbFRET (Bronson et al. 2009) and ebFRET (Meent, Bronson, and Gonzalez 2014)\n\n\n\nAfter selecting a model, tMAVEN prompts users to determine some parameters for the modelling algorithms that inform the prior. In most cases these settings need not be changed aside from number of states. The parameters asked for might change depending on the model type. The algorithms in tMAVEN use a Gaussian gamma function with: a as the shape parameter, b as the rate parameter of the gamma distribution parameters, beta as the Gaussian precision parameter, and alpha as the sole parameter of the Dirichlet distribution (Bishop 2006).\n\n\nWhen running any model, users also have to input some computational settings (see figure). It is recommended to just leave the defaults. The number of restarts corresponds to the number of times the algorithm will restart with different initializations, in order to ensure this state does not affect the final result. The setting for the convergence determines at what relative change in cost function the algorithm will determine convergence has occurred. In case the convergence doesn’t occur, the algorithm will cut off after the max iterations.\n\n\nGenerating a Threshold Model\nUnder Modeling/FRET Modeling/Threshold is the simplest Model. The threshold model assigns every data point to one of two states dependent on whether it is greater than or less than a user-specified threshold. Threshold models calculate average emission values, means, variances, and fractions of the two states visible in the log.\n\n\nGenerating a Mixture model\nUnder Modeling/FRET/Mixtures are various models that simply cluster the data from all traces either by K-means or by a Gaussian mixture model (GMM) with either a maximum likelihood (mlGMM) or a variational Bayesian (vbGMM) technique (Bishop 2006). If the number of states is unknown, users can also choose to use model selection (see above) with variational Bayesian (vbGMM + Model Selection). Mixture models calculate average emission values, means, variances, and fractions of k states visible in the log.\n\n\nGenerating a Composite HMM Model\nComposite models under Modeling/FRET Modeling/Composite HMMs create a hidden Markov model (HMM) for each trace and then cluster them in various ways. This single clustered model is then used for the idealized paths shown on each trace.\nTo generate the HMMs, users can choose either a maximum likelihood algorithm (mlHMM, McKinney, Joo, and Ha 2006) or variational Bayesian algorithm (vbHMM, Bronson et al. 2009). If the number of states is unknown, users can also choose to use model selection (see above).\nOnce HMMs have been generated, they are clustered in various ways: K-means, vbGMM and Threshold which have been elaborated above. The means, variances and fractions of the states from the clustered model can be found in the log.\n\n\nGenerating Global HMMs\nvbConsensus (variational Bayesian, TMAVENPAPER?) and ebHMM (empirical Bayesian, Meent, Bronson, and Gonzalez 2014) are both consensus methods, in that they generate one HMM from the entire data set. In addition to means, variances, and fractions, the consensus methods yield a transition matrix, which may be found in the log or under Analyze Dwell Times as discussed below.\n\n\nDwell Time Plots and Analysis\nOnce a model is run and the number states and their means and transition matrices are calculated, tMAVEN can analyze a data set in terms of dwell times. Before analyzing, go to modeling/Analyze Dwell Times, select your model with Change Active and hit calculate (see figure). To look at a graph for the dwell of a specific state, choose the desired state under rate analysis and input whether it is expected to be a single, double, or triple exponential and hit run. Under results, the “Rate type” will read “Dwell Analysis”, and rates and coefficients will be shown according to the form of the equation selected. For instance a double exponential will show two rates and two coefficients according to the equation \\(y=A_1e^{-r_1t}+A_2e^{-r_2t}\\).\n\n\n\nBefore hitting calculate, make sure the intended model is used by looking at “Model Type” in the top left.\n\n\n\n\n\nA dwell time plot with the data in blue and theoretical dwell graph, from model selected as in the preceding figure, as a dotted black line. To change the log scale to linear, search on the left for hist\\(\\_\\)log\\(\\_\\)y. To toggle the model, search for model\\(\\_\\)on. To change which state of the model is displayed, search for dwell\\(\\_\\)state and set to the desired.\n\n\nThen, either navigate to plots/Dwell Times or simply hit Plot in the Dwell Times section of Run Dwell Analysis (see figure). Now that the plot is made (see figure), a histogram of the dwell time is displayed, an exponential decay function. The presets show the y axis on a log scale and the model, theoretical dwell, off. Alter these in the preferences on the left (see figure).\nIf any series do not appear, or do not update when dwell\\(\\_\\)state is changed, navigate back to modeling/analyze dwell times and hit calculate again, turn off and on the active model, or hit refresh in the top left corner of the dwell time plot (see figure).\n\n\n\n\n\nReferences\n\nBishop, Christopher. 2006. Pattern Recognition and Machine Learning. Information Science and Statistics. New York: Springer-Verlag. https://www.springer.com/gp/book/9780387310732.\n\n\nBronson, J. E., Jingyi Fei, Jake M. Hofman, R. L. Gonzalez Jr, and Chris H. Wiggins. 2009. “Learning Rates and States from Biophysical Time Series: A Bayesian Approach to Model Selection and Single-Molecule FRET Data.” Biophysical Journal 97 (12): 3196–3205. https://doi.org/10.1016/j.bpj.2009.09.031.\n\n\nKinz-Thompson, C. D., K. K. Ray, and R. L. Gonzalez Jr. 2021. “Bayesian Inference: The Comprehensive Approach to Analyzing Single-Molecule Experiments.” Annual Review of Biophysics 50 (1): 191–208. https://doi.org/10.1146/annurev-biophys-082120-103921.\n\n\nMcKinney, S. A., C. Joo, and T. Ha. 2006. “Analysis of Single-Molecule FRET Trajectories Using Hidden Markov Modeling.” Biophysical Journal 91 (5): 1941–51. https://doi.org/10.1529/biophysj.106.082487.\n\n\nMeent, J. W. van de, C. H. Bronson J. E.and Wiggins, and R. L. Gonzalez Jr. 2014. “Empirical Bayes Methods Enable Advanced Population-Level Analyses of Single-Molecule FRET Experiments.” Biophysical Journal 106 (6): 1327–37. https://doi.org/10.1016/j.bpj.2013.12.055.",
+    "crumbs": [
+      "tMANUAL",
+      "4. Modelling"
+    ]
+  },
+  {
+    "objectID": "examples/example_defaultprefs.html",
+    "href": "examples/example_defaultprefs.html",
+    "title": "Lab Default Preferences",
+    "section": "",
+    "text": "If you want to have the same, reproducible figures for publication, you should make a script to change the preferences to your default values. The script will just be a python script that only needs to contain lines like:\nmaven.prefs['plot.fig_width'] = 6.0\nmaven.prefs['plot.fig_height'] = 3.0\nmaven.prefs['plot.intensity_max' ] =500.0\nmaven.prefs['plot.intensity_min'] = -50.0\nIt doesn’t even need any imports! To run this, you can use the Scripts &gt;&gt; Run Scripts menu option. Alternatively, you can use the --script command line option if running from a terminal.",
+    "crumbs": [
+      "Examples",
+      "Lab Default Preferences"
+    ]
+  },
+  {
+    "objectID": "examples/example_entropyplot.html",
+    "href": "examples/example_entropyplot.html",
+    "title": "Plot Entropy",
+    "section": "",
+    "text": "Here’s a full script that you can use to plot the entropy of your trajectories. Note that you must have a model first (otherwise you cannot know the probabilities). In general, you should save this as a .py file, and use the Scripts &gt;&gt; Run Scripts menu option to run that file. You can edit it as you go if you want to change something, and then re-run it. Note that it use’s the current activate model for the calculation.\n\nSave the code below in a file as plot_entropy.py\n\nimport numpy as np\nimport matplotlib.pyplot as plt\n\ndef calc_entropy_expected(A,pi):\n    Hxavg = -np.sum(pi[:,None]*A*np.log(A))\n    H_expected = Hxavg\n    return H_expected\n\nfig,ax = plt.subplots(1,figsize=(3,3),dpi=300)\n\nm = maven.modeler.model\nnt = maven.data.nt\nnk = m.nstates\nkb = 1.\n\nTmc = m.tmatrix\nA = Tmc.copy()\nfor i in range(A.shape[0]):\n    A[i] /= A[i].sum()\n\n# pi = m.frac\n# pi /= pi.sum()\n\nw,v = np.linalg.eig(A.T)\nind = np.where(w==w.max())[0][0]\nss = v[:,ind]\nss /= ss.sum()\npi = ss\n\nvits = m.chain\nnmol,nt = vits.shape\nss = np.zeros((nmol,nt)) + np.nan\npre = maven.data.pre_list\npost = maven.data.post_list\ndp = post-pre\n\nfor nmoli in range(nmol):\n    v = vits[nmoli]\n    if dp[nmoli] &gt; 1:\n        ri = m.r[nmoli].copy()\n\n        # ## use viterbi instead of the full chain\n        # v = v[pre[nmoli]:post[nmoli]].copy()\n        # pij = pi[v[0]]*np.concatenate(([1.],np.exp(np.cumsum(np.log(A[v[:-1],v[1:]])))))\n        # sij = -kb*np.log(pij)\n\n        ## use full gamma treatment\n        pij = np.zeros((dp[nmoli]))\n        pij[0] = np.log(np.sum(pi*ri[pre[nmoli]+0]))\n        for t in range(1,dp[nmoli]):\n            pij[t] = np.log(np.sum(A*(ri[pre[nmoli]+t-1][:,None]*ri[pre[nmoli]+t][None,:])))\n        sij = -kb*(np.cumsum(pij))\n        sij[np.isinf(sij)] = np.log(np.finfo(np.float64).max)\n        sij[np.bitwise_not(np.isfinite(sij))] = np.nanmax(sij[np.isfinite(sij)])\n        ss[nmoli,pre[nmoli]:post[nmoli]] = sij\n\ndt = maven.prefs['plot.time_dt']\nx = np.arange(nt) \n\nfor nmoli in range(nmol):\n    ax.plot(x*dt,ss[nmoli],color='k',lw=1,alpha=.05,zorder=1)\n\n\nsexp = calc_entropy_expected(A,pi)\ntheory = x*sexp-kb*np.sum(pi*np.log(pi))\nax.plot(x*dt,theory,color='tab:red',ls='-',lw=1.2,zorder=1)\ndesc = m.description()\ndesc = desc.split('] ')[1]\ndesc = ''.join(desc.split(' -')[:-1])\n\nlow,med,high = np.nanpercentile(ss,[2.5,50.,97.5],0)\nstd = np.nanstd(ss,axis=0)\nmean = np.nanmean(ss,axis=0)\nax.plot(x*dt,mean-std,color=\"tab:blue\",label ='%s'%(desc),ls='-',lw=1.2,zorder=2)\nax.plot(x*dt,mean,color=\"tab:blue\",label ='%s'%(desc),ls='-',lw=1.2,zorder=2)\nax.plot(x*dt,mean+std,color=\"tab:blue\",label ='%s'%(desc),ls='-',lw=1.2,zorder=2)\n\n\n#### order the traces. This destroys the matching w the HMM viterbis so... annoying\n# order = np.nanmax(ss,axis=1)\n# print(ss.shape,order.shape)\n# order[np.isnan(order)] = 0.\n# order = np.argsort(order)[::-1]\n# print(order)\n# maven.data.order(order)\n# maven.emit_data_update()\n\n\nax.set_ylim(0,np.log(np.finfo(np.float64).max))\nax.set_ylabel('Entropy')\nax.set_xlabel('Time')\nax.set_title(desc)\nax.set_xlim(0,x.max()*dt)\nfig.tight_layout()\nplt.show()",
+    "crumbs": [
+      "Examples",
+      "Plot Entropy"
+    ]
+  },
+  {
+    "objectID": "examples/example_runhhmm.html",
+    "href": "examples/example_runhhmm.html",
+    "title": "Run hHMM in tMAVEN script mode",
+    "section": "",
+    "text": "The following is a script example for apply a hierarchical HMM (hHMM) in tMAVEN. The algorithm used is translated into Python from the MATLAB version described in: Hon, J., and Gonzalez, R.L., Jr., Bayesian-estimated hierarchical HMMs enable robust analysis of single-molecule kinetic heterogeneity. Biophysical Journal. 116, 1790-1802 (2019).\nfrom tmaven.app import setup_maven\n\n#### Analyze data with hHMM\n## Make a new MAVEN instance\nmaven  = setup_maven(['--log_stdout'])\n\n## Load data\nmaven.io.load_smdtmaven_hdf5('example_smd.hdf5','L1-tRNA')\n\n## Turn on only the first 10 trajectorys\nmaven.data.flag_ons*=False\nmaven.data.flag_ons[:10]+=True\n\n# Specify the model parameters\nmaven.prefs['modeler.hhmm.restarts'] = 4\nmaven.prefs['modeler.hhmm.maxiters'] = 100\nmaven.prefs['modeler.hhmm.tolerance'] = 1e-4\n\n\n## Run 2xw hHMM\nmaven.modeler.run_fret_hhmm()\n\n\n# Export\noname = 'result_hhmm.hdf5'\nmaven.modeler.export_result_to_hdf5(oname)\nThis script runs a two-level two-state hHMM. Integrating this into the tMAVEN GUI, along with interface options to specify and customize the tree structure of the hHMM applied to the data, is currently a work in progress.",
+    "crumbs": [
+      "Examples",
+      "Run hHMM in tMAVEN script mode"
+    ]
+  },
+  {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About tMAVEN",
+    "section": "",
+    "text": "tMAVEN is a program for analyzing time series data from single-molecule experiments. It is fine-tuned for single-molecule fluorescence resonance energy transfer (smFRET) experiments. The major design goals are to allow for:\n\nextremely fast pre-processing\nperfectly reproducible figures (e.g., tick locations)\na one-stop-shop for kinetic modeling\nimmutable data – you only work on a copy of it!\npower-user coding via scripts (see Examples pages)\n\n\nLearn more\nCheck out the tMANUAL pages on this site, view some of the examples (links in the side bar), or join in on the discussions on Github\n\n\nWho and Where\ntMAVEN is a development that came out of the Gonzalez lab at Columbia University from about 2015-present.\n\n\nCiting tMAVEN\nIf you use tMAVEN in your work, please cite the associated paper:\nVerma, A.R., Ray, K., Bodick, M., Kinz-Thompson, C.D., Gonzalez, Jr., R.L. (2024) Increasing the accuracy of single-molecule data analysis using tMAVEN. Biophysical Journal. In press, DOI:10.1016/j.bpj.2024.01.022. bioRxiv Preprint: DOI:10.1101/2023.08.15.553409.",
+    "crumbs": [
+      "About tMAVEN"
+    ]
+  },
+  {
+    "objectID": "install.html",
+    "href": "install.html",
+    "title": "Installing tMAVEN",
+    "section": "",
+    "text": "There are two ways to install tMAVEN. If you aren’t going to call tMAVEN functions from within your own scripts, then you should install the standalone binary. Note: the first time you launch tMAVEN, it might take a while to load as it finds your system’s fonts; it’s much quicker after that.\n\nInstall a Standalone Binary\n\nGo to the latest binary release on Github.\nDownload\n\nThe .dmg file (Mac).\nThe .msi file (Windows).\n\nDouble click on the file and follow the directions to install tMAVEN.\n\n\n\n\n\n\n\n\n\n\nNote\n\n\n\n\n\nMac security issue.\nIf you try to install on a Mac, you may encounter a security issue that won’t allow you to launch tMAVEN because the OS cannot verify that it isn’t malware. You need to do the following:\n\nGo to the Apple menu item\nOpen System Settings\nGo to the Privacy & Security tab on the side.\nScroll down past the Privacy section, and into the Security section\nFind the section that says tMAVEN was blocked from use becasue it is not from an identified developer.\nClick Open Anyway\n\n\n\n\n\n\nInstall the Python Package\nTo install tMAVEN from GitHub:\n\nOpen a terminal.\nRun the command:\n\npip install git+https://github.com/GonzalezBiophysicsLab/tmaven.git\n\nOnce installed, you can launch tMAVEN from your termainal by running the command:\n\ntmaven\n\n\n\n\n\n\n\n\n\nNote\n\n\n\n\n\nOptional: Make Separate Python Environment\nFirst, create a new conda environment: conda create -n tmaven python==3.9. Then, everytime you want to run tMAVEN:\n\nActivate your new conda environment:conda activate tmaven.\nThen launch tMAVEN: tmaven\n\nAlso make sure to activate the environment before you install tmaven using pip!",
+    "crumbs": [
+      "Get Started",
+      "Installing tMAVEN"
+    ]
+  },
+  {
+    "objectID": "info_priors.html",
+    "href": "info_priors.html",
+    "title": "Priors",
+    "section": "",
+    "text": "Priors is shorthand for Prior Probability Distribution. In the Bayesian interpretation of probability, the prior is what you know about your model before you perform the experiment. For instance, you might only know that your rate constants/transition probabilities are faster than once per year and slower than once per femtosecond, but ignoring this in your analysis means you’re not properly handling probabilities.",
+    "crumbs": [
+      "Information",
+      "Priors"
+    ]
+  },
+  {
+    "objectID": "info_priors.html#gmm",
+    "href": "info_priors.html#gmm",
+    "title": "Priors",
+    "section": "GMM",
+    "text": "GMM\nThese are the default prior values for a variational Bayes GMM. They are for a joint Normal-Gamma distribution and values are taken from the vbFRET emissions. Mixture coefficients are Dirichlet.\n\n\n\nParameter\nValue\n\n\n\n\n\\(a\\) (Gamma)\n0.1\n\n\n\\(b\\) (Gamma)\n0.01\n\n\n\\(\\beta\\) (Normal)\n0.25\n\n\n\\(\\pi\\) (Mixture)\n1.0",
+    "crumbs": [
+      "Information",
+      "Priors"
+    ]
+  },
+  {
+    "objectID": "info_priors.html#hmm",
+    "href": "info_priors.html#hmm",
+    "title": "Priors",
+    "section": "HMM",
+    "text": "HMM\nThese are thedefault prior values for ebhmm (i.e., ebFRET), vbconhmm (i.e., global vbFRET), and vbhmm (i.e., vbFRET). Emissions are Normal-Gamma, first data-point is Dirichlet, and transition probability for each state is Dirichlet.\n\n\n\nParameter\nValue\n\n\n\n\n\\(a\\) (Gamma)\n0.1\n\n\n\\(b\\) (Gamma)\n0.01\n\n\n\\(\\beta\\) (Normal)\n0.25\n\n\n\\(\\alpha\\) (Transition probability)\n1.0\n\n\n\\(\\pi\\) (First datapoint)\n1.0",
+    "crumbs": [
+      "Information",
+      "Priors"
+    ]
+  },
+  {
+    "objectID": "info_pysmd.html",
+    "href": "info_pysmd.html",
+    "title": "SMD Files",
+    "section": "",
+    "text": "Data from a single-molecule experiment are stored in an SMD. These exist in files (HDF5 format) or in memory as an object. This format is slighty different than originally described in: Greenfeld, M., van de Meent, JW., Pavlichin, D.S. et al. Single-molecule dataset (SMD): a generalized storage format for raw and processed single-molecule data. BMC Bioinformatics 16, 3 (2015). https://doi.org/10.1186/s12859-014-0429-4.\n\n\n\nHDF5 file based instead of JSON\nMultiple SMDs can live in the same HDF5 file; each lives as a group within the HDF5 file\nFlexible WRT analysis: results from any analysis should be saved as a sub-group within the particular SMD.\nWhen molecules from different data sources can be combined into the same SMD, the original source is remembered.\nClassifying/grouping molecules is very important for many methods; each molecule in the SMD has an integer to specify the class to which it belongs.\n\n\n\n\nNotes/Non-standard points are put in angle brackets.\n\n\nIn tMAVEN, each maven instance has an maven.smd SMD object, even if there is no data in it. There can only be one at a time in tMAVEN. The parameters in each object are\nmaven.smd.raw : ndarray(NxTxD...) - the data\nmaven.smd.source_index : ndarray(N) - integers specifying the source each molecule came from\nmaven.smd.source_names : list - the names of each sources\nmaven.smd.source_dicts : list - dictionaries with metadata entries for each source\nmaven.smd.smd_dict : dictionary - metadata entries describing smd file\n\nmaven.smd.nmol : int - the value of dataset.raw.shape[0]\nmaven.smd.nt : int - the value of dataset.raw.shape[1]\nmaven.smd.ntime : int - the value of dataset.raw.shape[1]\nmaven.smd.ncolor : int - the value of dataset.raw.shape[2]\nmaven.smd.ncolors : int - the value of dataset.raw.shape[2]\nmaven.smd.ndata - : int - the value of dataset.raw.shape[2:]\n\n\n\nWe save SMD data in HDF5 files. Assume you have an HDF5 file with handle f that contains an SMD entry called ‘my_smd_expt7’. The raw data is stored in the SMD specified places. Any tMAVEN-specific data (e.g., classes, pre- or post-times) are stores in the a separate groupd within the SMD called tmaven.\nf['my_smd_expt7'] : group - this is the SMD2 entry\nf['my_smd_expt7'].attrs['format'] = \"SMD\"\nf['my_smd_expt7'].attrs['date_created'] = &lt;time.ctime() upon creation&gt;\nf['my_smd_expt7'].attrs['date_modified'] = &lt;time.ctime() upon last save&gt;\nf['my_smd_expt7'].attrs['description'] = \"Description of the dataset goes here\"\n\nf['my_smd_expt7/data'] : group - this holds the data\nf['my_smd_expt7/data/raw'] : dataset[int/float/double (nmol,ntime,ndata)] - this is the data for each molecule\nf['my_smd_expt7/data/source_index'] : dataset[int (nmol)] - specifies the source for each molecule\n\nf['my_smd_expt7/sources'] : group - This holds the information about the origin of each molecule (e.g., separate movies)\nf['my_smd_expt7/sources/0'] : group - Information about source 0 in the source_index list\nf['my_smd_expt7/sources/0'] : group - Information about the Nth source in the source_index list\nf['my_smd_expt7/sources/0'].attrs['source_name'] = \"&lt;Description of this source, e.g. movie 12\"&gt;\nf['my_smd_expt7/sources/0'].attrs['&lt;Name for a bit of metadata for this source&gt;'] = \"&lt;the metadata itself&gt;\"\nf['my_smd_expt7/sources/0'].attrs['&lt;Name for another bit of metadata for this source&gt;'] = \"&lt;the metadata itself&gt;\"\n...... more metadata for source 0\nf['my_smd_expt7/sources/1'] : group - information about source 1 in the source_index list\n.... entries for source 1\n.. more sources\n\nf['my_smd_expt7/analysisA'] : group  - this is an example of how you would save an analysis (i.e., within this hdf5 group)\nf['my_smd_expt7/program7result'] : group - each program is responsible for the format/specification beyond this point...",
+    "crumbs": [
+      "Information",
+      "SMD Files"
+    ]
+  },
+  {
+    "objectID": "info_pysmd.html#notable-differences",
+    "href": "info_pysmd.html#notable-differences",
+    "title": "SMD Files",
+    "section": "",
+    "text": "HDF5 file based instead of JSON\nMultiple SMDs can live in the same HDF5 file; each lives as a group within the HDF5 file\nFlexible WRT analysis: results from any analysis should be saved as a sub-group within the particular SMD.\nWhen molecules from different data sources can be combined into the same SMD, the original source is remembered.\nClassifying/grouping molecules is very important for many methods; each molecule in the SMD has an integer to specify the class to which it belongs.",
+    "crumbs": [
+      "Information",
+      "SMD Files"
+    ]
+  },
+  {
+    "objectID": "info_pysmd.html#format-specificationsdescription",
+    "href": "info_pysmd.html#format-specificationsdescription",
+    "title": "SMD Files",
+    "section": "",
+    "text": "Notes/Non-standard points are put in angle brackets.\n\n\nIn tMAVEN, each maven instance has an maven.smd SMD object, even if there is no data in it. There can only be one at a time in tMAVEN. The parameters in each object are\nmaven.smd.raw : ndarray(NxTxD...) - the data\nmaven.smd.source_index : ndarray(N) - integers specifying the source each molecule came from\nmaven.smd.source_names : list - the names of each sources\nmaven.smd.source_dicts : list - dictionaries with metadata entries for each source\nmaven.smd.smd_dict : dictionary - metadata entries describing smd file\n\nmaven.smd.nmol : int - the value of dataset.raw.shape[0]\nmaven.smd.nt : int - the value of dataset.raw.shape[1]\nmaven.smd.ntime : int - the value of dataset.raw.shape[1]\nmaven.smd.ncolor : int - the value of dataset.raw.shape[2]\nmaven.smd.ncolors : int - the value of dataset.raw.shape[2]\nmaven.smd.ndata - : int - the value of dataset.raw.shape[2:]\n\n\n\nWe save SMD data in HDF5 files. Assume you have an HDF5 file with handle f that contains an SMD entry called ‘my_smd_expt7’. The raw data is stored in the SMD specified places. Any tMAVEN-specific data (e.g., classes, pre- or post-times) are stores in the a separate groupd within the SMD called tmaven.\nf['my_smd_expt7'] : group - this is the SMD2 entry\nf['my_smd_expt7'].attrs['format'] = \"SMD\"\nf['my_smd_expt7'].attrs['date_created'] = &lt;time.ctime() upon creation&gt;\nf['my_smd_expt7'].attrs['date_modified'] = &lt;time.ctime() upon last save&gt;\nf['my_smd_expt7'].attrs['description'] = \"Description of the dataset goes here\"\n\nf['my_smd_expt7/data'] : group - this holds the data\nf['my_smd_expt7/data/raw'] : dataset[int/float/double (nmol,ntime,ndata)] - this is the data for each molecule\nf['my_smd_expt7/data/source_index'] : dataset[int (nmol)] - specifies the source for each molecule\n\nf['my_smd_expt7/sources'] : group - This holds the information about the origin of each molecule (e.g., separate movies)\nf['my_smd_expt7/sources/0'] : group - Information about source 0 in the source_index list\nf['my_smd_expt7/sources/0'] : group - Information about the Nth source in the source_index list\nf['my_smd_expt7/sources/0'].attrs['source_name'] = \"&lt;Description of this source, e.g. movie 12\"&gt;\nf['my_smd_expt7/sources/0'].attrs['&lt;Name for a bit of metadata for this source&gt;'] = \"&lt;the metadata itself&gt;\"\nf['my_smd_expt7/sources/0'].attrs['&lt;Name for another bit of metadata for this source&gt;'] = \"&lt;the metadata itself&gt;\"\n...... more metadata for source 0\nf['my_smd_expt7/sources/1'] : group - information about source 1 in the source_index list\n.... entries for source 1\n.. more sources\n\nf['my_smd_expt7/analysisA'] : group  - this is an example of how you would save an analysis (i.e., within this hdf5 group)\nf['my_smd_expt7/program7result'] : group - each program is responsible for the format/specification beyond this point...",
+    "crumbs": [
+      "Information",
+      "SMD Files"
+    ]
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Welcome to tMAVEN",
+    "section": "",
+    "text": "Learn how use the tMAVEN modeling, analysis, and visualization environment",
+    "crumbs": [
+      "Home"
+    ]
+  },
+  {
+    "objectID": "shortcuts.html",
+    "href": "shortcuts.html",
+    "title": "Shortcut Keys",
+    "section": "",
+    "text": "Note: Most keys are locked when the lock button (bottom left of the window) is activated.\n\nCommands\nUse command (⌘; Mac) or control (Windows, Linux)\n\n\n\nCommand\nKey\n\n\n\n\nShow Preferences\n⌘ + p\n\n\nShow Molecule Table\n⌘ + t\n\n\nRun Script\n⌘ + r\n\n\nOpen SMD\n⌘ + o\n\n\nSave SMD\n⌘ + s\n\n\nQuit\n⌘ + q\n\n\n\n\n\nHot-keys\nNote: If these aren’t working, a tab might have the focus, and you might need to give the focus back to the main window (e.g., click on the ticks).\n\n\n\nCommand\nKey\n\n\n\n\nToggle grid\ng\n\n\nGo to next molecule\nright arrow, down arrow\n\n\nGo to previous molecule\nleft arrow, up arrow\n\n\nJog pre-time backwards by one point\n-\n\n\nJog pre-time forwards by one point\n+\n\n\nJog post-time backwards by one point\n[\n\n\nJog post-time forwards by one point\n]\n\n\nReset pre- and post-time\nr\n\n\nSplit trace at post-time location\nc\n\n\nRecombine all split of this trace\nv\n\n\nAuto-detect photobleaching point\np\n\n\nAssign class\n1, 2, …, 9, 0",
+    "crumbs": [
+      "Get Started",
+      "Shortcut Keys"
+    ]
+  },
+  {
+    "objectID": "examples/example_rastergramplot.html",
+    "href": "examples/example_rastergramplot.html",
+    "title": "Plot Rastergram",
+    "section": "",
+    "text": "Here’s a full script that you can use to plot the (ordered) set of all events in your trajectories. For instance, if you have a three state model, where state 0 is unbound, and state 1 and state 2 are bound but different conformations, you can change the inds variable (line 3, below) to show when state 1 and state 2 are happening.\ninds = [1,2]\nNote that you must have a model first. In general, you should save this as a .py file, and use the Scripts &gt;&gt; Run Scripts menu option to run that file. You can edit it as you go if you want to change something, and then re-run it. Note that it use’s the current activate model for the calculation.\nSave the code below in a file as plot_rastergram.py\n\nimport numpy as np\nimport matplotlib.pyplot as plt\n\ninds = [0,]\n\nm = maven.modeler.model\nnt = maven.data.nt\nnk = m.nstates\nkb = 1.\n\nvits = m.chain\nnmol,nt = vits.shape\n\npre = maven.data.pre_list\npost = maven.data.post_list\n\ndata = np.zeros((nmol,nt)) + np.nan\nfor i in range(nmol):\n    if post[i]-pre[i] &gt; 1:\n        data[i,0:post[i]-pre[i]] = np.isin(vits[i][pre[i]:post[i]],inds).astype('float')\n\n\nfirst = np.nanargmax(data,axis=1)\norder = first.argsort()\ndata = data[order]\n\ndt = maven.prefs['plot.time_dt']\ndesc = m.description()\ndesc = desc.split('] ')[1]\ndesc = ''.join(desc.split(' -')[:-1])\n\nfig,ax = plt.subplots(1,figsize=(3,3))\nax.pcolormesh(np.arange(nt)*dt,np.arange(nmol),data,cmap='Greys')\nax.set_ylabel('Molecules')\nax.set_yticks(())\nax.set_xlabel('Time (s)')\nax.set_title(desc)\nfig.tight_layout()\nplt.show()",
+    "crumbs": [
+      "Examples",
+      "Plot Rastergram"
+    ]
+  },
+  {
+    "objectID": "examples/example_script1.html",
+    "href": "examples/example_script1.html",
+    "title": "Scripted modeling - no GUI",
+    "section": "",
+    "text": "Process some data with a kinetic model and then plot it all without using the GUI\nfrom tmaven.app import setup_maven\n\n#### Analyze some data\n## Make a new MAVEN instance\nmaven  = setup_maven(['--log_stdout'])\n\n## Load data\nmaven.io.load_smdtmaven_hdf5('./notes/example_smd.hdf5','L1-tRNA')\n\n## Turn on only the first 10 trajectorys\nmaven.data.flag_ons*=False\nmaven.data.flag_ons[:10]+=True\n\n## Run vbFRET model selection with 1 through 6 states\nmaven.modeler.run_fret_vbhmm_modelselection(1,6)\n\n\n\n#### Make some plots\nimport matplotlib.pyplot as plt\nfig,ax =plt.subplots(2)\n\n## Plot a 1D histogram in the first plots using the raw data instead of the Viterbi data\nmaven.plots.fret_hist1d.prefs['idealized'] = False\nmaven.plots.fret_hist1d.plot(fig,ax[0])\n\n## Plot a trajectory in the second plot\nax[1].plot(maven.data.corrected[0,:,0],'g')\nax[1].plot(maven.data.corrected[0,:,1],'r')\n\nplt.show()",
+    "crumbs": [
+      "Examples",
+      "Scripted modeling - no GUI"
+    ]
+  },
+  {
+    "objectID": "examples/example_smdload.html",
+    "href": "examples/example_smdload.html",
+    "title": "Load SMD",
+    "section": "",
+    "text": "Here’s a code example\nmaven.io.load_smdtmaven_hdf5('./docs/examples/example_smd.hdf5','L1-tRNA')",
+    "crumbs": [
+      "Examples",
+      "Load SMD"
+    ]
+  },
+  {
+    "objectID": "tutorial_quickstart.html",
+    "href": "tutorial_quickstart.html",
+    "title": "Quick Tutorial",
+    "section": "",
+    "text": "Download the example data here, and then follow the steps in this video to model the data using a two-state global HMM.\nThis HDF5 file contains two smFRET datasets in the single-molecule dataset (SMD) format. They are two different smFRET signals (L1-L9 and L1-tRNA) on the same bacterial ribosome complex with deactylated tRNA\\(^{Phe}\\) in the P-site at 25. These data are published in a recent paper 1.",
+    "crumbs": [
+      "Get Started",
+      "Quick Tutorial"
+    ]
+  },
+  {
+    "objectID": "tutorial_quickstart.html#footnotes",
+    "href": "tutorial_quickstart.html#footnotes",
+    "title": "Quick Tutorial",
+    "section": "Footnotes",
+    "text": "Footnotes\n\n\nRay, K., Kinz-Thompson, C.D., Fei, J., Wang, B., Lin, Q., Gonzalez, Jr., R.L. (2023) Entropic control of the free-energy landscape of an archetypal biomolecular machine. Proc. Natl. Acad. Sci. USA, 120(21), e2220591120. DOI: 10.1073/pnas.2220591120.↩︎",
+    "crumbs": [
+      "Get Started",
+      "Quick Tutorial"
+    ]
+  },
+  {
+    "objectID": "tmanual/navigating.html",
+    "href": "tmanual/navigating.html",
+    "title": "2. Navigating",
+    "section": "",
+    "text": "Loading Data\ntMAVEN can support ASCII, SMD (Greenfeld et al. 2015 , HDF5 based), raw HDF5, and SPARTAN files. Load data by hitting File/Load, select file type, and then the file itself. Note that class, pre/post etc. files may be uploaded separately. The default upload settings are for SMD format, so if using ASCII files, the upload setting must be chosen through the menus File/Load/Text files (ASCII/UTF)/Raw/[user’s format]. In this section, N refers to number of traces, T to number of time points and C to number of color channels for some N by T by C format. C,T,N is most common format such as in vbFRET (Bronson et al. 2009) and ebFRET (Meent, Bronson, and Gonzalez 2014). Alternatively, if using Raw, users can manually alter settings for uploading under “io.” preferences: Namely, io.axis_order for which [0,1,2] corresponds to [N,T,C]. Decollate_axis (0 or 1) refers to how the text separates individual traces, and the delimiter may be inputed under io.delimiter.\n \nNote that any preferences using True/False are case sensitive. There is also an HDF5 viewer tool under View/ that the user may find useful.\n\n\nThe Molecule Table\nNavigate to the molecule table View/Molecule Table or hit command T to bring up the molecule table. Notice the columns:\n\nClass: the class of the trace, change a trace’s class by clicking its row in the molecule table and inputing a number, or simply by clicking around the plot and keying a number.\nOn/Off: Whether the trace is turned on. By toggling a trace one can easily choose which traces are included in modeling and plotting features, see section 4. It will also toggle whether the trace is subject to actions like save.\nPre/Post: The range of time each cut trace covers\nSource: If modeling from different datasets, the origin of each trace can be seen here. Note that the class can be assigned separately from the source.\n\n\n\n\nMolecule Table Sample\n\n\nClassifying traces is one of the most powerful aspects of tMAVEN.\n\n\nUsing the UI and Cutting a Trace\nNavigate between traces by scrolling while graph window is selected or by using the scroll underneath the graphs (see Figure). Notice trace number and class of the graph displayed in the bottom right corner. Aspects of the graph can be adjusted in the graph settings and figure options (see Figure), or in preferences. Most of these settings are plot.[aspect] and include settings for the axes, subdivision ticks, time scale, and more. The user can always use the View/reset GUI command to set all these settings to default.\n\n\n\nlabeled UI after loading a dataset\n\n\nMost actions in tMAVEN do not alter the raw data of a trace, such as gamma and bleed-through corrections. Only cutting traces actually alters the pre and post times which can be seen in the molecule table or on the traces themselves. The user can set the post time by right clicking at the desired point on a graph or left clicking for the pre time. Notice that once a section has been cut out, it appears much fainter on the graph. Reset the pre and post times for a single trace by hitting R. Users can also use the square brackets to increase and decrease the post time by 1 point.\nOther tools include the pan and zoom features (see Figure). Use the zoom tool to select a section of the graph to enlarge and to allow more precise selection of pre/post time. Additionally, hit G to toggle viewing subdivisions on the graph (settings for these can be altered in preferences as described earlier). Another useful tool is single photobleach detection, which finds and cuts out photobleaching for only the trace shown. Hit P to apply this tool to the shown trace. Photobleach for all traces is also available and is discussed in section 3.5. \nBut before any manual trace picking is done, it is highly recommended that the user employ the preprocessing tools described in section 3.\n\n\n\n\n\nReferences\n\nBronson, J. E., Jingyi Fei, Jake M. Hofman, R. L. Gonzalez Jr, and Chris H. Wiggins. 2009. “Learning Rates and States from Biophysical Time Series: A Bayesian Approach to Model Selection and Single-Molecule FRET Data.” Biophysical Journal 97 (12): 3196–3205. https://doi.org/10.1016/j.bpj.2009.09.031.\n\n\nGreenfeld, M., J. W. van de Meent, D. S. Pavlichin, H. Mabuchi, C. H. Wiggins, R. L. Gonzalez Jr, and D. Herschlag. 2015. “Single-Molecule Dataset (SMD): A Generalized Storage Format for Raw and Processed Single-Molecule Data.” BMC Bioinformatics 16 (3). https://doi.org/10.1186/s12859-014-0429-4.\n\n\nMeent, J. W. van de, C. H. Bronson J. E.and Wiggins, and R. L. Gonzalez Jr. 2014. “Empirical Bayes Methods Enable Advanced Population-Level Analyses of Single-Molecule FRET Experiments.” Biophysical Journal 106 (6): 1327–37. https://doi.org/10.1016/j.bpj.2013.12.055.",
+    "crumbs": [
+      "tMANUAL",
+      "2. Navigating"
+    ]
+  },
+  {
+    "objectID": "tmanual/installing.html",
+    "href": "tmanual/installing.html",
+    "title": "1. Installing",
+    "section": "",
+    "text": "Installing tMAVEN\ntMAVEN is a free open-source software available to anyone looking to comparatively analyze single molecule time-series data. The easiest way to install tMAVEN is to download the latest release from the Github. Choose your installer (.dmg for Mac or .msi for Windows).\nOtherwise, users can also do a manual installation (oulined here). Note, this requires a Python installation. We recommend using miniconda, which may be installed from here.",
+    "crumbs": [
+      "tMANUAL",
+      "1. Installing"
+    ]
+  },
+  {
+    "objectID": "tmanual/readme.html",
+    "href": "tmanual/readme.html",
+    "title": "How to update",
+    "section": "",
+    "text": "How to update\nIn this tMANUAL folder:\nquarto render\nThis will fail if you don’t have xelatex installed. If you use tectonic (brew install tectonic), you can then:\nmv index.tex tMANUAL.tex\ntectonic tMANUAL.tex\nrm tMANUAL.tex\n\n\nNotes\nYou MUST use index.qmd as a file in your contents. See https://github.com/quarto-dev/quarto-cli/discussions/3759. The web version of tMANUAL uses web_intro.qmd as the first page instead"
+  },
+  {
+    "objectID": "tmanual/preprocessing.html",
+    "href": "tmanual/preprocessing.html",
+    "title": "3. Preprocessing",
+    "section": "",
+    "text": "The tMAVEN tools allow users to skip a lot of the painful preprocessing by culling bad traces, reordering traces by viability, and adjusting the presentation of those traces without altering the raw data, all of which makes data sets easier to process. These features can be found under “tools”, and all should be considered before trace picking to optimize the process.\n\nSelection\nBefore going through traces users should navigate to tools/ selection/order by/cross-correlation to order traces by cross-correlation since good FRET data corresponds to cross correlated jumps of the donor and acceptor emissions. Notice also the options to order by and Turn on/off by class. One of the greatest strengths of tMAVEN is the ease of classifying and viewing traces with the molecule table (refer to section 2). The power to classify traces greatly enhances use of the algorithms discussed in section 4 by the ease with which one may experiment with inclusion of groups of traces. In this case the user is not forced to go through the whole data set repeatedly. \n\n\nFilter Traces\nThe Filter Traces command, found under tools, allows the user to filter traces by signal to background ratio (SBR). An algorithm that identifies photobleaching (see section 3: Photobleaching) is used to determine the parameters of background. Filter Traces then sorts traces by SBR and allows the user to classify or cull those groups.\n\n\n\nA graph like this is generated once calculate is hit. The actual culling/classifying is not completed until the user hits process (see next figure). The graph enables the user a comprehensive view of their data set\n\n\nCulling in Filter Traces:\n\nOnce calculate is hit and the graph is made, the user can choose what to do with each type of trace (previous figure): ones with low SBR and bleaching, ones with high SBR and bleaching, ones with low SBR and no bleaching, ones with high SBR and no bleaching, and dead traces (traces that bleach before the “minimum frames dead”). Users can repeat the process of filtering and culling until satisfied.\n\n\nCull\nThe Cull function under tools is relatively intuitive and allows users to discard traces according to class or a maximum/minimum data point value. The latter functions should be used only after photobleach detection (see section 3: Photobleaching) lest good traces be culled. The data searched for this function includes only Emissions and not E\\(_{FRET}\\) values.\n\n\nCorrections\nIn this group there are many useful tools such as bleedthrough, gamma, and background correction. As discussed earlier, the actual data is not altered. The program stores a copy of the given data, and the copy is altered by corrections and displayed. For this reason, the corrections should be applied just once for each time a data set is loaded into tMAVEN.\n\n[Bleedthrough corrections] The default bleedthrough correction is set to 5% and can be adjusted in preferences under correction.bleedthrough.\n[Gamma Corrections] The default gamma correction is set to 1 and can be adjusted in preferences under correction.gamma.\n[Background] Background is determined for each trace by the last x frames, alterable in preferences under correction.backgroundframes, and subtracted from the red emission value.\n\n\n\nSignal Filters\nAlso found under tools/corrections are various signal filters that can make traces much easier to read. All smooth the graphs according to different methods, making the E\\(_{FRET}\\) states easier to discern. The filters are found under Tools/Corrections/Signal Filters, and can be removed by resetting corrections under corrections/reset. Reset corrections before switching between signal filters. The width of the filter window’s can also be adjusted in preferences by correction.filterwidth which is automatically set to 2. See figure below for a look at these filters.\n\nGaussian\nWiener\nMedian\n8-pole Bessel\nChung–Kennedy (Chung and Kennedy 1991)\n\n\n\n\nThe visual effect of the signal filters offered by tMAVEN on the same trace (top left). The benefits of different filters and level of smoothing can be seen here. The Chung-Kennedy filter best maintains the sharp transitions while also reducing noise well. In comparison the Gaussian filter is much more rounded, which makes determining transition times harder.\n\n\n\n\nPhotobleaching\nBy navigating to tools/photobleach/photobleach detection, the user can run an algorithm that checks each trace for photobleaching and cuts the trace there. Alternatively, users can hit P and cut only the trace they are looking at. The algorithm essentially identifies transitions by maximizing the evidence of a Gaussian between sections of data and placing transitions between those. Photobleaches are then transitions to mean 0 states.\n\n\n\n\n\nReferences\n\nChung, S. H., and R. A. Kennedy. 1991. “Forward-Backward Non-Linear Filtering Technique for Extracting Small Biological Signals from Noise.” Journal of Neuroscience Methods 40 (1): 71–86. https://doi.org/10.1016/0165-0270(91)90118-j.",
+    "crumbs": [
+      "tMANUAL",
+      "3. Preprocessing"
+    ]
+  },
+  {
+    "objectID": "info_models.html",
+    "href": "info_models.html",
+    "title": "Models",
+    "section": "",
+    "text": "tMAVEN provides many built-in models that you can run on your data. Generally, they are divided into several categories. On this page, we discuss each model, and then provide timings for how long they take to run on a typical dataset.",
+    "crumbs": [
+      "Information",
+      "Models"
+    ]
+  },
+  {
+    "objectID": "info_models.html#mixture-models",
+    "href": "info_models.html#mixture-models",
+    "title": "Models",
+    "section": "Mixture Models",
+    "text": "Mixture Models\n\nthreshold\nA threshold is applied and datapoints on each side of the threshold are clustered together.\n\n\nkmeans\nThe K-means clustering algorithm is use to cluster the datapoints into \\(N_{states}\\).\n\n\nmlgmm\nA maximum likelihood Gaussian mixture model (GMM) clustering algorithm is use to cluster the datapoints into \\(N_{states}\\).\n\n\nvbgmm\nA variational Bayes Gaussian mixture model (GMM) clustering algorithm is use to cluster the datapoints into \\(N_{states}\\).",
+    "crumbs": [
+      "Information",
+      "Models"
+    ]
+  },
+  {
+    "objectID": "info_models.html#individual-hmms",
+    "href": "info_models.html#individual-hmms",
+    "title": "Models",
+    "section": "Individual HMMs",
+    "text": "Individual HMMs\n\nmlhmm\nThis is a separate maximum likelihood HMM for each trajectory. No ensemble model is generated, therefore no statistics are provided and much of the plotting functionality cannot be performed.\n\n\nvbhmm\nThis is a separate variational Bayes HMM (i.e., vbFRET) for each trajectory. No ensemble model is generated, therefore no statistics are provided and much of the plotting functionality cannot be performed.",
+    "crumbs": [
+      "Information",
+      "Models"
+    ]
+  },
+  {
+    "objectID": "info_models.html#composite-hmms",
+    "href": "info_models.html#composite-hmms",
+    "title": "Models",
+    "section": "Composite HMMs",
+    "text": "Composite HMMs\nComposite HMMs created by modeling each trajectory with its own HMM. We do this by using model selection (where appropriate; see below). Thus we run the one through \\(N_{states}\\) models for each trajectory, select the best (max evidence) of those models, and then do some version of clustering of the individual states found across all of the trajectories using \\(N_{states}\\) number of clusters. After assigning the individual states to the clustered global states, HMM parameters are assembled to create a composite HMM.\n\nkmeans_mlhmm\nA maximum likelihood HMM is run on each trajectory using \\(N_{states}\\), and then K-means with \\(N_{states}\\) is used to cluster the emission states. No model selection is performed, so the individual trajectory models often have spurious states – especially when kinetics are relatively slow.\n\n\nkmeans_vbhmm\nA variational Bayes HMM (i.e., vbFRET) is run on each trajectory using model selection from one to \\(N_{states}\\), and then K-means with \\(N_{states}\\) is used to cluster the emission states.\n\n\nvbgmm_vbhmm\nA variational Bayes HMM (i.e., vbFRET) is run on each trajectory using model selection from one to \\(N_{states}\\), and then a variational Bayes GMM is used with model selection from one to \\(N_{states}\\) to cluster the emission states.\n\n\nthreshold_vbhmm\nA variational Bayes HMM (i.e., vbFRET) is run on each trajectory using model selection from one to \\(N_{states}\\), and then a threshold is applied to the emission states to cluster them into two groups.\n\n\nthreshold_vbconhmm\nA global variational Bayes HMM is run on all trajectories using \\(N_{states}\\), and then a threshold is applied to the emission states to cluster them into two groups.",
+    "crumbs": [
+      "Information",
+      "Models"
+    ]
+  },
+  {
+    "objectID": "info_models.html#global-hmms",
+    "href": "info_models.html#global-hmms",
+    "title": "Models",
+    "section": "Global HMMs",
+    "text": "Global HMMs",
+    "crumbs": [
+      "Information",
+      "Models"
+    ]
+  },
+  {
+    "objectID": "info_models.html#vbconhmm",
+    "href": "info_models.html#vbconhmm",
+    "title": "Models",
+    "section": "vbconhmm",
+    "text": "vbconhmm\nThis is a global variational Bayes HMM. It is conceptually similar to vbFRET, but all of the trajectories and assumed to be idependent and identically distributed (IID). This means that they will all obey the same HMM.",
+    "crumbs": [
+      "Information",
+      "Models"
+    ]
+  },
+  {
+    "objectID": "info_models.html#ebhmm",
+    "href": "info_models.html#ebhmm",
+    "title": "Models",
+    "section": "ebhmm",
+    "text": "ebhmm\nThis is an empirical Bayes HMM (i.e., ebFRET). The model provided in the empirical prior. This is a pseudo-global method in that it also models each trajectory individually. The idealized (Viterbi) paths in the plot are from the individual posteriors. Parameters are from the empirical prior.",
+    "crumbs": [
+      "Information",
+      "Models"
+    ]
+  },
+  {
+    "objectID": "info_models.html#model-selection",
+    "href": "info_models.html#model-selection",
+    "title": "Models",
+    "section": "Model Selection",
+    "text": "Model Selection\nThese are variations of several models discussed above. Specifically for the Bayesian-based methods, we use the maximum evidence or evidence lower bound (ELBO) to identify the optimal number of states. This works by running the same type of model, each time using a different number of states. The variation with the largest evidence/ELBO is chosen as the best model. Generally, you want to run the one state through at least the six state model.\n\nvbgmm_modelselection\nThis is a variational Bayes GMM (mixture model) with model selection from one to \\(N_{states}\\).\n\n\nvbhmm_modelselection\nThis is a variational Bayes HMM (i.e., vbFRET) with model selection from one to \\(N_{states}\\).\n\n\nvbconhmm_modelselection\nThis is a global variational Bayes HMM (i.e., global vbFRET) with model selection from one to \\(N_{states}\\).\n\n\nvbgmm_vbhmm_modelselection\nThis is a composite variational Bayes HMM (i.e., composite vbFRET). Model selection with the vbhmm is performed from one to \\(N_{states}\\), and then model selection for the number of cluster states in the GMM is performed from one to \\(N_{states}\\)",
+    "crumbs": [
+      "Information",
+      "Models"
+    ]
+  },
+  {
+    "objectID": "info_models.html#apple-m2-pro",
+    "href": "info_models.html#apple-m2-pro",
+    "title": "Models",
+    "section": "Apple M2 Pro",
+    "text": "Apple M2 Pro\n\n\n\nMixture\nTime (s)\n\n\n\n\nthreshold\n0.107\n\n\nkmeans\n0.167\n\n\nmlgmm\n1.024\n\n\nvbgmm\n0.287\n\n\n\n\n\n\nHMM\nTime (s)\n\n\n\n\nmlhmm\n0.453\n\n\nvbhmm\n0.508\n\n\n\n\n\n\nComposite\nTime (s)\n\n\n\n\nvbconhmm\n8.230\n\n\nebhmm\n6.479\n\n\n\n\n\n\nGlobal\nTime (s)\n\n\n\n\nkmeans_mlhmm\n0.529\n\n\nkmeans_vbhmm\n1.783\n\n\nvbgmm_vbhmm\n1.913\n\n\nthreshold_vbhmm\n1.671\n\n\nthreshold_vbconhmm\n14.339\n\n\n\n\n\n\nw/ Model Selection(1-6)\nTime (s)\n\n\n\n\nvbgmm_modelselection\n3.663\n\n\nvbhmm_modelselection\n13.550\n\n\nvbconhmm_modelselection\n101.481\n\n\nvbgmm_vbhmm_modelselection\n41.001",
+    "crumbs": [
+      "Information",
+      "Models"
+    ]
   }
 ]

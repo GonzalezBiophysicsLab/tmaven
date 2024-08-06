@@ -138,7 +138,7 @@ double click the second column to edit the preference value. After doing so, the
 
 
 # This Website
-This site is made using quarto.
+This site is made using quarto. You can install quarto using `pip install quarto-cli`.
 The quarto source code is in `docs_src`, and this is rendered into `docs` which github pages will serve as the website.
 To edit it, modify/write new .qmd files (it's a modified version of markdown.
 To add files to the sidebar or update the website look, modify the _quarto.yml file
