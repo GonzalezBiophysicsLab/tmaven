@@ -9,7 +9,7 @@ from .fxns.exponentials import single_exp_surv, double_exp_surv, triple_exp_surv
 def generate_dwells(trace, dwell_list, means, first_flag):
 	trace = trace[~np.isnan(trace)]
 	#print(trace)
-	if len(trace) > 0: #proetcting if all is NaN
+	if len(trace) > 0: #protecting if all is NaN
 		dwell_split = np.split(trace, np.argwhere(np.diff(trace)!=0).flatten()+1)
 
 	if len(dwell_split) > 1: #protecting against no transitions in a trace
@@ -19,6 +19,8 @@ def generate_dwells(trace, dwell_list, means, first_flag):
 			start = 1
 		dwell_split = dwell_split[start:-1] #skipping last dwells
 		for d in dwell_split:
+			print(d)
+			print(means)
 			ind = int(np.argwhere(d[0] == means))
 			dwell_list[str(ind)].append(len(d))
 
