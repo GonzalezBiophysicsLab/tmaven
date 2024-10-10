@@ -201,7 +201,7 @@ class controller_base_analysisplot(object):
 			if cutoff3 < cutoff2:
 				cutoff3 = cutoff2+1e-6
 
-			cmap_dbl = plt.cm.get_cmap(self.prefs['color_cmap'], int(colorbar_bins * (cutoff3 - cutoff2)+1))
+			cmap_dbl = plt.get_cmap(self.prefs['color_cmap'], int(colorbar_bins * (cutoff3 - cutoff2)+1))
 			part_map = np.array([cmap_dbl(i)[:3] for i in range(cmap_dbl.N)]).T
 
 			part_floor = np.zeros((3,int((cutoff2 - cutoff1)*colorbar_bins))) + np.array(colors.to_rgb(self.prefs['color_dblfloorcolor']))[:,None]
