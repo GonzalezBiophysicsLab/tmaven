@@ -185,7 +185,8 @@ class controller_fret_hist2d(controller_base_analysisplot):
 					self.prefs['fret_nbins'])
 			return out,nmol,npoints
 
-		except:
+		except Exception as e:
+			print(e)
 			return np.zeros((self.prefs['time_nbins'],self.prefs['fret_nbins'])),0,0
 
 	def plot(self,fig,ax):
