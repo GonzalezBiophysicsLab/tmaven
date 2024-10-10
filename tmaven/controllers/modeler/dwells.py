@@ -19,8 +19,6 @@ def generate_dwells(trace, dwell_list, means, first_flag):
 			start = 1
 		dwell_split = dwell_split[start:-1] #skipping last dwells
 		for d in dwell_split:
-			print(d)
-			print(means)
 			ind = int(np.argwhere(d[0] == means))
 			dwell_list[str(ind)].append(len(d))
 

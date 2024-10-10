@@ -67,6 +67,15 @@ class popplot_container(QMainWindow):
 		self.setStyleSheet(ui_stylesheet)
 
 		self.resize_figure()
+
+		sh1 = self.canvas.sizeHint()
+		sh2 = self.prefs_widget.sizeHint()
+
+
+		# Adjust the main window's size to be a little bigger than the size hint
+		self.resize(sh1.width()+sh2.width() + 200, sh1.height()+100)
+
+
 		self.show()
 		self.plot()
 
