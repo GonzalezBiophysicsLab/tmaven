@@ -87,10 +87,13 @@ class controller_survival_dwell(controller_base_analysisplot):
 			dt = np.float64(self.prefs['time_dt'])
 			d = np.array(self.maven.modeler.model.dwells[str(self.prefs['dwell_state'])])
 			d = d*dt
-			tau, surv = self.maven.modeler.get_survival_dwells(self.prefs['dwell_state'])
-			tau = tau*dt
-			error_dwell = False
-			drange=np.arange(d.min(),d.max())
+			if d.size == 0:
+				error_dwell = True
+			else:
+				tau, surv = self.maven.modeler.get_survival_dwells(self.prefs['dwell_state'])
+				tau = tau*dt
+				error_dwell = False
+				drange=np.arange(d.min(),d.max())
 
 		if error_dwell:
 			d = np.array([])

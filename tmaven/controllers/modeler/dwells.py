@@ -12,15 +12,15 @@ def generate_dwells(trace, dwell_list, means, first_flag):
 	if len(trace) > 0: #protecting if all is NaN
 		dwell_split = np.split(trace, np.argwhere(np.diff(trace)!=0).flatten()+1)
 
-	if len(dwell_split) > 1: #protecting against no transitions in a trace
-		if first_flag:
-			start = 0
-		else:
-			start = 1
-		dwell_split = dwell_split[start:-1] #skipping last dwells
-		for d in dwell_split:
-			ind = int(np.argwhere(d[0] == means))
-			dwell_list[str(ind)].append(len(d))
+		if len(dwell_split) > 1: #protecting against no transitions in a trace
+			if first_flag:
+				start = 0
+			else:
+				start = 1
+			dwell_split = dwell_split[start:-1] #skipping last dwells
+			for d in dwell_split:
+				ind = int(np.argwhere(d[0] == means))
+				dwell_list[str(ind)].append(len(d))
 
 	return dwell_list
 
@@ -45,6 +45,9 @@ def calculate_dwells(result, first_flag):
 
 @nb.njit
 def survival(dist):
+	if dist.size == 0:
+		return np.array([0]), np.array([0.0])
+
 	n = np.int32(np.max(dist))
 
 	raw_surv = np.zeros(n)
@@ -54,7 +57,10 @@ def survival(dist):
 		temp[np.where(dist > i)] = 1
 		raw_surv[i] = np.sum(temp)
 
-	norm_surv = raw_surv/raw_surv[0]
+	if raw_surv[0] == 0:
+		norm_surv = np.zeros_like(raw_surv)
+	else:
+		norm_surv = raw_surv/raw_surv[0]
 
 	return np.arange(n), norm_surv
 
