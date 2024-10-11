@@ -1248,7 +1248,7 @@ class controller_modeler(object):
 			post = self.maven.data.post_list[ii]
 
 			idealpath = viterbi(yi,r.mean,r.var,r.tmatrix,r.frac).astype('int')
-			vit = result.mean[idealpath]
+			vit = r.mean[idealpath]
 			idealized[ii,pre:post] = vit
 			chain[ii,pre:post] = idealpath.copy()
 			trace_level_inst = trace_model_container(r, ii)

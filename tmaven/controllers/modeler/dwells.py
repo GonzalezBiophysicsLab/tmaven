@@ -25,12 +25,19 @@ def generate_dwells(trace, dwell_list, means, first_flag):
 	return dwell_list
 
 def calculate_dwells(result, first_flag):
-	traces = result.idealized
-	means = result.mean
 	dwell_list = {str(i):[] for i in range(result.nstates)}
 
-	for t in range(len(traces)):
-		dwell_list = generate_dwells(traces[t],dwell_list, means, first_flag)
+	if result.type == 'eb HMM':
+		for key in result.trace_level.keys():
+			trace = result.trace_level[key].chain
+			means = np.arange(result.nstates,dtype='int')
+			dwell_list = generate_dwells(trace,dwell_list, means, first_flag)
+
+	else:
+		traces = result.idealized
+		means = result.mean
+		for t in range(len(traces)):
+			dwell_list = generate_dwells(traces[t],dwell_list, means, first_flag)
 
 	result.dwells = dwell_list
 	logger.info('Dwell time calculated')
