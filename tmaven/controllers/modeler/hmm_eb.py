@@ -5,13 +5,15 @@ import multiprocessing as mp
 import warnings
 
 from .fxns.numba_math import psi, trigamma
-from .fxns.statistics import dkl_dirichlet,dkl_dirichlet_2D, dkl_normgamma
+from .fxns.statistics import dkl_dirichlet,dkl_dirichlet_2D, dkl_normgamma,p_normal
 # from .fxns.initializations import initialize_gmm,initialize_tmatrix
 from .hmm_vb import outer_loop as vb_outer_loop
 from .hmm_vb import vb_em_hmm
 from .kmeans import _kmeans
+from .fxns.hmm import viterbi
+from .hmm_vb_consensus import m_updates
 
-@nb.jit(nb.float64[:,:](nb.float64[:,:,:]), nopython = True)
+@nb.jit(nb.float64[:,:](nb.float64[:,:,:]), nopython = True, cache=True)
 def h_step_dir_tm(alpha0):
 	"""
 	Empirical bayes step for Dirichlet prior for transition matrix. Solves equations
@@ -91,7 +93,7 @@ def h_step_dir_tm(alpha0):
 	'''
 	return alpha
 
-@nb.jit(nopython=True)
+@nb.jit(nopython=True, cache=True)
 def h_step_dir_pi(alpha0):
 	"""
 	Empirical bayes step for Dirichlet prior for initial probabilities. Solves equations
@@ -153,7 +155,7 @@ def h_step_dir_pi(alpha0):
 
 	return alpha
 
-@nb.jit(nopython=True)
+@nb.jit(nopython=True, cache=True)
 def h_step_normgamma(w_m, w_beta, w_a, w_b):
 	'''
 	Empirical Bayes step for a Normal-Gamma prior. Solves the following equations
@@ -249,7 +251,7 @@ def h_step_normgamma(w_m, w_beta, w_a, w_b):
 	'''
 	return u_m, u_beta, u_a, u_b
 
-@nb.jit(nopython=True)
+@nb.jit(nopython=True, cache=True)
 def h_step(w_mu, w_beta, w_a, w_b, w_A, w_pi,
 			E_z, E_z1, E_zz, E_x, V_x,
 			mu_old, beta_old, a_old, b_old, tm_old, pi_old):
@@ -362,9 +364,22 @@ def h_step(w_mu, w_beta, w_a, w_b, w_A, w_pi,
 		# Run normal-gamma updates for emission model parameters
 		mu, beta, a, b = h_step_normgamma(w_mu, w_beta, w_a, w_b);
 		# Run dirichlet updates for transition matrix
-		tm = h_step_dir_tm(w_A);
+		# tm = tm_old.copy()
+		# for k in range(tm.shape[1]):
+		# 	wtmk = w_A.copy()
+		# 	wtmk[:,0] = w_A[:,k]
+		# 	tm[k] = h_step_dir_tm(wtmk)[0]
+		# assert np.allclose(tm,h_step_dir_tm(w_A))
+		tm = h_step_dir_tm(w_A)
+
 		# Run dirichlet updates for initial state probabilities
-		pi = h_step_dir_pi(w_pi);
+		# ## THERE SEEMS TO BE A BUG IN THE 1D DIRICHLET UPDATE CODE... but NOT in the 2D. Use that instead, and then cast down
+		wpi = w_A.copy()
+		wpi[:,0] = w_pi
+		pi = h_step_dir_tm(wpi)[0]
+		# print(pi.shape,wpi.shape,w_pi.shape,h_step_dir_tm(w_pi).shape)
+		# # assert np.allclose(pi,h_step_dir_tm(w_pi))
+		# pi = h_step_dir_pi(w_pi)
 
 		# Check iteration count
 		if it >= MAX_ITER:
@@ -382,12 +397,12 @@ def h_step(w_mu, w_beta, w_a, w_b, w_A, w_pi,
 			break
 
 		# Update posteriors
-		w_pi = pi + E_z1
-		w_A = tm + E_zz
-		w_beta = beta + E_z
-		w_mu = (E_z * E_x + beta * mu) / w_beta
-		w_a = 0.5 * E_z + a
-		w_b = 0.5 * (2 * b + (E_z * V_x + ((E_z * beta) / w_beta * (E_x - mu)**2)))
+		w_pi = pi[None,:] + E_z1
+		w_A = tm[None,:] + E_zz
+		w_beta = beta[None,:] + E_z
+		w_mu = (E_z * E_x + beta[None,:] * mu[None,:]) / w_beta
+		w_a = 0.5 * E_z + a[None,:]
+		w_b = 0.5 * (2 * b[None,:] + (E_z * V_x + ((E_z * beta[None,:]) / w_beta * (E_x - mu[None,:])**2)))
 
 		# Next iteration
 		it += 1
@@ -422,7 +437,7 @@ def h_step(w_mu, w_beta, w_a, w_b, w_A, w_pi,
 	nb.float64[:],
 	nb.float64[:],
 	nb.float64[:,:],
-	nb.int64),nopython=True,parallel=False)
+	nb.int64),nopython=True,parallel=False, cache=True)
 def eb_outer_loop(xind,xdata,nstates,maxiters,threshold,mu_prior,beta_prior,a_prior,b_prior,pi_prior,tm_prior,nrestarts):
 
 	N = xind[-1]+1
@@ -459,13 +474,42 @@ def eb_outer_loop(xind,xdata,nstates,maxiters,threshold,mu_prior,beta_prior,a_pr
 	else:
 		ktmatrix = np.ones((1,1))
 
-	for nr in nb.prange(nrestarts):
-		emp_mu[nr] = mu_prior.copy()
-		emp_beta[nr] = beta_prior.copy()
-		emp_a[nr] = a_prior.copy()
-		emp_b[nr] = b_prior.copy()
-		emp_pi[nr] = pi_prior.copy()
+	# for nr in nb.prange(nrestarts):
+	for nr in range(nrestarts):
+
+		# initialize
+		prob = p_normal(xdata,mu_prior,b_prior/a_prior)
+		r = np.zeros_like(prob)
+		for i in range(r.shape[0]):
+			r[i] = prob[i]
+			r[i] /= np.sum(r[i]) + 1e-10 ## for stability
+			r[i] /= np.sum(r[i])
+
+		emp_a[nr],emp_b[nr],_,emp_beta[nr],nk,_,_ = m_updates(xdata,r,a_prior,b_prior,mu_prior,beta_prior)
+		emp_mu[nr] = mu_prior + np.random.normal(K)*np.sqrt(emp_b[nr]/emp_a[nr]) ## zuzsh it up a lot
+		emp_mu[nr] = np.sort(emp_mu[nr])
+		prob = p_normal(xdata,emp_mu[nr],emp_b[nr]/emp_a[nr])
+		r = np.zeros_like(prob)
+		for i in range(r.shape[0]):
+			r[i] = prob[i]
+			r[i] /= np.sum(r[i]) + 1e-10 ## for stability
+			r[i] /= np.sum(r[i])
+		emp_a[nr],emp_b[nr],_,emp_beta[nr],nk,_,_ = m_updates(xdata,r,emp_a[nr],emp_b[nr],emp_mu[nr],emp_beta[nr])
+
+		emp_pi[nr] = np.sqrt(nk+1.)
 		emp_tm[nr] = tm_prior.copy()
+		paths = viterbi(xdata,emp_mu[nr],np.sqrt(emp_b[nr]/emp_a[nr]),emp_tm[nr],emp_pi[nr]).astype('int')
+		for k in range(K):
+			keep = paths == k
+			if keep.sum() > 0:
+				emp_pi[nr][k] = float(keep.sum())/float(xdata.size)*np.sqrt(float(N))
+				for kk in range(K):
+					if k != kk:
+						emp_tm[nr][k,kk] = np.sum(np.bitwise_and(paths[1:]==kk,paths[:-1]==k))
+				emp_tm[nr][k] /= np.sum(emp_tm[nr][k])*10.
+				emp_tm[nr][k,k] = 1. - np.sum(emp_tm[nr][k])
+				emp_tm[nr] *= np.sqrt(float(N))
+
 
 		## Initial guesses for this restart (kmeans)
 		#kxdata = np.random.choice(xdata,size=xdata.size//100)
@@ -478,12 +522,9 @@ def eb_outer_loop(xind,xdata,nstates,maxiters,threshold,mu_prior,beta_prior,a_pr
 		#kvar = kx2/kx0 - kmu**2.
 					## Alternative initial guess (random by restart) -- this is really not very good
 
-
 		# import time
 		while iteration[nr] < maxiters:
 			L_sum = 0
-
-
 
 			## This is not a good solution either
 			#for nk in range(nstates):
@@ -498,13 +539,15 @@ def eb_outer_loop(xind,xdata,nstates,maxiters,threshold,mu_prior,beta_prior,a_pr
 					kmu[nk] = np.random.normal()*np.sqrt(1./emp_beta[nr,nk]) + emp_mu[nr,nk]
 					kvar[nk] = 1./np.random.gamma(shape=emp_a[nr,nk],scale=1./emp_b[nr,nk])
 
-
 			for Ni in range(N):
 				trace = xdata[xind==Ni]
-				if iteration[nr] == 0:
-					r,a,b,mu,beta,pi,tmatrix,E_lnlam,E_lnpi,E_lntm,vblikelihood,vbiteration,xi,xbark,sk = vb_outer_loop(trace,kmu,kvar,ktmatrix,emp_mu[nr],emp_beta[nr],emp_a[nr],emp_b[nr],emp_pi[nr],emp_tm[nr],maxiters,threshold)
-				else:
-					r,a,b,mu,beta,pi,tmatrix,E_lnlam,E_lnpi,E_lntm,vblikelihood,vbiteration,xi,xbark,sk = vb_outer_loop(trace,emp_mu[nr],emp_b[nr]/emp_a[nr],emp_tm[nr],emp_mu[nr],emp_beta[nr],emp_a[nr],emp_b[nr],emp_pi[nr],emp_tm[nr],maxiters,threshold)
+				# if iteration[nr] == 0:
+				# 	r,a,b,mu,beta,pi,tmatrix,E_lnlam,E_lnpi,E_lntm,vblikelihood,vbiteration,xi,xbark,sk = vb_outer_loop(trace,kmu,kvar,ktmatrix,emp_mu[nr],emp_beta[nr],emp_a[nr],emp_b[nr],emp_pi[nr],emp_tm[nr],maxiters,threshold)
+				# else:
+				# 	r,a,b,mu,beta,pi,tmatrix,E_lnlam,E_lnpi,E_lntm,vblikelihood,vbiteration,xi,xbark,sk = vb_outer_loop(trace,emp_mu[nr],emp_b[nr]/emp_a[nr],emp_tm[nr],emp_mu[nr],emp_beta[nr],emp_a[nr],emp_b[nr],emp_pi[nr],emp_tm[nr],maxiters,threshold)
+				r,a,b,mu,beta,pi,tmatrix,E_lnlam,E_lnpi,E_lntm,vblikelihood,vbiteration,xi,xbark,sk = vb_outer_loop(trace,emp_mu[nr],emp_b[nr]/emp_a[nr],emp_tm[nr],emp_mu[nr],emp_beta[nr],emp_a[nr],emp_b[nr],emp_pi[nr],emp_tm[nr],maxiters,threshold)
+				r /= r.sum(1)[:,None]
+				assert np.allclose(np.sum(r,axis=1),1.)
 
 				# Collect posteriors
 				for k in range(nstates):
@@ -517,13 +560,13 @@ def eb_outer_loop(xind,xdata,nstates,maxiters,threshold,mu_prior,beta_prior,a_pr
 						pos_tm[Ni,k,k2] = tmatrix[k,k2]
 
 				# Map expected statistics
-				E_z1[Ni] *= 0.
-				E_z[Ni] *= 0.
+				E_z1[Ni] = 0.
+				E_z[Ni] = 0.
+				E_zz[Ni] = 0.
 				for k in range(K):
 					E_z1[Ni,k] = r[0,k]
 					for n in range(1,r.shape[0]): ## skip n = 0
 						E_z[Ni,k] += r[n,k]
-				E_zz[Ni] *= 0.
 				for n in range(xi.shape[0]):
 					for k1 in range(xi.shape[1]):
 						for k2 in range(xi.shape[2]):
@@ -531,26 +574,31 @@ def eb_outer_loop(xind,xdata,nstates,maxiters,threshold,mu_prior,beta_prior,a_pr
 				E_x[Ni] = xbark
 				E_xx[Ni] = sk + xbark**2.
 
-				# Add individual trace contribution to global ELBO
+				# # Add individual trace contribution to global ELBO
 				if vbiteration == vblikelihood.shape[0]:
 					vbiteration -= 1
-				L_sum += vblikelihood[vbiteration,0]
+				vbli = vblikelihood[vbiteration,0]
+				if not np.isnan(vbli):
+					L_sum += vbli
 
 			V_x = E_xx - E_x**2
 
 			# Data processing
 			L_global[nr,iteration[nr]]=L_sum
 
-			if (iteration[nr] >= 2) and (L_global[nr,iteration[nr]] - L_global[nr,iteration[nr]-1]) < threshold * np.abs(L_global[nr,iteration[nr]]):
+			if (iteration[nr] >= 2) and ((L_global[nr,iteration[nr]] - L_global[nr,iteration[nr]-1]) < threshold * np.abs(L_global[nr,iteration[nr]]) or (L_global[nr,iteration[nr]] - L_global[nr,iteration[nr]-1]) < 0.1):
+				break
+			if np.isnan(L_global[nr,iteration[nr]]):
+				L_global[nr,iteration[nr]] = -np.inf
 				break
 
-			emp_mu[nr], emp_beta[nr], emp_a[nr], emp_b[nr], emp_pi[nr], emp_tm[nr] = h_step(pos_mu, pos_beta, pos_a, pos_b, pos_tm, pos_pi,
+			emp_mu[nr], emp_beta[nr], emp_a[nr], emp_b[nr], emp_pi[nr], emp_tm[nr] =  h_step(pos_mu, pos_beta, pos_a, pos_b, pos_tm, pos_pi,
 						E_z, E_z1, E_zz, E_x, V_x,
 						mu_prior, beta_prior, a_prior, b_prior, tm_prior, pi_prior)
+			
+			print(nr,iteration[nr],L_global[nr,iteration[nr]],emp_mu[nr],np.sqrt(emp_b[nr]/emp_a[nr]),emp_pi[nr],emp_tm[nr].flatten())
 
 			iteration[nr] += 1
-		#if iteration[nr] == maxiters:
-			#iteration[nr] -= 1
 		E_z_out[nr] = E_z
 
 	Lbest = np.zeros(nrestarts)

@@ -9,7 +9,7 @@ from .fxns.statistics import p_normal
 from .fxns.numba_math import psi,gammaln
 from .fxns.initializations import initialize_gmm
 
-@nb.jit(nb.types.Tuple((nb.float64[:],nb.float64[:],nb.float64[:]))(nb.float64[:],nb.float64[:,:]),nopython=True)
+@nb.jit(nb.types.Tuple((nb.float64[:],nb.float64[:],nb.float64[:]))(nb.float64[:],nb.float64[:,:]),nopython=True,cache=True)
 def m_sufficient_statistics(x,r):
 	#### M Step
 	## Sufficient Statistics
@@ -29,7 +29,7 @@ def m_sufficient_statistics(x,r):
 		sk[i] /= nk[i]
 	return nk,xbark,sk
 
-@nb.jit(nb.types.Tuple((nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:]))(nb.float64[:],nb.float64[:,:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:]),nopython=True)
+@nb.jit(nb.types.Tuple((nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:]))(nb.float64[:],nb.float64[:,:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:]),nopython=True,cache=True)
 def m_updates(x,r,a0,b0,m0,beta0,alpha0):
 	#### M Step
 	## Updates
@@ -51,7 +51,7 @@ def m_updates(x,r,a0,b0,m0,beta0,alpha0):
 	return a,b,m,beta,alpha,nk,xbark,sk
 
 
-@nb.jit(nb.float64[:](nb.float64[:,:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:]),nopython=True)
+@nb.jit(nb.float64[:](nb.float64[:,:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:]),nopython=True,cache=True)
 def calc_lowerbound(r,a,b,m,beta,alpha,nk,xbark,sk,E_lnlam,E_lnpi,a0,b0,m0,beta0,alpha0):
 
 	lt71 = 0.
@@ -84,7 +84,7 @@ def calc_lowerbound(r,a,b,m,beta,alpha,nk,xbark,sk,E_lnlam,E_lnpi,a0,b0,m0,beta0
 	ll1 = lt71 + Fgw + Fa + Fpi
 	return np.array((ll1,lt71,Fgw,Fa,Fpi))
 
-@nb.jit(nb.types.Tuple((nb.float64[:,:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:,:],nb.int64))(nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.int64,nb.float64,nb.float64[:]),nopython=True)
+@nb.jit(nb.types.Tuple((nb.float64[:,:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:,:],nb.int64))(nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.int64,nb.float64,nb.float64[:]),nopython=True,cache=True)
 def outer_loop(x,mu,var,ppi,maxiters,threshold,prior_strengths):
 
 	## priors - from vbFRET

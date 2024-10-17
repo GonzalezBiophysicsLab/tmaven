@@ -99,7 +99,7 @@ def individual_e_step(x,a,b,beta,m,pik,tm):
 
 	return r,xi,lnz,E_lntm,E_lnlam,E_lnpi
 
-'''
+
 @nb.jit(nb.types.Tuple(
 	(nb.float64[:,:],
 	 nb.float64[:],
@@ -123,10 +123,10 @@ def individual_e_step(x,a,b,beta,m,pik,tm):
 	 nb.types.Tuple((nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:,:]))),
 	 nopython=True,
 	 cache=True)
-	'''
 def outer_loop(xind,xdata,mu,var,tm,maxiters,threshold,priors):
 
 	N = xind[-1]+1
+	K = mu.size
 
 	## priors
 	m0 = priors[0]
@@ -140,15 +140,33 @@ def outer_loop(xind,xdata,mu,var,tm,maxiters,threshold,priors):
 	prob = p_normal(xdata,mu,var)
 	T,K = prob.shape
 	r = np.zeros((T,K))
-
 	for i in range(r.shape[0]):
 		r[i] = prob[i]
 		r[i] /= np.sum(r[i]) + 1e-10 ## for stability
 
-	pik = pi0.copy()
-	tm = tm0.copy()
-	a,b,m,beta,nk,xbark,sk = m_updates(xdata,r,a0,b0,m0,beta0)
+	a,b,_,beta,nk,xbark,sk = m_updates(xdata,r,a0,b0,m0,beta0)
+	m = m0 + np.random.normal(K)/np.sqrt(beta) ## zuzsh it up a lot
+	m = np.sort(m)
+	prob = p_normal(xdata,m,b/a)
+	for i in range(r.shape[0]):
+		r[i] = prob[i]
+		r[i] /= np.sum(r[i]) + 1e-10 ## for stability
+	a,b,_,beta,nk,xbark,sk = m_updates(xdata,r,a,b,m,beta)
 
+	pik = np.sqrt(nk+1)
+	tm = tm0.copy()
+	paths = viterbi(xdata,m,b/a,tm,pik).astype('int')
+	for k in range(K):
+		keep = paths == k
+		if keep.sum() > 0:
+			pik[k] = float(keep.sum())/float(xdata.size)*np.sqrt(float(N))
+			for kk in range(K):
+				if k != kk:
+					tm[k,kk] = np.sum(np.bitwise_and(paths[1:]==kk,paths[:-1]==k)) + 1
+			tm[k] /= np.sum(tm[k])*10.
+			tm[k,k] = 1. - np.sum(tm[k])
+			tm *= np.sqrt(float(N))
+	# print(m,np.sqrt(b/a),pik,tm.flatten())
 
 	iteration = 0
 	ll1 = -np.inf
@@ -169,6 +187,7 @@ def outer_loop(xind,xdata,mu,var,tm,maxiters,threshold,priors):
 			ind = xind==Ni
 			trace = xdata[ind]
 			ri,xii,lnzi,E_lntmi,E_lnlami,E_lnpii = individual_e_step(trace,a,b,beta,m,pik,tm)
+			ri /= ri.sum(1)[:,None]
 			r[ind] = ri
 
 			pi_sum += ri[0]
@@ -217,33 +236,36 @@ def consensus_vb_em_hmm(x,nstates,maxiters=1000,threshold=1e-10,nrestarts=1,prio
 	xind = np.concatenate([np.zeros(x[i].size,dtype='int64')+i for i in range(len(x))])
 	xdata = np.concatenate(x)
 
-	mu,var,ppi = initialize_gmm(xdata,nstates,init_kmeans)
+	# mu,var,ppi = initialize_gmm(xdata,nstates,init_kmeans)
 	tmatrix = initialize_tmatrix(nstates)
 
 	## Priors - beta, a, b, pi, alpha... mu is from GMM
+	# if priors is None:
+	# 	beta_prior = np.ones_like(mu) *0.25
+	# 	a_prior = np.ones_like(mu) *2.5
+	# 	b_prior = np.ones_like(mu)*0.01
+	# 	pi_prior = np.ones_like(mu)
+	# 	tm_prior = np.ones_like(tmatrix)
+	# 	mu_prior = mu
+
+	# 	priors = (mu_prior,beta_prior, a_prior, b_prior, pi_prior, tm_prior)
+
 	if priors is None:
-		beta_prior = np.ones_like(mu) *0.25
-		a_prior = np.ones_like(mu) *2.5
-		b_prior = np.ones_like(mu)*0.01
-		pi_prior = np.ones_like(mu)
-		tm_prior = np.ones_like(tmatrix)
-		mu_prior = mu
-
-		priors = (mu_prior,beta_prior, a_prior, b_prior, pi_prior, tm_prior)
-
+		beta_prior = np.ones(nstates) *0.25
+		a_prior = np.ones(nstates) *2.5
+		b_prior = np.ones(nstates)*0.01
+		pi_prior = np.ones(nstates)
+		tm_prior = np.ones(nstates,nstates)
+		mu_prior = np.percentile(xdata,np.linspace(0,100,nstates+2))[1:-1]
 	else:
-		if not mu_mode:
-			mu_prior = mu
-		else:
-			mu_prior = priors[0]
-
+		mu_prior = np.percentile(xdata,np.linspace(0,100,nstates+2))[1:-1]
 		beta_prior = priors[1]
 		a_prior = priors[2]
 		b_prior = priors[3]
 		pi_prior = priors[4]
 		tm_prior = priors[5]
 
-		priors = (mu_prior,beta_prior, a_prior, b_prior, pi_prior, tm_prior)
+	priors = (mu_prior,beta_prior, a_prior, b_prior, pi_prior, tm_prior)
 
 
 	#### run calculation
@@ -251,19 +273,13 @@ def consensus_vb_em_hmm(x,nstates,maxiters=1000,threshold=1e-10,nrestarts=1,prio
 	ll_restarts = []
 
 	for nr in range(nrestarts):
-		if nr == 0:
-			kmu = mu
-			kvar = var
-		else:
-			kmu = mu + np.random.normal(nstates)*np.sqrt(1./beta_prior)
-			kvar = 1./np.random.gamma(size = nstates,shape=a_prior,scale=b_prior)
-
+		kmu = mu_prior
+		kvar = b_prior/a_prior
 		r,a,b,mu,beta,pi,tmatrix,E_lnlam,E_lnpi,E_lntm,likelihood,iteration = outer_loop(xind,xdata,kmu,kvar,tmatrix,maxiters,threshold,priors)
 		likelihood = likelihood[:iteration+1]
-
 		ll_restarts.append(likelihood[-1,0])
-		res.append([r,a,b,mu,beta,pi,tmatrix,E_lnlam,E_lnpi,E_lntm,likelihood,iteration])
-
+		res.append([r,a,b,mu,beta,pi,tmatrix,E_lnlam,E_lnpi,E_lntm,likelihood,iteration])		
+		# print(nr,likelihood[-1,0],mu)#,np.sqrt(b/a),pi,tmatrix.flatten())
 	ll_restarts = np.array(ll_restarts)
 
 	try:

@@ -123,7 +123,7 @@ def dialog_vbhmm(gui,fxn,title,model_selection=False,threshold=False):
 
 	groupbox1 = QGroupBox("{} algorithm parameters".format(title))
 	grid1 = QGridLayout()
-	model_dialog.add_spin_box("CPUs:", grid1, [0,0], pref='ncpu')
+	# model_dialog.add_spin_box("CPUs:", grid1, [0,0], pref='ncpu')
 	model_dialog.add_spin_box("Restarts:", grid1, [1,0], pref='modeler.nrestarts')
 	model_dialog.add_spin_box("Max iterations:", grid1, [2,0], pref='modeler.maxiters')
 	model_dialog.add_line_edit("Convergence:", grid1, [3,0], pref='modeler.converge', validate = "double")
@@ -161,7 +161,7 @@ def dialog_vbgmm(gui,fxn,title,model_selection=False):
 
 	groupbox1 = QGroupBox("{} algorithm parameters".format(title))
 	grid1 = QGridLayout()
-	model_dialog.add_spin_box("CPUs:", grid1, [0,0], pref='ncpu')
+	# model_dialog.add_spin_box("CPUs:", grid1, [0,0], pref='ncpu')
 	model_dialog.add_spin_box("Restarts:", grid1, [1,0], pref='modeler.nrestarts')
 	model_dialog.add_spin_box("Max iterations:", grid1, [2,0], pref='modeler.maxiters')
 	model_dialog.add_line_edit("Convergence:", grid1, [3,0], pref='modeler.converge', validate = "double")
@@ -190,7 +190,7 @@ def dialog_vbgmm_vbhmm(gui,fxn,title,model_selection=False):
 
 	groupbox1 = QGroupBox("{} algorithm parameters".format(title))
 	grid1 = QGridLayout()
-	model_dialog.add_spin_box("CPUs:", grid1, [0,0], pref='ncpu')
+	# model_dialog.add_spin_box("CPUs:", grid1, [0,0], pref='ncpu')
 	model_dialog.add_spin_box("Restarts:", grid1, [1,0], pref='modeler.nrestarts')
 	model_dialog.add_spin_box("Max iterations:", grid1, [2,0], pref='modeler.maxiters')
 	model_dialog.add_line_edit("Convergence:", grid1, [3,0], pref='modeler.converge', validate = "double")
@@ -230,7 +230,7 @@ def dialog_vbconhmm(gui,fxn,model_selection=False,threshold=False):
 
 	groupbox1 = QGroupBox("Consensus vbHMM algorithm parameters")
 	grid1 = QGridLayout()
-	model_dialog.add_spin_box("CPUs:", grid1, [0,0], pref='ncpu')
+	# model_dialog.add_spin_box("CPUs:", grid1, [0,0], pref='ncpu')
 	model_dialog.add_spin_box("Restarts:", grid1, [1,0], pref='modeler.nrestarts')
 	model_dialog.add_spin_box("Max iterations:", grid1, [2,0], pref='modeler.maxiters')
 	model_dialog.add_line_edit("Convergence:", grid1, [3,0], pref='modeler.converge', validate = "double")
@@ -269,7 +269,7 @@ def dialog_mlmm(gui,fxn,title):
 
 	groupbox1 = QGroupBox("{} algorithm parameters".format(title))
 	grid1 = QGridLayout()
-	model_dialog.add_spin_box("CPUs:", grid1, [0,0], pref='ncpu')
+	# model_dialog.add_spin_box("CPUs:", grid1, [0,0], pref='ncpu')
 	model_dialog.add_spin_box("Restarts:", grid1, [1,0], pref='modeler.nrestarts')
 	model_dialog.add_spin_box("Max iterations:", grid1, [2,0], pref='modeler.maxiters')
 	model_dialog.add_line_edit("Convergence:", grid1, [3,0], pref='modeler.converge', validate = "double")
@@ -328,7 +328,7 @@ def dialog_ebhmm(gui,fxn,model_selection=False):
 
 	groupbox1 = QGroupBox("ebHMM algorithm parameters")
 	grid1 = QGridLayout()
-	model_dialog.add_spin_box("CPUs:", grid1, [0,0], pref='ncpu')
+	# model_dialog.add_spin_box("CPUs:", grid1, [0,0], pref='ncpu')
 	model_dialog.add_spin_box("Restarts:", grid1, [1,0], pref='modeler.nrestarts')
 	model_dialog.add_spin_box("Max iterations:", grid1, [2,0], pref='modeler.maxiters')
 	model_dialog.add_line_edit("Convergence:", grid1, [3,0], pref='modeler.converge', validate = "double")

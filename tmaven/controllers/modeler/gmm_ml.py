@@ -4,7 +4,7 @@ import numba as nb
 from .fxns.statistics import p_normal
 from .fxns.initializations import initialize_gmm
 
-@nb.jit(nb.types.Tuple((nb.float64[:],nb.float64[:],nb.float64[:,:],nb.float64[:],nb.float64,nb.int64))(nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.int64,nb.float64),nopython=True)
+@nb.jit(nb.types.Tuple((nb.float64[:],nb.float64[:],nb.float64[:,:],nb.float64[:],nb.float64,nb.int64))(nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.int64,nb.float64),nopython=True,cache=True)
 def outer_loop(x,mu,var,ppi,maxiters,threshold):
 	prob = p_normal(x,mu,var)
 	r = np.zeros_like(prob)

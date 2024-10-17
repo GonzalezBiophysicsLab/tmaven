@@ -10,7 +10,7 @@ from .fxns.numba_math import psi,gammaln
 from .fxns.initializations import initialize_gmm,initialize_tmatrix
 from .fxns.hmm import forward_backward,viterbi
 
-@nb.jit(nb.types.Tuple((nb.float64[:],nb.float64[:],nb.float64[:]))(nb.float64[:],nb.float64[:,:]),nopython=True)
+@nb.jit(nb.types.Tuple((nb.float64[:],nb.float64[:],nb.float64[:]))(nb.float64[:],nb.float64[:,:]),nopython=True,cache=True)
 def m_sufficient_statistics(x,r):
 	#### M Step
 	## Sufficient Statistics
@@ -30,7 +30,7 @@ def m_sufficient_statistics(x,r):
 		sk[i] /= nk[i]
 	return nk,xbark,sk
 
-@nb.jit(nb.types.Tuple((nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:]))(nb.float64[:],nb.float64[:,:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:]),nopython=True)
+@nb.jit(nb.types.Tuple((nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:]))(nb.float64[:],nb.float64[:,:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:]),nopython=True,cache=True)
 def m_updates(x,r,a0,b0,m0,beta0,alpha0):
 	#### M Step
 	## Updates
@@ -52,7 +52,7 @@ def m_updates(x,r,a0,b0,m0,beta0,alpha0):
 	return a,b,m,beta,alpha,nk,xbark,sk
 
 
-@nb.jit(nb.float64[:](nb.float64[:,:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:,:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:,:],nb.float64),nopython=True)
+@nb.jit(nb.float64[:](nb.float64[:,:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:,:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:,:],nb.float64),nopython=True,cache=True)
 def calc_lowerbound(r,a,b,m,beta,pik,tm,nk,xbark,sk,E_lnlam,E_lnpi,a0,b0,m0,beta0,pi0,tm0,lnz):
 
 	lt74 = 0.
@@ -83,7 +83,7 @@ def calc_lowerbound(r,a,b,m,beta,pik,tm,nk,xbark,sk,E_lnlam,E_lnpi,a0,b0,m0,beta
 @nb.jit(nb.types.Tuple(
 (nb.float64[:,:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:,:],nb.float64[:],nb.float64[:],nb.float64[:,:],nb.float64[:,:],nb.int64,nb.float64[:,:,:],nb.float64[:],nb.float64[:]))
 (nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:,:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:,:],nb.int64,nb.float64)
-,nopython=True)
+,nopython=True,cache=True)
 def outer_loop(x,mu,var,tm,mu_prior,beta_prior,a_prior,b_prior,pi_prior,tm_prior,maxiters,threshold):
 
 	## priors - from vbFRET
@@ -128,6 +128,7 @@ def outer_loop(x,mu,var,tm,mu_prior,beta_prior,a_prior,b_prior,pi_prior,tm_prior
 		for i in range(prob.shape[1]):
 			prob[:,i] = (2.*np.pi)**-.5 * np.exp(-.5*(E_dld[:,i] - E_lnlam[i]))
 		r, xi, lnz = forward_backward(prob, np.exp(E_lntm), np.exp(E_lnpi))
+		r /= r.sum(1)[:,None]
 
 		ll0 = ll1
 		ll[iteration] = calc_lowerbound(r,a,b,m,beta,pik,tm,nk,xbark,sk,E_lnlam,E_lnpi,a0,b0,m0,beta0,pi0,tm0,lnz)

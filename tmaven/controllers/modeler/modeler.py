@@ -6,9 +6,9 @@ import h5py as h
 from .model_container import model_container
 
 default_prefs = {
-	'modeler.nrestarts':4,
-	'modeler.converge':1e-10,
-	'modeler.maxiters':1000,
+	'modeler.nrestarts':5,
+	'modeler.converge':1e-8,
+	'modeler.maxiters':100,
 	'modeler.vbgmm.prior.beta':0.25,
 	'modeler.vbgmm.prior.a':0.1,
 	'modeler.vbgmm.prior.b':0.01,
