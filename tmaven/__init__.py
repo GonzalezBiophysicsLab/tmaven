@@ -3,7 +3,7 @@ tMAVEN - Modeling, Analysis and Visualization ENvironment for N-dimensional sing
 """
 
 __title__ = "tMAVEN"
-__version__ = "0.2.2b"
+__version__ = "0.2.2c"
 
 __description__ = "tMAVEN - Modeling, Analysis and Visualization ENvironment for N-dimensional single-molecule time series."
 
