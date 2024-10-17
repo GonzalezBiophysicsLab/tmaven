@@ -10,7 +10,7 @@ _windows = False
 if os.name == 'nt':
 	_windows = True
 
-@nb.njit(nb.double(nb.double[:]))
+@nb.njit(nb.double(nb.double[:]),cache=True)
 def sufficient_xbar(x):
 	n = x.size
 
@@ -21,7 +21,7 @@ def sufficient_xbar(x):
 	xbar /= float(n)
 	return xbar
 
-@nb.njit(nb.double(nb.double[:],nb.double))
+@nb.njit(nb.double(nb.double[:],nb.double),cache=True)
 def sufficient_s2(x,m):
 	n = x.size
 
@@ -35,7 +35,7 @@ def sufficient_s2(x,m):
 ################################################################################
 ### \mathcal{N} with an unknown \mu and an unknown \sigma
 ################################################################################
-@nb.njit(nb.types.Tuple((nb.double,nb.double,nb.double,nb.double))(nb.double[:],nb.double,nb.double,nb.double,nb.double))
+@nb.njit(nb.types.Tuple((nb.double,nb.double,nb.double,nb.double))(nb.double[:],nb.double,nb.double,nb.double,nb.double),cache=True)
 def normal_update(x,a0,b0,k0,m0):
 	# sufficient statistics
 	xbar = sufficient_xbar(x)
@@ -49,7 +49,7 @@ def normal_update(x,a0,b0,k0,m0):
 	mn = (k0*m0 + n*xbar)/kn
 	return an,bn,kn,mn
 
-@nb.njit([nb.double(nb.double[:],nb.double,nb.double,nb.double,nb.double)])
+@nb.njit([nb.double(nb.double[:],nb.double,nb.double,nb.double,nb.double)],cache=True)
 def normal_ln_evidence(x,a0,b0,k0,m0):
 
 	n = x.size
@@ -61,7 +61,7 @@ def normal_ln_evidence(x,a0,b0,k0,m0):
 ################################################################################
 ### \mathcal{N} with an known \mu and an unknown \sigma
 ################################################################################
-@nb.njit(nb.types.Tuple((nb.double,nb.double))(nb.double[:],nb.double,nb.double,nb.double))
+@nb.njit(nb.types.Tuple((nb.double,nb.double))(nb.double[:],nb.double,nb.double,nb.double),cache=True)
 def normal_mu_update(x,mu,a0,b0):
 	# sufficient statistics
 	# s2 = np.sum((x-mu)**2.)
@@ -73,7 +73,7 @@ def normal_mu_update(x,mu,a0,b0):
 	bn = b0 + .5*s2
 	return an,bn
 
-@nb.njit(nb.double(nb.double[:],nb.double,nb.double,nb.double))
+@nb.njit(nb.double(nb.double[:],nb.double,nb.double,nb.double),cache=True)
 def normal_mu_ln_evidence(x,mu,a0,b0):
 	n = x.size
 
@@ -86,7 +86,7 @@ def normal_mu_ln_evidence(x,mu,a0,b0):
 ### Photobleaching model - start w/ N(\mu) go to N(0) at time t
 ################################################################################
 
-@nb.njit(nb.double[:](nb.double[:],nb.double,nb.double,nb.double,nb.double))
+@nb.njit(nb.double[:](nb.double[:],nb.double,nb.double,nb.double,nb.double),cache=True)
 def ln_likelihood(d,a0,b0,k0,m0):
 	lnl = np.zeros_like(d)
 
@@ -97,7 +97,7 @@ def ln_likelihood(d,a0,b0,k0,m0):
 	lnl[-1] = normal_ln_evidence(d,a0,b0,k0,m0)
 	return lnl
 
-@nb.njit(nb.double(nb.double[:],nb.double,nb.double,nb.double,nb.double))
+@nb.njit(nb.double(nb.double[:],nb.double,nb.double,nb.double,nb.double),cache=True)
 def ln_evidence(d,a0,b0,k0,m0):
 
 	lnl  = ln_likelihood(d,a0,b0,k0,m0)
@@ -106,7 +106,7 @@ def ln_evidence(d,a0,b0,k0,m0):
 	ev = np.log(np.sum(np.exp(lnl-lmax)))+lmax
 	return ev
 
-@nb.njit(nb.double(nb.double[:],nb.double,nb.double,nb.double,nb.double))
+@nb.njit(nb.double(nb.double[:],nb.double,nb.double,nb.double,nb.double),cache=True)
 def ln_bayes_factor(d,a0,b0,k0,m0):
 	# a0 = 1.
 	# b0 = 1.
@@ -115,7 +115,7 @@ def ln_bayes_factor(d,a0,b0,k0,m0):
 
 	return ln_evidence(d,a0,b0,k0,m0) - normal_ln_evidence(d,a0,b0,k0,m0)
 
-@nb.njit(nb.double[:](nb.double[:],nb.double,nb.double,nb.double,nb.double,nb.double))
+@nb.njit(nb.double[:](nb.double[:],nb.double,nb.double,nb.double,nb.double,nb.double),cache=True)
 def posterior(d,k,a0,b0,k0,m0):
 	t = np.arange(d.size)
 	lnp = ln_likelihood(d,a0,b0,k0,m0) + np.log(k) - k*t
@@ -126,7 +126,7 @@ def posterior(d,k,a0,b0,k0,m0):
 ### Single Step Model
 ################################################################################
 
-@nb.njit(nb.int64(nb.double[:],nb.double,nb.double,nb.double,nb.double))
+@nb.njit(nb.int64(nb.double[:],nb.double,nb.double,nb.double,nb.double),cache=True)
 def get_point_pbtime(d,a0,b0,k0,m0):
 	lnl = ln_likelihood(d,a0,b0,k0,m0)
 	for i in range(lnl.shape[0]):
@@ -138,7 +138,7 @@ def get_point_pbtime(d,a0,b0,k0,m0):
 		pbt = d.shape[0]
 	return pbt
 
-@nb.njit(nb.double(nb.double[:],nb.double,nb.double,nb.double,nb.double))
+@nb.njit(nb.double(nb.double[:],nb.double,nb.double,nb.double,nb.double),cache=True)
 def get_expectation_pbtime(d,a0,b0,k0,m0):
 	# a0 = 1.
 	# b0 = 1.
@@ -157,7 +157,7 @@ def get_expectation_pbtime(d,a0,b0,k0,m0):
 	return pbt
 
 if _windows:
-	@nb.njit(nb.types.Tuple((nb.double,nb.int64[:]))(nb.double[:,:],nb.double,nb.double,nb.double,nb.double))
+	@nb.njit(nb.types.Tuple((nb.double,nb.int64[:]))(nb.double[:,:],nb.double,nb.double,nb.double,nb.double),cache=True)
 	def pb_ensemble(d,a0,b0,k0,m0):
 		'''
 		Input:
@@ -181,7 +181,7 @@ if _windows:
 		return e_k,pbt
 
 else:
-	@nb.njit(nb.types.Tuple((nb.double,nb.int64[:]))(nb.double[:,:],nb.double,nb.double,nb.double,nb.double),parallel=True)
+	@nb.njit(nb.types.Tuple((nb.double,nb.int64[:]))(nb.double[:,:],nb.double,nb.double,nb.double,nb.double),parallel=True,cache=True)
 	def pb_ensemble(d,a0,b0,k0,m0):
 		'''
 		Input:
@@ -205,7 +205,7 @@ else:
 				pbt[i] = d.shape[1]
 		return e_k,pbt
 
-# @nb.njit(nb.double[:](nb.double[:,:]))
+# @nb.njit(nb.double[:](nb.double[:,:]),cache=True)
 # def pb_snr(d,a0,b0,k0,m0):
 # 	pbt = pb_ensemble(d,a0,b0,k0,m0)[1]
 # 	snrr = np.zeros(d.shape[0],dtype=nb.double)
@@ -222,7 +222,7 @@ else:
 # ################################################################################
 # ## Check to see if a signal is zero
 # ################################################################################
-# @nb.njit(nb.double[:](nb.double[:,:]))
+# @nb.njit(nb.double[:](nb.double[:,:]),cache=True)
 # def model_comparison_signal(x):
 # 	out = np.zeros(x.shape[0],dtype=nb.double)
 # 	a0 = 1.
