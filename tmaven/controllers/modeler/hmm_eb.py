@@ -596,7 +596,7 @@ def eb_outer_loop(xind,xdata,nstates,maxiters,threshold,mu_prior,beta_prior,a_pr
 						E_z, E_z1, E_zz, E_x, V_x,
 						mu_prior, beta_prior, a_prior, b_prior, tm_prior, pi_prior)
 			
-			print(nr,iteration[nr],L_global[nr,iteration[nr]],emp_mu[nr],np.sqrt(emp_b[nr]/emp_a[nr]),emp_pi[nr],emp_tm[nr].flatten())
+			# print(nr,iteration[nr],L_global[nr,iteration[nr]],emp_mu[nr],np.sqrt(emp_b[nr]/emp_a[nr]),emp_pi[nr],emp_tm[nr].flatten())
 
 			iteration[nr] += 1
 		E_z_out[nr] = E_z

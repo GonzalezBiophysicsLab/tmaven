@@ -250,6 +250,8 @@ class controller_modeler(object):
 
 	def get_traces(self):
 		checked = self.maven.data.flag_ons
+		longenough = self.maven.data.post_list-self.maven.data.pre_list >= 2 ## HMMs need more than 1
+		okay = np.bitwise_and(checked,longenough)
 		return checked
 
 	def get_fret_traces(self):
