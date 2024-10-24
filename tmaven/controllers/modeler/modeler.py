@@ -252,7 +252,7 @@ class controller_modeler(object):
 		checked = self.maven.data.flag_ons
 		longenough = self.maven.data.post_list-self.maven.data.pre_list >= 2 ## HMMs need more than 1
 		okay = np.bitwise_and(checked,longenough)
-		return checked
+		return okay
 
 	def get_fret_traces(self):
 		keep = self.get_traces()
@@ -260,12 +260,8 @@ class controller_modeler(object):
 			logger.info('Failed to get traces')
 			return False,keep,[]
 		pre,post = self.get_prepost()
-		notshort = post-pre > 2
-		keep = keep[notshort]
-		# print(len(keep))
 		y = [self.maven.calc_fret(i)[pre[i]:post[i],1].astype('double').flatten() for i in range(keep.size) if keep[i]]
 		y = self.clip_traces(y,-1,2)
-		# print(len(y))
 		return True,keep,y
 
 	def get_prepost(self):
