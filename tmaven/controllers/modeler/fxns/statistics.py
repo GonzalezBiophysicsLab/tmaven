@@ -16,8 +16,7 @@ def ln_p_normal(x,mu,var):
 
 @nb.jit(nb.double[:,:](nb.double[:],nb.double[:],nb.double[:]),nopython=True,cache=True)
 def p_normal(x,mu,var):
-	return np.exp(ln_p_normal(x,mu,var))
-
+	return np.exp(ln_p_normal(x,mu,var)) + 1e-300
 
 @nb.jit(nb.float64[:,:](nb.float64[:,:]),nopython=True,cache=True)
 def dirichlet_estep(alpha):

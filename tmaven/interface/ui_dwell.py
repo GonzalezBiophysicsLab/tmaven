@@ -144,7 +144,7 @@ class _dwell_dialog(QDialog):
 		if model.dwells is None:
 			return
 
-		self.gui.maven.modeler.run_fret_dwell_analysis(self.active_func, self.active_state,
+		self.gui.maven.modeler.run_dwell_analysis(self.active_func, self.active_state,
 						 				 fix_A = self.fixA_check.isChecked())
 		self.update_result()
 
@@ -250,7 +250,7 @@ def dialog_dwell_analysis(gui,model):
 	gui.dwell_dialog = dwell_dialog
 
 def launch_dwell_analysis(gui):
-	logger.info('Launching FRET Dwell Analysis')
+	logger.info('Launching Dwell Analysis')
 	if gui.maven.modeler.model is None:
 		pass
 	else:
