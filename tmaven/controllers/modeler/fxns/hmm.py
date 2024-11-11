@@ -141,5 +141,5 @@ def compose_tmatrix(y,result):
 			for k,n in enumerate(probs.T):
 				tmatrix[j,k] += (vb.tmatrix*(m[:,None])*(n[None,:])).sum()
 
-	print(type(tmatrix[0,0]))
+	# print(type(tmatrix[0,0]))
 	return tmatrix

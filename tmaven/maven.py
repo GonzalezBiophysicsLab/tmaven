@@ -79,7 +79,7 @@ class maven_class(object):
 		from .controllers import controller_analysisplots
 		self.plots = controller_analysisplots(self)
 
-	def calc_fret(self,index=None):
+	def calc_relative(self,index=None):
 		if not index is None:
 			return self.data.corrected[index]/(self.data.corrected[index].sum(-1) + 1e-300)[:,None]
 		return self.data.corrected / (self.data.corrected.sum(2) + 1e-300)[:,:,None]

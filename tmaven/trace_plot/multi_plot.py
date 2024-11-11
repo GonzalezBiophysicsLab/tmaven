@@ -765,7 +765,7 @@ class multi_canvas(FigureCanvas):
 		pbtime = int(self.gui.maven.data.post_list[index])
 		pretime = int(self.gui.maven.data.pre_list[index])
 
-		rel = self.gui.maven.calc_fret(index).copy()
+		rel = self.gui.maven.calc_relative(index).copy()
 		return t,intensities,rel,pretime,pbtime
 
 	def calc_histograms(self,intensities,rel,pretime,pbtime):

@@ -17,7 +17,7 @@ def m_sufficient_statistics(x,r):
 	xbark = np.zeros(r.shape[1])
 	sk = np.zeros_like(xbark)
 
-	nk = np.sum(r,axis=0) + 1e-10
+	nk = np.sum(r,axis=0) + 1e-16
 	for i in range(nk.size):
 		xbark[i] = 0.
 		for j in range(r.shape[0]):
@@ -125,9 +125,16 @@ def outer_loop(x,mu,var,tm,mu_prior,beta_prior,a_prior,b_prior,pi_prior,tm_prior
 		for i in range(E_lntm.shape[0]):
 			E_lntm[i] = psi(tm[i])-psi(np.sum(tm[i]))
 
+		# for i in range(prob.shape[1]):
+		# 	prob[:,i] = (2.*np.pi)**-.5 * np.exp(-.5*(E_dld[:,i] - E_lnlam[i]))
 		for i in range(prob.shape[1]):
-			prob[:,i] = (2.*np.pi)**-.5 * np.exp(-.5*(E_dld[:,i] - E_lnlam[i]))
+			for j in range(prob.shape[0]):
+				prob[j,i] = (2.*np.pi)**-.5 * np.exp(-.5*(E_dld[j,i] - E_lnlam[i]))
+				if prob[j,i] < 1e-300: 
+					prob[j,i] = 1e-300 ## hard-limit to avoid under/overflow	
+
 		r, xi, lnz = forward_backward(prob, np.exp(E_lntm), np.exp(E_lnpi))
+		r += 1e-16 ## avoid underflow/overflow
 		r /= r.sum(1)[:,None]
 
 		ll0 = ll1

@@ -149,7 +149,7 @@ class _dwell_dialog(QDialog):
 		self.update_result()
 
 	def run_tmatrix(self):
-		self.gui.maven.modeler.run_fret_tmatrix()
+		self.gui.maven.modeler.run_tmatrix()
 		self.update_result()
 
 def dialog_dwell_analysis(gui,model):
@@ -249,7 +249,7 @@ def dialog_dwell_analysis(gui,model):
 
 	gui.dwell_dialog = dwell_dialog
 
-def launch_fret_dwell_analysis(gui):
+def launch_dwell_analysis(gui):
 	logger.info('Launching FRET Dwell Analysis')
 	if gui.maven.modeler.model is None:
 		pass

@@ -123,7 +123,7 @@ class controller_base_analysisplot(object):
 		fpb : np.ndarray
 		 	fret (nmol toggled, ntime, ncolors)
 		'''
-		fpb = self.maven.calc_fret()
+		fpb = self.maven.calc_relative()
 		for i in range(self.maven.data.nmol): ## photobleach molecules
 			fpb[i,:self.maven.data.pre_list[i]] = np.nan
 			fpb[i,self.maven.data.post_list[i]:] = np.nan

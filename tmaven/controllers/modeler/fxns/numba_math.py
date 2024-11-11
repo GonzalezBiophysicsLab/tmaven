@@ -125,24 +125,43 @@ def trigamma(q):
 # %timeit special.psi(a)
 # %timeit psi(a)
 
+
 @nb.vectorize(cache=True)
-def invpsi(x):
-# Y = INVPSI(X)
-#
-# Inverse digamma (psi) function.  The digamma function is the
-# derivative of the log gamma function.  This calculates the value
-# Y > 0 for a value X such that digamma(Y) = X.
-#
-# This algorithm is from Paul Fackler: http://www4.ncsu.edu/~pfackler/
+def invert_psi(y):
+	## Minka appendix C -- doesn't really work if x is negative....
 
-    L = 1;
-    y = np.exp(x)
-    while L > 10e-8:
-        y += L*np.sign(x-psi(y))
-        L = L / 2
+	## initial guess (Minka 149)
+	if y >= -2.22:
+		x = np.exp(y)+.5
+	else:
+		x = -1./(y - psi(1.))
 
-    return y
+	## iterations
+	for i in range(5): ## Minka says only 5 to get 14 bit accuracy
+		x = x - (psi(x)-y)/trigamma(x) ## Minka 146
+	return x
+
+# @nb.vectorize(cache=True)
+# def invpsi(x):
+# # Y = INVPSI(X)
+# #
+# # Inverse digamma (psi) function.  The digamma function is the
+# # derivative of the log gamma function.  This calculates the value
+# # Y > 0 for a value X such that digamma(Y) = X.
+# #
+# # This algorithm is from Paul Fackler: http://www4.ncsu.edu/~pfackler/
+
+#     L = 1;
+#     y = np.exp(x)
+#     while L > 10e-8:
+#         y += L*np.sign(x-psi(y))
+#         L = L / 2
+
+#     return y
+
+
+invpsi = invert_psi
 
 @nb.njit
 def rev_eye(N):
-    return np.ones((N,N)) - np.eye(N)
+	return np.ones((N,N)) - np.eye(N)

@@ -85,14 +85,14 @@ def calc_lowerbound(r,a,b,m,beta,alpha,nk,xbark,sk,E_lnlam,E_lnpi,a0,b0,m0,beta0
 	return np.array((ll1,lt71,Fgw,Fa,Fpi))
 
 @nb.jit(nb.types.Tuple((nb.float64[:,:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:,:],nb.int64))(nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.int64,nb.float64,nb.float64[:]),nopython=True,cache=True)
-def outer_loop(x,mu,var,ppi,maxiters,threshold,prior_strengths):
+def outer_loop(x,mu,var,ppi,maxiters,threshold,priors):
 
 	## priors - from vbFRET
-	beta0 = prior_strengths[0] + np.zeros_like(mu)
+	beta0 = priors[0] + np.zeros_like(mu)
 	m0 = mu + np.zeros_like(mu)
-	a0 = prior_strengths[1] + np.zeros_like(mu)
-	b0 = prior_strengths[2] + np.zeros_like(mu)
-	alpha0 = prior_strengths[3] + np.zeros_like(mu)
+	a0 = priors[1] + np.zeros_like(mu)
+	b0 = priors[2] + np.zeros_like(mu)
+	alpha0 = priors[3] + np.zeros_like(mu)
 
 	# initialize
 	prob = p_normal(x,mu,var)
@@ -140,7 +140,7 @@ def outer_loop(x,mu,var,ppi,maxiters,threshold,prior_strengths):
 			iteration += 1
 	return r,a,b,m,beta,alpha,E_lnlam,E_lnpi,ll,iteration
 
-def vb_em_gmm(x,nstates,maxiters=1000,threshold=1e-6,prior_strengths=None,init_kmeans=False):
+def vb_em_gmm(x,nstates,maxiters=1000,threshold=1e-6,priors=None,init_kmeans=False):
 	'''
 	Data convention is NxK
 	'''
@@ -149,8 +149,8 @@ def vb_em_gmm(x,nstates,maxiters=1000,threshold=1e-6,prior_strengths=None,init_k
 		raise Exception("Input data isn't 1D")
 
 	## Priors - beta, a, b, alpha... mu is from GMM
-	if prior_strengths is None:
-		prior_strengths = np.array((0.25,2.5,.01,1.))
+	if priors is None:
+		priors = np.array((0.25,2.5,.01,1.))
 
 	mu,var,ppi = initialize_gmm(x,nstates,init_kmeans)
 	# from ml_em_gmm import ml_em_gmm
@@ -161,14 +161,13 @@ def vb_em_gmm(x,nstates,maxiters=1000,threshold=1e-6,prior_strengths=None,init_k
 	# ppi /= ppi.sum() ## ignore outliers
 
 	#### Run calculation
-	r,a,b,mu,beta,alpha,E_lnlam,E_lnpi,likelihood,iteration = outer_loop(x,mu,var,ppi,maxiters,threshold,prior_strengths)
+	r,a,b,mu,beta,alpha,E_lnlam,E_lnpi,likelihood,iteration = outer_loop(x,mu,var,ppi,maxiters,threshold,priors)
 	likelihood = likelihood[:iteration+1]
 
 	#### Collect results
 	from .model_container import model_container
 	var = 1./np.exp(E_lnlam)
 	ppi = r.sum(0) / r.sum()
-	priors = prior_strengths
 	out = model_container(type='vb GMM',
 						  nstates=nstates,mean=mu,var=var,frac=ppi,
 						  likelihood=likelihood,
@@ -179,19 +178,19 @@ def vb_em_gmm(x,nstates,maxiters=1000,threshold=1e-6,prior_strengths=None,init_k
 	#out.idealized = out.r.argmax(-1)
 	return out
 
-def vb_em_gmm_parallel(x,nstates,maxiters=1000,threshold=1e-10,nrestarts=1,prior_strengths=None,ncpu=1):
+def vb_em_gmm_parallel(x,nstates,maxiters=1000,threshold=1e-10,nrestarts=1,priors=None,ncpu=1):
 	#
 	# if platform != 'win32' and ncpu != 1 and nrestarts != 1:
 	# 	pool = mp.Pool(processes = ncpu)
-	# 	results = [pool.apply_async(vb_em_gmm, args=(x,nstates,maxiters,threshold,prior_strengths,i==0)) for i in range(nrestarts)]
+	# 	results = [pool.apply_async(vb_em_gmm, args=(x,nstates,maxiters,threshold,priors,i==0)) for i in range(nrestarts)]
 	# 	results = [p.get() for p in results]
 	# 	pool.close()
 	# else:
-	# 	results = [vb_em_gmm(x,nstates,maxiters,threshold,prior_strengths,i==0) for i in range(nrestarts)]
+	# 	results = [vb_em_gmm(x,nstates,maxiters,threshold,priors,i==0) for i in range(nrestarts)]
 	#
 	# try:
 	# 	best = np.nanargmax([r.elbo[-1,0] for r in results])
 	# except:
 	# 	best = 0
 	# return results[best]
-	return vb_em_gmm(x,nstates,maxiters,threshold,prior_strengths,True)
+	return vb_em_gmm(x,nstates,maxiters,threshold,priors,True)

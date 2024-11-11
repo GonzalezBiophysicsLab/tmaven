@@ -5,7 +5,7 @@ import os
 
 def build_menu(gui):
 	from . import launchers
-	from ..ui_dwell import launch_fret_dwell_analysis
+	from ..ui_dwell import launch_dwell_analysis
 
 	from PyQt5.QtWidgets import QMenu
 	logger.info('Adding menu modeler')
@@ -32,40 +32,40 @@ def build_menu(gui):
 
 	# ind = menu_modeler.addMenu('Individual (FRET)')
 # 	indall = ind.addMenu('Run all')
-# 	indall.addAction('mlHMM',lambda : launchers.launch_fret_mlhmm(gui))
-# 	indall.addAction('vbHMM',lambda : launchers.launch_fret_vbhmm(gui))
-# 	indall.addAction('vbHMM + Model selection',lambda : launchers.launch_fret_vbhmm_modelselection(gui))
+# 	indall.addAction('mlHMM',lambda : launchers.launch_mlhmm(gui))
+# 	indall.addAction('vbHMM',lambda : launchers.launch_vbhmm(gui))
+# 	indall.addAction('vbHMM + Model selection',lambda : launchers.launch_vbhmm_modelselection(gui))
 # 	indone = ind.addMenu('Run one, Apply all (FRET)')
-# 	indone.addAction('mlHMM',lambda : launchers.launch_fret_mlhmm_one(gui))
-# 	indone.addAction('vbHMM', lambda: launchers.launch_fret_vbhmm_one(gui))
+# 	indone.addAction('mlHMM',lambda : launchers.launch_mlhmm_one(gui))
+# 	indone.addAction('vbHMM', lambda: launchers.launch_vbhmm_one(gui))
 
 	menu_modeler.addSeparator()
 	#menu_modeler.addAction('Calculate Dwell Times', lambda: analyze_dwells(gui))
-	menu_modeler.addAction('Analyze Dwell Times', lambda: launch_fret_dwell_analysis(gui))
+	menu_modeler.addAction('Analyze Dwell Times', lambda: launch_dwell_analysis(gui))
 
 	menu_modeler.addSeparator()
 
 
-	ens = menu_modeler.addMenu("FRET Modeling")
+	ens = menu_modeler.addMenu("Models")
 	
-	ens.addAction('Threshold',lambda : launchers.launch_fret_threshold(gui))
+	ens.addAction('Threshold',lambda : launchers.launch_threshold(gui))
 	mixture = ens.addMenu('Mixtures')
 	composites = ens.addMenu('Composite HMMs')
 	globalhmm = ens.addMenu('Global HMMs')
-	mixture.addAction('K-means',lambda : launchers.launch_fret_kmeans(gui))
-	mixture.addAction('vbGMM',lambda : launchers.launch_fret_vbgmm(gui))
-	mixture.addAction('vbGMM + Model selection',lambda : launchers.launch_fret_vbgmm_modelselection(gui))
-	mixture.addAction('mlGMM',lambda : launchers.launch_fret_mlgmm(gui))
-	composites.addAction('vbHMM -> K-means', lambda: launchers.launch_fret_kmeans_vbhmm(gui))
-	composites.addAction('mlHMM -> K-means', lambda: launchers.launch_fret_kmeans_mlhmm(gui))
-	composites.addAction('vbHMM -> vbGMM', lambda: launchers.launch_fret_vbgmm_vbhmm(gui))
-	composites.addAction('vbHMM -> vbGMM + Model selection', lambda: launchers.launch_fret_vbgmm_vbhmm_modelselection(gui))
-	composites.addAction('vbHMM -> Threshold', lambda: launchers.launch_fret_threshold_vbhmm(gui))
-	globalhmm.addAction('vbConsensus', lambda: launchers.launch_fret_vbconhmm(gui))
-	globalhmm.addAction('vbConsensus + Model selection', lambda: launchers.launch_fret_vbconhmm_modelselection(gui))
-	globalhmm.addAction('vbConsensus -> Threshold', lambda: launchers.launch_fret_threshold_vbconhmm(gui))
-	globalhmm.addAction('ebHMM', lambda: launchers.launch_fret_ebhmm(gui))
-	globalhmm.addAction('ebHMM + Model selection', lambda: launchers.launch_fret_ebhmm_modelselection(gui))
+	mixture.addAction('K-means',lambda : launchers.launch_kmeans(gui))
+	mixture.addAction('vbGMM',lambda : launchers.launch_vbgmm(gui))
+	mixture.addAction('vbGMM + Model selection',lambda : launchers.launch_vbgmm_modelselection(gui))
+	mixture.addAction('mlGMM',lambda : launchers.launch_mlgmm(gui))
+	composites.addAction('vbHMM -> K-means', lambda: launchers.launch_kmeans_vbhmm(gui))
+	composites.addAction('mlHMM -> K-means', lambda: launchers.launch_kmeans_mlhmm(gui))
+	composites.addAction('vbHMM -> vbGMM', lambda: launchers.launch_vbgmm_vbhmm(gui))
+	composites.addAction('vbHMM -> vbGMM + Model selection', lambda: launchers.launch_vbgmm_vbhmm_modelselection(gui))
+	composites.addAction('vbHMM -> Threshold', lambda: launchers.launch_threshold_vbhmm(gui))
+	globalhmm.addAction('vbConsensus', lambda: launchers.launch_vbconhmm(gui))
+	globalhmm.addAction('vbConsensus + Model selection', lambda: launchers.launch_vbconhmm_modelselection(gui))
+	globalhmm.addAction('vbConsensus -> Threshold', lambda: launchers.launch_threshold_vbconhmm(gui))
+	globalhmm.addAction('ebHMM', lambda: launchers.launch_ebhmm(gui))
+	globalhmm.addAction('ebHMM + Model selection', lambda: launchers.launch_ebhmm_modelselection(gui))
 
 
 	return menu_modeler
@@ -144,7 +144,7 @@ def select_model_popup(gui,title='',flag_select_multiple=False):
 	return success,value
 
 def get_fret_traces(gui):
-	return gui.maven.modeler.get_fret_traces()
+	return gui.maven.modeler.get_traces('FRET')
 
 def update_idealization(gui):
 	try:
@@ -203,4 +203,5 @@ def load(gui):
 		logger.error("Failed to export model to {}".format(oname))
 
 def close_dialog(gui):
+	gui.model_dialog.update_prefs()
 	gui.model_dialog.close()

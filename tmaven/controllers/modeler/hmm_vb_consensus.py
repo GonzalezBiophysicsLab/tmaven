@@ -17,7 +17,11 @@ def m_sufficient_statistics(x,r):
 	xbark = np.zeros(r.shape[1])
 	sk = np.zeros_like(xbark)
 
-	nk = np.sum(r,axis=0) + 1e-10
+	# nk = np.zeros(r.shape[1])
+	# for i in range(nk.size):
+	# 	nk += np.nansum(r[:,i])
+
+	nk = np.sum(r,axis=0) + 1e-16
 	for i in range(nk.size):
 		xbark[i] = 0.
 		for j in range(r.shape[0]):
@@ -28,6 +32,7 @@ def m_sufficient_statistics(x,r):
 		for j in range(r.shape[0]):
 			sk[i] += r[j,i]*(x[j] - xbark[i])**2.
 		sk[i] /= nk[i]
+	
 	return nk,xbark,sk
 
 @nb.jit(nb.types.Tuple((nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:]))(nb.float64[:],nb.float64[:,:],nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:]),nopython=True,cache=True)
@@ -94,11 +99,13 @@ def individual_e_step(x,a,b,beta,m,pik,tm):
 
 	prob = np.zeros((x.size,m.size))
 	for i in range(prob.shape[1]):
-		prob[:,i] = (2.*np.pi)**-.5 * np.exp(-.5*(E_dld[:,i] - E_lnlam[i]))
+		for j in range(prob.shape[0]):
+			prob[j,i] = (2.*np.pi)**-.5 * np.exp(-.5*(E_dld[j,i] - E_lnlam[i]))
+			if prob[j,i] < 1e-300: 
+				prob[j,i] = 1e-300 ## hard-limit to avoid under/overflow	
+	
 	r, xi, lnz = forward_backward(prob, np.exp(E_lntm), np.exp(E_lnpi))
-
 	return r,xi,lnz,E_lntm,E_lnlam,E_lnpi
-
 
 @nb.jit(nb.types.Tuple(
 	(nb.float64[:,:],
@@ -187,7 +194,7 @@ def outer_loop(xind,xdata,mu,var,tm,maxiters,threshold,priors):
 			ind = xind==Ni
 			trace = xdata[ind]
 			ri,xii,lnzi,E_lntmi,E_lnlami,E_lnpii = individual_e_step(trace,a,b,beta,m,pik,tm)
-			ri /= ri.sum(1)[:,None]
+			# ri /= ri.sum(1)[:,None]
 			r[ind] = ri
 
 			pi_sum += ri[0]
@@ -200,7 +207,8 @@ def outer_loop(xind,xdata,mu,var,tm,maxiters,threshold,priors):
 
 		## likelihood
 		if iteration > 1:
-			dl = (ll1 - ll0)/np.abs(ll0)
+			dl = np.abs(ll0 - ll1)/np.abs(ll0)
+			# print(iteration,m,ll0,ll1,dl,threshold,np.isnan(ll1))
 			if dl < threshold or np.isnan(ll1):
 				break
 
@@ -267,7 +275,6 @@ def consensus_vb_em_hmm(x,nstates,maxiters=1000,threshold=1e-10,nrestarts=1,prio
 
 	priors = (mu_prior,beta_prior, a_prior, b_prior, pi_prior, tm_prior)
 
-
 	#### run calculation
 	res = []
 	ll_restarts = []
@@ -313,7 +320,6 @@ def consensus_vb_em_hmm(x,nstates,maxiters=1000,threshold=1e-10,nrestarts=1,prio
 			  'b_prior':b_prior,
 			  'pi_prior':pi_prior,
 			  'tm_prior':tm_prior}
-
 
 	out = model_container(type='vb Consensus HMM',
 						  nstates = nstates,mean=mu,var=var,frac=ppi,

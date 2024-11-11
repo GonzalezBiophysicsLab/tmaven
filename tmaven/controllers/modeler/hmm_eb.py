@@ -12,148 +12,8 @@ from .hmm_vb import vb_em_hmm
 from .kmeans import _kmeans
 from .fxns.hmm import viterbi
 from .hmm_vb_consensus import m_updates
+from .fxns.minka_dirichlet import estimate_dirichlet
 
-@nb.jit(nb.float64[:,:](nb.float64[:,:,:]), nopython = True, cache=True)
-def h_step_dir_tm(alpha0):
-	"""
-	Empirical bayes step for Dirichlet prior for transition matrix. Solves equations
-
-	E[ln theta(k)] = psi(sum(alpha)) - psi(alpha(k))
-				   = sum_n weight(n)
-				   psi(sum(alpha(n))) - psi(alpha(n))
-
-	Inputs
-	------
-
-	alpha0 : [N x K x K] array
- 			 Posterior parameters for Dirichlet distribution.
-			 Each alpha{n} should contain a matrix of size [K x K]
-
-	Outputs
-	-------
-
-	alpha : [K x K] array
-			Solved Dirichlet parameters
-	"""
-
-	### Copied and Translated from JWvdM's ebfret dirichlet.h_step.m file, available at link below
-	### https://github.com/ebfret/ebfret-gui/blob/master/src/%2Bebfret/%2Banalysis/%2Bdist/%2Bdirichlet/h_step.m
-
-	 # Initialize
-	eps = 1e-12
-	MAX_ITER = 1000
-	threshold = 1e-6
-
-	#if len(alpha0.shape) == 3:
-	N,K,L = alpha0.shape
-	alpha = np.ones((L, K))
-
-	# E[log theta(k)] = mean_n (psi(alpha(k,n)) - psi(sum_k alpha(k,n)))
-	reshape = np.zeros_like(alpha0)
-	temp0 = psi(np.sum(alpha0 + eps, 2))
-	for i in range(N):
-		for j in range(L):
-			reshape[i,:,j] = temp0[i]
-
-	E_ln_theta =  np.sum(psi(alpha0 + eps) - reshape, axis = 0)/N
-
-	# Use Newton's Method to numerically solve for alpha
-	for it in range(MAX_ITER):
-		# Sum over K
-		asum = np.sum(alpha, 1)
-		# Minka 13
-		qkk = -trigamma(alpha + eps)
-		# Minka 6
-		gk = psi(asum).reshape(K,1) - (psi(alpha) - E_ln_theta)
-		# Minka 14
-		z = trigamma(asum)
-		# Minka 18
-		b = np.sum(gk/qkk, 1)/ (1./z+np.sum(1./qkk, 1))
-		# Minka 15
-		al_update = (gk - b.reshape(K,1)) / qkk
-		# Set update condition (ASK ABOUT THIS)
-		delta = np.zeros(K)
-		temp = (np.minimum((1 - 1e-3) * alpha / (al_update + eps), 1)
-											* (al_update > 0) + (al_update <= 0))
-		for i in range(K):
-			delta[i] = np.min(temp[i])
-
-		# Check convergence
-		if np.max(np.abs(al_update) / (alpha + eps)) < threshold:
-			break
-		else:
-			alpha -= (delta.reshape(K,1) * al_update)
-
-	# Warn if maximum iterations reached
-
-	'''
-	if it==MAX_ITER:
-		warnings.warn('Newton did not converge in %d iterations', MAX_ITER)
-
-	'''
-	return alpha
-
-@nb.jit(nopython=True, cache=True)
-def h_step_dir_pi(alpha0):
-	"""
-	Empirical bayes step for Dirichlet prior for initial probabilities. Solves equations
-
-	E[ln theta(k)] = psi(sum(alpha)) - psi(alpha(k))
-				   = sum_n weight(n)
-				   psi(sum(alpha(n))) - psi(alpha(n))
-
-	Inputs
-	------
-
-	alpha0 : [N x K] array
- 			 Posterior parameters for Dirichlet distribution.
-			 Each alpha{n} should contain a single vector
-			 of size [1 x K]
-
-	Outputs
-	-------
-
-	alpha : [1 x K] array
-			Solved Dirichlet parameters
-	"""
-
-	 # Initialize
-	eps = 1e-12
-	MAX_ITER = 1000
-	threshold = 1e-6
-
-	N,K = alpha0.shape
-	alpha = np.ones(K)
-
-	# E[log theta(k)] = mean_n (psi(alpha(k,n)) - psi(sum_k alpha(k,n)))
-	E_ln_theta = np.sum(psi(alpha0 + eps) - psi(np.sum(alpha0 + eps, 1).reshape(N,1)), axis=0)/N
-
-	for it in range(MAX_ITER):
-		# Sum over K
-		asum = np.sum(alpha)
-		# Minka 13
-		qkk = -trigamma(alpha)
-		# Minka 6
-		gk = psi(asum) - (psi(alpha) - E_ln_theta)
-		# Minka 14
-		z = trigamma(asum + eps)
-		# Minka 18
-		b = np.sum(gk/qkk)/ (1./z+np.sum(1./qkk))
-		# Minka 15
-		al_update = (gk - b) / qkk
-		# Set update condition (ASK ABOUT THIS)
-		delta = np.zeros(K)
-		temp = (np.minimum((1 - 1e-3) * alpha / (al_update + eps),1)
-													* (al_update > 0) + (al_update <= 0))
-		delta = np.min(temp)
-
-		# Check convergence
-		if np.max(np.abs(al_update) / (alpha + eps)) < threshold:
-			break
-		else:
-			alpha -= (delta * al_update)
-
-	return alpha
 
 @nb.jit(nopython=True, cache=True)
 def h_step_normgamma(w_m, w_beta, w_a, w_b):
@@ -211,6 +71,7 @@ def h_step_normgamma(w_m, w_beta, w_a, w_b):
 	# psi(u_a) - log(u_a) = E[log(lambda)] - log(E[lambda])
 	a_old = a0
 	a = a0
+
 
 	for it in range(MAX_ITER):
 		# gradient
@@ -357,29 +218,21 @@ def h_step(w_mu, w_beta, w_a, w_b, w_A, w_pi,
 	# Initialize
 	MAX_ITER = 100
 	threshold = 1e-5
-	kl = []
+	kl0 = -np.inf
+	kl1 = -np.inf
 	it = 0
 
 	while True:
 		# Run normal-gamma updates for emission model parameters
-		mu, beta, a, b = h_step_normgamma(w_mu, w_beta, w_a, w_b);
-		# Run dirichlet updates for transition matrix
-		# tm = tm_old.copy()
-		# for k in range(tm.shape[1]):
-		# 	wtmk = w_A.copy()
-		# 	wtmk[:,0] = w_A[:,k]
-		# 	tm[k] = h_step_dir_tm(wtmk)[0]
-		# assert np.allclose(tm,h_step_dir_tm(w_A))
-		tm = h_step_dir_tm(w_A)
-
-		# Run dirichlet updates for initial state probabilities
-		# ## THERE SEEMS TO BE A BUG IN THE 1D DIRICHLET UPDATE CODE... but NOT in the 2D. Use that instead, and then cast down
-		wpi = w_A.copy()
-		wpi[:,0] = w_pi
-		pi = h_step_dir_tm(wpi)[0]
-		# print(pi.shape,wpi.shape,w_pi.shape,h_step_dir_tm(w_pi).shape)
-		# # assert np.allclose(pi,h_step_dir_tm(w_pi))
-		# pi = h_step_dir_pi(w_pi)
+		mu, beta, a, b = h_step_normgamma(w_mu, w_beta, w_a, w_b)
+		# assert not np.any(np.isnan(mu))
+		# print(it)
+		## Run dirichlet updates for transition matrix
+		tm = tm_old.copy()
+		for k in range(tm.shape[1]):
+			tm[k] = estimate_dirichlet(w_A[:,k])
+		pi = estimate_dirichlet(w_pi)
+		# print(w_pi.shape,w_pi.dtype,w_pi,pi)
 
 		# Check iteration count
 		if it >= MAX_ITER:
@@ -390,10 +243,9 @@ def h_step(w_mu, w_beta, w_a, w_b, w_A, w_pi,
 			D_kl_pi = dkl_dirichlet(pi, pi_old)
 			D_kl_tm = dkl_dirichlet_2D(tm,tm_old)
 			D_kl_ng = dkl_normgamma(mu, beta, a, b, mu_old, beta_old, a_old, b_old)
+			kl1 = D_kl_pi + D_kl_tm + D_kl_ng
 
-			kl.append(D_kl_pi + D_kl_tm + D_kl_ng)
-
-		if (it >= 2) and (kl[it-2] - kl[it-1]) / (1 - kl[it-1]) < threshold:
+		if (it >= 2) and (kl0 - kl1) / (1 - kl1) < threshold:
 			break
 
 		# Update posteriors
@@ -406,6 +258,7 @@ def h_step(w_mu, w_beta, w_a, w_b, w_A, w_pi,
 
 		# Next iteration
 		it += 1
+		kl0 = kl1
 
 		mu_old = mu
 		beta_old = beta
@@ -450,7 +303,7 @@ def eb_outer_loop(xind,xdata,nstates,maxiters,threshold,mu_prior,beta_prior,a_pr
 	emp_pi = np.zeros((nrestarts,nstates))
 	emp_tm = np.zeros((nrestarts,nstates,nstates))
 	L_global = np.zeros((nrestarts,maxiters))-np.inf
-	iteration = np.zeros((nrestarts),dtype=nb.int64)
+	iteration = np.zeros((nrestarts),dtype=np.int64)
 
 	E_z = np.zeros((N,K))
 	E_z_out = np.zeros((nrestarts,N,K))
@@ -481,8 +334,7 @@ def eb_outer_loop(xind,xdata,nstates,maxiters,threshold,mu_prior,beta_prior,a_pr
 		prob = p_normal(xdata,mu_prior,b_prior/a_prior)
 		r = np.zeros_like(prob)
 		for i in range(r.shape[0]):
-			r[i] = prob[i]
-			r[i] /= np.sum(r[i]) + 1e-10 ## for stability
+			r[i] = prob[i] + 1e-16 ## for stability
 			r[i] /= np.sum(r[i])
 
 		emp_a[nr],emp_b[nr],_,emp_beta[nr],nk,_,_ = m_updates(xdata,r,a_prior,b_prior,mu_prior,beta_prior)
@@ -491,9 +343,8 @@ def eb_outer_loop(xind,xdata,nstates,maxiters,threshold,mu_prior,beta_prior,a_pr
 		prob = p_normal(xdata,emp_mu[nr],emp_b[nr]/emp_a[nr])
 		r = np.zeros_like(prob)
 		for i in range(r.shape[0]):
-			r[i] = prob[i]
-			r[i] /= np.sum(r[i]) + 1e-10 ## for stability
-			r[i] /= np.sum(r[i])
+			r[i] = prob[i] + 1e-16 ## for stability
+			r[i] /= np.sum(r[i]) 
 		emp_a[nr],emp_b[nr],_,emp_beta[nr],nk,_,_ = m_updates(xdata,r,emp_a[nr],emp_b[nr],emp_mu[nr],emp_beta[nr])
 
 		emp_pi[nr] = np.sqrt(nk+1.)
@@ -510,7 +361,7 @@ def eb_outer_loop(xind,xdata,nstates,maxiters,threshold,mu_prior,beta_prior,a_pr
 				emp_tm[nr][k,k] = 1. - np.sum(emp_tm[nr][k])
 				emp_tm[nr] *= np.sqrt(float(N))
 
-
+	for nr in range(nrestarts):
 		## Initial guesses for this restart (kmeans)
 		#kxdata = np.random.choice(xdata,size=xdata.size//100)
 		#kr,kmu,_,_ = _kmeans(kxdata,nstates)
@@ -530,14 +381,14 @@ def eb_outer_loop(xind,xdata,nstates,maxiters,threshold,mu_prior,beta_prior,a_pr
 			#for nk in range(nstates):
 			#	kmu[nk] = np.random.normal()*np.sqrt(1./_kvar[nk]) + _kmu[nk]
 			#	kvar[nk] = 1./np.random.gamma(shape=kx0[nk],scale=1./(kx0[nk]*_kvar[nk]))
-
-			if nr == 0:
-				kmu = emp_mu[nr]
-				kvar = emp_b[nr]/emp_a[nr]
-			else:
-				for nk in range(nstates):
-					kmu[nk] = np.random.normal()*np.sqrt(1./emp_beta[nr,nk]) + emp_mu[nr,nk]
-					kvar[nk] = 1./np.random.gamma(shape=emp_a[nr,nk],scale=1./emp_b[nr,nk])
+			# if nr == 0:
+			# if True:
+			# 	kmu = emp_mu[nr]
+			# 	kvar = emp_b[nr]/emp_a[nr]
+			# else:
+			# 	for nk in range(nstates):
+			# 		kmu[nk] = np.random.normal()*np.sqrt(1./emp_beta[nr,nk]) + emp_mu[nr,nk]
+			# 		kvar[nk] = 1./np.random.gamma(shape=emp_a[nr,nk],scale=1./emp_b[nr,nk])
 
 			for Ni in range(N):
 				trace = xdata[xind==Ni]
@@ -546,8 +397,8 @@ def eb_outer_loop(xind,xdata,nstates,maxiters,threshold,mu_prior,beta_prior,a_pr
 				# else:
 				# 	r,a,b,mu,beta,pi,tmatrix,E_lnlam,E_lnpi,E_lntm,vblikelihood,vbiteration,xi,xbark,sk = vb_outer_loop(trace,emp_mu[nr],emp_b[nr]/emp_a[nr],emp_tm[nr],emp_mu[nr],emp_beta[nr],emp_a[nr],emp_b[nr],emp_pi[nr],emp_tm[nr],maxiters,threshold)
 				r,a,b,mu,beta,pi,tmatrix,E_lnlam,E_lnpi,E_lntm,vblikelihood,vbiteration,xi,xbark,sk = vb_outer_loop(trace,emp_mu[nr],emp_b[nr]/emp_a[nr],emp_tm[nr],emp_mu[nr],emp_beta[nr],emp_a[nr],emp_b[nr],emp_pi[nr],emp_tm[nr],maxiters,threshold)
+				r += 1e-16
 				r /= r.sum(1)[:,None]
-				assert np.allclose(np.sum(r,axis=1),1.)
 
 				# Collect posteriors
 				for k in range(nstates):
@@ -558,15 +409,15 @@ def eb_outer_loop(xind,xdata,nstates,maxiters,threshold,mu_prior,beta_prior,a_pr
 					pos_pi[Ni,k] = pi[k]
 					for k2 in range(nstates):
 						pos_tm[Ni,k,k2] = tmatrix[k,k2]
-
+				
 				# Map expected statistics
 				E_z1[Ni] = 0.
 				E_z[Ni] = 0.
 				E_zz[Ni] = 0.
 				for k in range(K):
-					E_z1[Ni,k] = r[0,k]
+					E_z1[Ni,k] = r[0,k] + 1e-16
 					for n in range(1,r.shape[0]): ## skip n = 0
-						E_z[Ni,k] += r[n,k]
+						E_z[Ni,k] += r[n,k]  + 1e-16
 				for n in range(xi.shape[0]):
 					for k1 in range(xi.shape[1]):
 						for k2 in range(xi.shape[2]):
@@ -578,40 +429,45 @@ def eb_outer_loop(xind,xdata,nstates,maxiters,threshold,mu_prior,beta_prior,a_pr
 				if vbiteration == vblikelihood.shape[0]:
 					vbiteration -= 1
 				vbli = vblikelihood[vbiteration,0]
-				if not np.isnan(vbli):
-					L_sum += vbli
+				# if not np.isnan(vbli):
+				L_sum += vbli
 
 			V_x = E_xx - E_x**2
 
+			emp_mu[nr], emp_beta[nr], emp_a[nr], emp_b[nr], emp_pi[nr], emp_tm[nr] =  h_step(pos_mu, pos_beta, pos_a, pos_b, pos_tm, pos_pi, E_z, E_z1, E_zz, E_x, V_x, mu_prior, beta_prior, a_prior, b_prior, tm_prior, pi_prior)
+			
+			# if np.any(np.isnan(emp_mu)):
+			# 	print(emp_mu)
+			# 	assert False
+			# print(nr,iteration[nr],L_global[nr,iteration[nr]],emp_mu[nr],np.sqrt(emp_b[nr]/emp_a[nr]),emp_pi[nr],emp_tm[nr].flatten())
+
 			# Data processing
-			L_global[nr,iteration[nr]]=L_sum
+			L_global[nr,iteration[nr]] = L_sum
+
+			print(nr, iteration[nr], emp_mu[nr])
+			if np.isnan(L_global[nr,iteration[nr]]):
+			# 	# L_global[nr,iteration[nr]] = -np.inf
+				break
 
 			if (iteration[nr] >= 2) and ((L_global[nr,iteration[nr]] - L_global[nr,iteration[nr]-1]) < threshold * np.abs(L_global[nr,iteration[nr]]) or (L_global[nr,iteration[nr]] - L_global[nr,iteration[nr]-1]) < 0.1):
 				break
-			if np.isnan(L_global[nr,iteration[nr]]):
-				L_global[nr,iteration[nr]] = -np.inf
-				break
-
-			emp_mu[nr], emp_beta[nr], emp_a[nr], emp_b[nr], emp_pi[nr], emp_tm[nr] =  h_step(pos_mu, pos_beta, pos_a, pos_b, pos_tm, pos_pi,
-						E_z, E_z1, E_zz, E_x, V_x,
-						mu_prior, beta_prior, a_prior, b_prior, tm_prior, pi_prior)
-			
-			# print(nr,iteration[nr],L_global[nr,iteration[nr]],emp_mu[nr],np.sqrt(emp_b[nr]/emp_a[nr]),emp_pi[nr],emp_tm[nr].flatten())
 
 			iteration[nr] += 1
 		E_z_out[nr] = E_z
 
+
 	Lbest = np.zeros(nrestarts)
 	for nr in range(nrestarts):
-		Lbest[nr] = L_global[nr,iteration[nr]-1]
+		Lbest[nr] = L_global[nr,iteration[nr]]
 	best = 0
 	for nr in range(nrestarts):
-		if not np.isnan(Lbest[nr]):
+		if np.isfinite(Lbest[nr]):
 			best = nr
 	for nr in range(nrestarts):
-		if not np.isnan(Lbest[nr]):
+		if np.isfinite(Lbest[nr]):
 			if Lbest[nr] > Lbest[best]:
 				best = nr
+	print(nr,best,Lbest[best])
 
 	# print(nstates,Lbest,L_global[best,iteration[best]-1],iteration, best)
 	return emp_mu[best], emp_beta[best], emp_a[best], emp_b[best], emp_pi[best], emp_tm[best], L_global[best,:iteration[best]], iteration[best], E_z_out[best]
@@ -660,7 +516,7 @@ def eb_em_hmm(x,nstates,maxiters=1000,nrestarts=1,threshold=1e-10,priors=None,nc
 		b_prior = np.ones(nstates)*0.01
 		pi_prior = np.ones(nstates)
 		tm_prior = np.ones(nstates,nstates)
-		mu_prior = np.percentile(xdata,np.linspace(0,100,nstates+2))[1:-1]
+		mu_prior = np.percentile(xdata,np.linspace(0.1,99.9,nstates+2))[1:-1]
 	else:
 		mu_prior,beta_prior, a_prior, b_prior, pi_prior, tm_prior = priors
 
