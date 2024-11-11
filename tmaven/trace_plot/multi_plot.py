@@ -163,6 +163,7 @@ class multi_canvas(FigureCanvas):
 		self.gui.maven.prefs['plot.ylabel_text1'] = r'Intensity (A.U.)'
 		self.gui.maven.prefs['plot.ylabel_text2'] = r''
 		self.gui.maven.prefs['plot.fig_height'] /= 2.
+		self.update_plots(self.gui.index)
 
 	def sizeHint(self):
 		qs = QSize(int(self.gui.maven.prefs['plot.fig_width']*self.dpi), int(self.gui.maven.prefs['plot.fig_height']*self.dpi))
@@ -190,7 +191,7 @@ class multi_canvas(FigureCanvas):
 		Also creates blank lines for set data
 		'''
 
-		int_ind,rel_ind = self.get_axis_inds()
+		int_ind,rel_ind,model_ind = self.get_axis_inds()
 
 
 		grid_on = self.ax[int_ind,0].yaxis._major_tick_kw['gridOn']
@@ -224,6 +225,7 @@ class multi_canvas(FigureCanvas):
 				self.ax[rel_ind,0].plot(np.random.rand(self.gui.maven.data.ntime), ls=ls)
 
 		for i in range(self.gui.maven.data.ncolors): ## Idealized Relatives.... e.g., for vbFRET idealized
+			self.ax[int_ind,0].plot(np.zeros(self.gui.maven.data.ntime)+np.nan)
 			self.ax[rel_ind,0].plot(np.zeros(self.gui.maven.data.ntime)+np.nan)
 
 		for i in range(self.gui.maven.data.ncolors):
@@ -436,11 +438,12 @@ class multi_canvas(FigureCanvas):
 	def get_axis_inds(self):
 		int_ind = 1 if self.plot_mode == 'ND' else 0
 		rel_ind = int(not int_ind)
-		return int_ind,rel_ind
+		model_ind = 1 #if self.plot_mode == 'ND' else 1
+		return int_ind,rel_ind,model_ind
 
 	def set_axis_limits(self):
 		''' set xlim and ylim of self.ax'''
-		int_ind,rel_ind = self.get_axis_inds()
+		int_ind,rel_ind,model_ind = self.get_axis_inds()
 
 		if self.gui.maven.prefs['plot.time_min'] < self.gui.maven.data.ntime*self.gui.maven.prefs['plot.time_dt']:
 			self.ax[rel_ind,0].set_xlim(self.gui.maven.prefs['plot.time_min'],self.gui.maven.data.ntime*self.gui.maven.prefs['plot.time_dt'])
@@ -461,7 +464,7 @@ class multi_canvas(FigureCanvas):
 
 	def set_ticks(self):
 		''' fix the ticks of self.ax '''
-		int_ind,rel_ind = self.get_axis_inds()
+		int_ind,rel_ind,model_ind = self.get_axis_inds()
 		self.pretty_plot()
 
 		p = self.gui.maven.prefs
@@ -485,7 +488,7 @@ class multi_canvas(FigureCanvas):
 	def set_axis_labels(self):
 		''' add the correct axis labels to self.ax'''
 
-		int_ind,rel_ind = self.get_axis_inds()
+		int_ind,rel_ind,model_ind = self.get_axis_inds()
 
 		p = self.gui.maven.prefs
 		fs = p['plot.label_fontsize']
@@ -513,7 +516,7 @@ class multi_canvas(FigureCanvas):
 
 	def set_linestyles(self):
 		'''Make the lines the right style'''
-		int_ind,rel_ind = self.get_axis_inds()
+		int_ind,rel_ind,model_ind = self.get_axis_inds()
 
 		p = self.gui.maven.prefs
 		lw = p['plot.line_linewidth']
@@ -537,12 +540,15 @@ class multi_canvas(FigureCanvas):
 				self.set_linestyle(self.ax[rel_ind,0].lines[3*i+j], color, alpha, lw)
 			self.set_linestyle(self.ax[rel_ind,1].lines[i], color, p['plot.line_alpha'], hw)
 
+		color = p['plot.idealized_color']
+		alpha = p['plot.idealized_alpha']
+		lw = p['plot.idealized_linewidth']
 		if len(self.ax[rel_ind,0].lines) > 3*self.gui.maven.data.ncolors:
 			for i in range(self.gui.maven.data.ncolors):
-				color = p['plot.idealized_color']
-				alpha = p['plot.idealized_alpha']
-				lw = p['plot.idealized_linewidth']
 				self.set_linestyle(self.ax[rel_ind,0].lines[-(1+i)], color, alpha, lw)
+		if len(self.ax[int_ind,0].lines) > 3*self.gui.maven.data.ncolors:
+			for i in range(self.gui.maven.data.ncolors):
+				self.set_linestyle(self.ax[int_ind,0].lines[-(1+i)], color, alpha, lw)
 
 	def update_data(self,index):
 		''' Replot only the lines on the plot for one trace
@@ -716,33 +722,33 @@ class multi_canvas(FigureCanvas):
 
 	def draw_hist(self,i,hx,hy):
 		'''Draw intensity histograms'''
-		int_ind,rel_ind = self.get_axis_inds()
+		int_ind,rel_ind,model_ind = self.get_axis_inds()
 		self.ax[int_ind,1].lines[i].set_data(hy,hx)
 
 	def draw_fret_hist(self,i,hx,hy):
 		'''Draw fret histograms'''
-		int_ind,rel_ind = self.get_axis_inds()
+		int_ind,rel_ind,model_ind = self.get_axis_inds()
 		self.ax[rel_ind,1].lines[i].set_data(hy,hx)
 
 	def draw_no_model(self):
 		'''Hide the model lines'''
-		int_ind,rel_ind = self.get_axis_inds()
+		int_ind,rel_ind,model_ind = self.get_axis_inds()
 		# for i in range(self.gui.maven.data.ncolors):
 		# 	self.ax[rel_ind,0].lines[-i-1].set_visible(False)
 
 	def draw_model(self,t,idealized,pretime,pbtime):
 		'''Draw idealized fret lines and show them'''
-		int_ind,rel_ind = self.get_axis_inds()
+		int_ind,rel_ind,model_ind = self.get_axis_inds()
 		# if remove_idealized:
 		# 	d = self.ax[1,0].lines[-3].get_data()
 		# 	self.ax[1,0].lines[-3].set_data(t[pretime:pbtime],d[1]-state_means[vitpath])
 		for i in range(self.gui.maven.data.ncolors):
-			self.ax[rel_ind,0].lines[-i-1].set_data(t[pretime:pbtime],idealized[pretime:pbtime])
-			self.ax[rel_ind,0].lines[-i-1].set_visible(True)
+			self.ax[model_ind,0].lines[-i-1].set_data(t[pretime:pbtime],idealized[pretime:pbtime])
+			self.ax[model_ind,0].lines[-i-1].set_visible(True)
 
 	def draw_traj(self,t,intensities,rel,pretime,pbtime):
 		''' draw intensity lines and rel. intensity lines '''
-		int_ind,rel_ind = self.get_axis_inds()
+		int_ind,rel_ind,model_ind = self.get_axis_inds()
 
 		for i in range(self.gui.maven.data.ncolors):
 			self.ax[int_ind,0].lines[3*i+0].set_data(t[:pretime],intensities[:pretime,i])

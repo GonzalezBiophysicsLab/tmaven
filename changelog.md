@@ -1,8 +1,14 @@
 # Change Log
 
-## Unreleased
+## 0.2.4
+### Added
+* Adds support for plotting models on both axis
+  
+### Changed
+* Makes modeler able to handle non-FRET data
+* Stabilizes ebFRET
 
-* Nothing yet
+## .....
 
 ## 0.1.3
 ### Added
