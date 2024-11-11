@@ -88,7 +88,7 @@ def launch_ebhmm(gui):
 
 def launch_ebhmm_modelselection(gui):
 	method_name = 'EB HMM + Model Selection'
-	fxn = gui.maven.modeler.run_ebhmm
+	fxn = gui.maven.modeler.run_ebhmm_modelselection
 	logger.info(f'Launching {method_name} dialog')
 	dialogs.dialog_ebhmm(gui, lambda: general_fxn(gui,method_name,fxn),model_selection=True)
 	gui.model_dialog.start()

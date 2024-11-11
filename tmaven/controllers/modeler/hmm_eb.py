@@ -492,19 +492,24 @@ def eb_outer_loop(xind,xdata,nstates,maxiters,threshold,mu_prior,beta_prior,a_pr
 			iteration[nr] += 1
 		E_z_out[nr] = E_z
 
-
 	Lbest = np.zeros(nrestarts)
 	for nr in range(nrestarts):
-		Lbest[nr] = L_global[nr,iteration[nr]]
-	best = 0
+		Lbest[nr] = L_global[nr, iteration[nr]]
+
+	# Initialize `best` with a placeholder index
+	best = -1
 	for nr in range(nrestarts):
 		if np.isfinite(Lbest[nr]):
 			best = nr
-	for nr in range(nrestarts):
-		if np.isfinite(Lbest[nr]):
-			if Lbest[nr] > Lbest[best]:
+			break
+
+	# Now compare remaining finite entries if `best` was initialized
+	if best != -1:
+		for nr in range(nrestarts):
+			if np.isfinite(Lbest[nr]) and Lbest[nr] > Lbest[best]:
 				best = nr
-	print(nr,best,Lbest[best])
+
+	print(best, Lbest[best])
 
 	# print(nstates,Lbest,L_global[best,iteration[best]-1],iteration, best)
 	return emp_mu[best], emp_beta[best], emp_a[best], emp_b[best], emp_pi[best], emp_tm[best], L_global[best,:iteration[best]], iteration[best], E_z_out[best]
