@@ -3,6 +3,7 @@
 ## 0.2.4
 ### Added
 * Adds support for plotting models on both axis
+* Adds BIASD analysis support
   
 ### Changed
 * Makes modeler able to handle non-FRET data
