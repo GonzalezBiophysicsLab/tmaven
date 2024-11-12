@@ -1573,7 +1573,7 @@ class controller_modeler(object):
 	
 
 	def run_biasd_safeimports(self):
-		try:
+		# try:
 			import biasd as b
 
 			import tempfile
@@ -1583,10 +1583,10 @@ class controller_modeler(object):
 			import h5py
 			import os
 			return b,tempfile,shutil,emcee,time,h5py,os
-		except:
-			print('You need BIASD installed to run BIASD')
-			print('see https://github.com/ckinzthompson/biasd')
-			return None,None,None,None,None,None,None
+		# except:
+		# 	print('You need BIASD installed to run BIASD')
+		# 	print('see https://github.com/ckinzthompson/biasd')
+		# 	return None,None,None,None,None,None,None
 
 	def run_biasd_checkfname(self):
 		import os
@@ -1614,11 +1614,26 @@ class controller_modeler(object):
 		data = np.concatenate(y)
 		
 		tau = float(self.maven.prefs['modeler.biasd.tau'])
-
-		theta,covars= b.histogram.fit_histogram(data,tau)
-		fig,ax = b.plot.likelihood_hist(data,tau,theta)
-		fig.set_dpi(100)
 		
+		dmin,dmax = np.percentile(data,[20,80])
+		std = np.sqrt(np.var(data)/10.)
+		guess = np.array((dmin,dmax,std,std,1./tau,1./tau))
+		theta,covars= b.histogram.fit_histogram(data,tau,guess)
+	
+		xmin = theta[0]-3*theta[2]
+		xmax = theta[1]+3*theta[3]
+		nbins = 201
+		x = np.linspace(xmin,xmax,nbins*10)
+		y = np.exp(b.likelihood.nosum_log_likelihood(theta,x,tau))
+		
+		fig,ax = plt.subplots(1,dpi=100)
+		nbins = 201
+		ax.hist(data,bins=nbins,range=(data.min(),data.max()),density=True,alpha=.8,histtype='step',color='tab:blue')
+		ax.plot(x,y,color='tab:red',alpha=.8)
+
+		ax.set_ylabel('Probability Density',fontsize=10)
+		ax.set_xlabel('Signal',fontsize=10)
+		fig.tight_layout()
 		plt.show()
 
 	def run_biasd_loadinfo(self):

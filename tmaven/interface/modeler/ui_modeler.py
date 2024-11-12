@@ -71,6 +71,7 @@ def build_menu(gui):
 	exptl = menu_modeler.addMenu("Experimental")
 	biasd = exptl.addMenu('BIASD')
 	biasd.addAction("Setup", lambda : launchers.launch_biasd_setup(gui))
+	biasd.addAction("Fit Histogram", lambda: gui.maven.modeler.run_biasd_fithistogram())
 	biasd.addAction("Run MCMC", lambda: gui.maven.modeler.run_biasd_mcmc(stochastic=False))
 	biasd.addAction("Run MCMC (Stochastic)", lambda: gui.maven.modeler.run_biasd_mcmc(stochastic=True))
 	biasd.addAction("Randomize All Walkers", lambda: gui.maven.modeler.run_biasd_randomizep0(justdead=False))
