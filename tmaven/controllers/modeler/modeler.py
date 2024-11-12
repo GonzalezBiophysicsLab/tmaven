@@ -45,6 +45,32 @@ default_prefs = {
 	'modeler.hhmm.tolerance': 1e-4,
     'modeler.hhmm.maxiters':100,
     'modeler.hhmm.restarts':2,
+
+	'modeler.biasd.tau':1.0,
+	'modeler.biasd.likelihood':'Python',
+	'modeler.biasd.nwalkers':96,
+	'modeler.biasd.thin':1000,
+	'modeler.biasd.steps':200,
+	'modeler.biasd.filename':'./biasd.hdf5',
+	'modeler.biasd.prior.e1.type':'Normal',
+	'modeler.biasd.prior.e1.p1':0.0,
+	'modeler.biasd.prior.e1.p2':0.1,
+	'modeler.biasd.prior.e2.type':'Normal',
+	'modeler.biasd.prior.e2.p1':1.0,
+	'modeler.biasd.prior.e2.p2':0.1,
+	'modeler.biasd.prior.sigma1.type':'Log-uniform',
+	'modeler.biasd.prior.sigma1.p1':0.01,
+	'modeler.biasd.prior.sigma1.p2':1.0,
+	'modeler.biasd.prior.sigma2.type':'Log-uniform',
+	'modeler.biasd.prior.sigma2.p1':0.01,
+	'modeler.biasd.prior.sigma2.p2':1.0,
+	'modeler.biasd.prior.k1.type':'Log-uniform',
+	'modeler.biasd.prior.k1.p1':0.001,
+	'modeler.biasd.prior.k1.p2':1000.0,
+	'modeler.biasd.prior.k2.type':'Log-uniform',
+	'modeler.biasd.prior.k2.p1':0.001,
+	'modeler.biasd.prior.k2.p2':1000.0,
+
     'modeler.dwells.include_first':True,
     'modeler.dwells.include_last':False,
     'modeler.dwells.fix_norm':False,
@@ -1544,6 +1570,314 @@ class controller_modeler(object):
 			model.rate_type = "Transition Matrix"
 		else:
 			return
+	
+
+	def run_biasd_safeimports(self):
+		try:
+			import biasd as b
+
+			import tempfile
+			import shutil
+			import emcee
+			import time
+			import h5py
+			import os
+			return b,tempfile,shutil,emcee,time,h5py,os
+		except:
+			print('You need BIASD installed to run BIASD')
+			print('see https://github.com/ckinzthompson/biasd')
+			return None,None,None,None,None,None,None
+
+	def run_biasd_checkfname(self):
+		import os
+		import h5py
+		fname = self.maven.prefs['modeler.biasd.filename']
+		if not os.path.exists(fname):
+			return False,""
+		else:
+			with h5py.File(fname,'r') as f:
+				if not 'biasd mcmc' in f:
+					return False,""
+		return True,fname
+
+	def run_biasd_fithistogram(self):
+		import matplotlib.pyplot as plt
+		b,tempfile,shutil,emcee,time,h5py,os = self.run_biasd_safeimports()
+		if b is None:
+			return
+		b.likelihood.use_python_numba_ll_2sigma()
+
+		dtype = self.maven.prefs['modeler.dtype']
+		success,keep,y = self.get_traces(dtype)
+		if not success:
+			return
+		data = np.concatenate(y)
+		
+		tau = float(self.maven.prefs['modeler.biasd.tau'])
+
+		theta,covars= b.histogram.fit_histogram(data,tau)
+		fig,ax = b.plot.likelihood_hist(data,tau,theta)
+		fig.set_dpi(100)
+		
+		plt.show()
+
+	def run_biasd_loadinfo(self):
+		b,tempfile,shutil,emcee,time,h5py,os = self.run_biasd_safeimports()
+		if b is None:
+			return
+		
+		success,fname = self.run_biasd_checkfname()
+		if not success:
+			return
+
+		## Load in the initializations
+		with h5py.File(fname,'r') as f:
+			if not 'biasd mcmc' in f:
+				return
+			g = f['biasd mcmc']
+			tau = float(g.attrs['tau'])
+			pstring = g.attrs['prior']
+			prior = pstring.split('\n')
+			plabels = [priori.split(',')[0] for priori in prior]
+			ptypes = [priori.split(',')[1] for priori in prior]
+			pparam1 = [float(priori.split(',')[2]) for priori in prior]
+			pparam2 = [float(priori.split(',')[3]) for priori in prior]
+			nwalkers = int(g.attrs["nwalkers"])
+			# chain = g['chain'][:]
+
+		self.maven.prefs.__setitem__('modeler.biasd.tau',tau,quiet=True)	
+		self.maven.prefs.__setitem__('modeler.biasd.nwalkers',nwalkers,quiet=True)	
+
+		for i in range(len(ptypes)):
+			if ptypes[i] == ' normal':
+				stype = 'Normal'
+			elif ptypes[i] == ' uniform':
+				stype = 'Uniform'
+			elif ptypes[i] == ' log uniform':
+				stype = 'Log-uniform'
+			self.maven.prefs.__setitem__(f'modeler.biasd.prior.{plabels[i]}.type',stype,quiet=True)	
+			self.maven.prefs.__setitem__(f'modeler.biasd.prior.{plabels[i]}.p1',pparam1[i],quiet=True)	
+			self.maven.prefs.__setitem__(f'modeler.biasd.prior.{plabels[i]}.p2',pparam2[i],quiet=True)	
+		self.maven.prefs.emit_changed()
+	
+	def run_biasd_assembleprior(self):
+		b,tempfile,shutil,emcee,time,h5py,os = self.run_biasd_safeimports()
+		if b is None:
+			return
+
+		labels = ['e1','e2','sigma1','sigma2','k1','k2']
+		pdists = []
+		for key in labels:
+			stype = self.maven.prefs[f'modeler.biasd.prior.{key}.type']
+			p1 = self.maven.prefs[f'modeler.biasd.prior.{key}.p1']
+			p2 = self.maven.prefs[f'modeler.biasd.prior.{key}.p2']
+			if stype == 'Normal':
+				pdists.append(b.distributions.normal(p1,p2))
+			elif stype == 'Uniform':
+				pdists.append(b.distributions.uniform(p1,p2))
+			elif stype == 'Log-uniform':
+				pdists.append(b.distributions.loguniform(p1,p2))
+		prior = b.distributions.collection_standard_2sigma(*pdists)
+		return prior
+
+	def run_biasd_setupfile(self):
+		b,tempfile,shutil,emcee,time,h5py,os = self.run_biasd_safeimports()
+		if b is None:
+			return
+
+		ndim = 6
+		prior = self.run_biasd_assembleprior()
+		nwalkers = int(self.maven.prefs['modeler.biasd.nwalkers'])
+		tau = float(self.maven.prefs['modeler.biasd.tau'])
+		fname = self.maven.prefs['modeler.biasd.filename']
+
+		dtype = self.maven.prefs['modeler.dtype']
+		success,keep,y = self.get_traces(dtype)
+		if not success:
+			return
+		data = np.concatenate(y)
+
+		with tempfile.NamedTemporaryFile(suffix=".hdf5", delete=False) as temp_file: ## avoid weird dropbox lock issues
+			temp_file_path = temp_file.name
+		with emcee.backends.HDFBackend(temp_file_path,name='biasd mcmc') as backend:
+			backend.reset(nwalkers, ndim)
+			sampler, positions = b.mcmc.setup(data,prior,tau,nwalkers,backend=backend)
+			assert np.all(positions[:,2:] > 0)
+			# sampler.run_mcmc(positions, 0, progress=False) ## commit the initializations to file????
+		del backend
+
+		with h5py.File(temp_file_path,'a') as f: 	## Write Metadata
+			g = f[f'biasd mcmc']
+			g.create_dataset('data',data=data,compression='gzip',compression_opts=9)
+			g.create_dataset('p0',data=positions,compression='gzip',compression_opts=9)
+			g.attrs['tau'] = tau
+			g.attrs['nwalkers'] = nwalkers
+			g.attrs['ndim'] = ndim
+			pstring = '\n'.join([f'{label}, {prior.parameters[label].name}, {prior.parameters[label].parameters[0]}, {prior.parameters[label].parameters[1]}' for label in prior.labels])
+			g.attrs['prior'] = pstring
+			f.flush()
+		shutil.move(temp_file_path,fname) ## avoid weird dropbox lock issues
+		if os.path.exists(temp_file_path):
+			os.remove(temp_file_path)
+		
+		self.run_biasd_loadinfo() ## test 
+		print(f'Created {fname}')
+
+	def run_biasd_mcmc(self, stochastic=False):
+		b,tempfile,shutil,emcee,time,h5py,os = self.run_biasd_safeimports()
+		if b is None:
+			return
+		b.likelihood.use_python_numba_ll_2sigma()
+		
+		success,fname = self.run_biasd_checkfname()
+		if not success:
+			return
+	
+		## transfer information from file into preferences
+		self.run_biasd_loadinfo()
+		
+		ndim = 6
+		nwalkers = int(self.maven.prefs['modeler.biasd.nwalkers'])
+		tau = float(self.maven.prefs['modeler.biasd.tau'])
+		fname = self.maven.prefs['modeler.biasd.filename']
+		thin = self.maven.prefs['modeler.biasd.thin']
+		steps = self.maven.prefs['modeler.biasd.steps']
+		prior = self.run_biasd_assembleprior()
+		
+		with h5py.File(fname,'r') as f:
+			g = f['biasd mcmc']
+			data = g['data'][:]
+			p0 = g['p0'][:]
+
+		## possibly thin the data....
+		if stochastic:
+			rng = np.random.default_rng(int(time.time()))
+			data = rng.choice(data,size=np.min((thin,data.size)),replace=False)
+
+		## Setup & run the sampler
+		## Avoid weird lock issues with backed up file storage (eg dropbox) by working in a tempfile.
+		## Also, tempfile means you don't overwrite the original yet until everything is complete...
+		with tempfile.NamedTemporaryFile(suffix=".hdf5", delete=False) as temp_file: ## avoid weird dropbox lock issues
+			temp_file_path = temp_file.name
+		shutil.copy(fname,temp_file_path) ## avoid weird dropbox lock issues
+
+		with emcee.backends.HDFBackend(temp_file_path,name='biasd mcmc') as backend:
+			sampler,_ = b.mcmc.setup(data,prior,tau,nwalkers,backend=backend)
+			sampler.run_mcmc(p0, steps, progress=True) ## Production
+			p0 = sampler.get_last_sample().coords.copy()
+		del backend
+		with h5py.File(temp_file_path,'a') as f:
+			g = f['biasd mcmc']
+			g['p0'][...] = p0
+			f.flush()
+		shutil.move(temp_file_path,fname) ## avoid weird dropbox lock issues
+
+	def run_biasd_randomizep0(self,justdead=False):
+		b,tempfile,shutil,emcee,time,h5py,os = self.run_biasd_safeimports()
+		if b is None:
+			return
+		success,fname = self.run_biasd_checkfname()
+		if not success:
+			return 
+		with h5py.File(fname,'r') as f:
+				g = f['biasd mcmc']
+				accepted = g['accepted'][:]
+				p0 = g['p0'][:]
+		
+		if justdead:
+			remove = accepted < np.max(accepted)//10
+			keep = np.bitwise_not(remove)
+		else:
+			remove = accepted >= 0
+			keep = accepted >= 0
+
+		p0[:,2:] = np.log(p0[:,2:])  ## do any magnitude parameters in log-space to avoid negative values...
+		mean = np.mean(p0[keep],axis=0)
+		cov = np.cov(p0[keep].T)
+		rng = np.random.default_rng(int(time.time()))
+		p1 = rng.multivariate_normal(mean,cov,p0.shape[0])
+		p0[remove] = p1[remove].copy()
+		p0[:,2:] = np.exp(p0[:,2:])
+
+		with h5py.File(fname,'a') as f:
+			g = f['biasd mcmc']
+			g['p0'][...] = p0
+			f.flush()
+
+	def run_biasd_analyze(self):
+		b,tempfile,shutil,emcee,time,h5py,os = self.run_biasd_safeimports()
+		if b is None:
+			return
+		import matplotlib.pyplot as plt
+		b.likelihood.use_python_numba_ll_2sigma()
+
+		success,fname = self.run_biasd_checkfname()
+		if not success:
+			return
+
+		self.run_biasd_loadinfo()
+		prior = self.run_biasd_assembleprior()
+		tau = self.maven.prefs['modeler.biasd.tau']
+
+		## load data and chain
+		with h5py.File(fname,'r') as f:
+			g = f['biasd mcmc']
+			data = g['data'][:]
+			lnp = g['log_prob'][:]
+			chain = g['chain'][:]
+			nt,nwalkers,ndim = chain.shape
+		
+		# print(nt,nwalkers,ndim)
+		if nt < 1:
+			return
+		
+		## plot parameter evolutions
+		# fig,ax = plt.subplots(ndim)
+		# for i in range(ndim):
+		# 	for j in range(nwalkers):
+		# 		ax[i].plot(chain[:,j,i],color='k',alpha=.15)
+		# 		ax[i].set_ylabel(labels[i])
+		# plt.show()
+
+		## plot log prob evolution 
+		fig,ax = plt.subplots(1,2,figsize=(10,6),dpi=100)
+		lnpmax = lnp.max()
+		for j in range(nwalkers):
+			# ax[0].plot(lnp[:,j],color='k',alpha=.05)
+			ax[0].plot(np.abs(lnp[:,j]-lnpmax)/lnpmax,color='k',alpha=.3)
+		# ax[1].set_ylim(,1)
+		ax[0].set_yscale('log')
+		ax[0].set_xlabel('MCMC Step')
+		ax[0].set_ylabel('Rel. ln Posterior')
+
+		## show likelihood of MAP solution over histograms of full data
+		indbest = np.where(lnp==lnp.max())
+		best = chain[indbest[0][-1],indbest[1][-1]]
+
+		# flatchain = chain[-1]
+		# mean = flatchain.mean(0)
+		# cov = np.cov(flatchain.T)
+		# for ii in range(len(labels)):
+		# 	print(f'{labels[ii]}: {mean[ii]:.4f} {best[ii]:.4f}')#+/- {np.sqrt(cov[ii,ii]):.4f}')
+		# print(np.any(chain[:,:,2:]<=0.))
+		# print('\n')
+
+		nbins = 201
+		xx = np.linspace(data.min(),data.max(),10*nbins)
+		ax[1].hist(data,range=(xx.min(),xx.max()),bins=nbins,histtype='step',density=True,color='k',lw=1.5)
+		for j in range(nwalkers):
+			params = chain[-1,j]
+			yy = np.exp(b.likelihood.nosum_log_likelihood(params,xx,tau))
+			ax[1].plot(xx,yy,color='tab:blue',alpha=.3,zorder=1)
+		params = best
+		yy = np.exp(b.likelihood.nosum_log_likelihood(params,xx,tau))
+		ax[1].plot(xx,yy,color='tab:red',lw=1.5)
+		ax[1].set_title(r'$\tau=$ %.3f s'%(tau))
+		ax[1].set_xlabel(r'Signal')
+		ax[1].set_ylabel(r'Probability Density')
+		# ax[1].set_xlim(0,1)
+		plt.tight_layout()
+		plt.show()
 
 	def idealize_threshold(self,result):
 		success,data = self.get_data(result.dtype)

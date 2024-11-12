@@ -1,7 +1,7 @@
 import numpy as np
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIntValidator, QDoubleValidator
-from PyQt5.QtWidgets import (QDialog, QMainWindow, QPushButton, QProgressBar, QStyleFactory,QGridLayout, QLabel, QSpinBox, QLayout, QLineEdit, QPlainTextEdit,QComboBox, QCheckBox, QGroupBox, QStyleFactory)
+from PyQt5.QtWidgets import (QDialog, QPushButton, QFileDialog, QStyleFactory,QGridLayout, QLabel, QSpinBox, QLayout, QLineEdit,QComboBox, QGroupBox, QStyleFactory)
 
 class model_dialog_base(QDialog):
 	'''
@@ -42,11 +42,57 @@ class model_dialog_base(QDialog):
 						value = widget.currentText() == 'True'
 					else:
 						value = widget.currentText()
+				elif type(widget) is list:
+					if widget[0] == 'biasd prior':
+						_,dist,p1,p2 = widget
+						self.gui.maven.prefs.__setitem__(pref+'.p1',float(p1.text()),quiet=True)
+						self.gui.maven.prefs.__setitem__(pref+'.p2',float(p2.text()),quiet=True)
+						self.gui.maven.prefs.__setitem__(pref+'.type',str(dist.currentText()),quiet=True)
+						continue
+					elif widget[0] == 'file':
+						_,filename = widget
+						self.gui.maven.prefs.__setitem__(pref,str(filename.text()),quiet=True)
+						continue
 				else:
 					raise Exception('no value')
 				# print(pref,value) ## for debugging
 				self.gui.maven.prefs.__setitem__(pref,value,quiet=True)
 		self.gui.maven.prefs.emit_changed()
+
+	def add_file(self,label,grid,position,pref):
+		qfname = QLineEdit(self.gui)
+		qbutton = QPushButton(self.gui)
+		grid.addWidget(QLabel(label),position[0],position[1]+0)
+		grid.addWidget(qfname,position[0],position[1]+1)
+		grid.addWidget(qbutton,position[0],position[1]+2)
+		
+		qfname.setText(str(self.gui.maven.prefs[pref]))
+		def open_file_dialog():
+			filename, _ = QFileDialog.getSaveFileName(self.gui, "Select HDF5 File", "", "HDF5 Files (.hdf5,.h5)")
+			if filename: 
+				if not filename.endswith((".hdf5",".h5")):
+					filename += ".hdf5"
+				qfname.setText(filename)
+		qbutton.clicked.connect(open_file_dialog)
+		self.widgets.append([['file',qfname],pref])
+
+	def add_biasd_prior(self, label, grid, position, pref):
+		dist = QComboBox(self.gui)
+		for disttype in ['Normal','Uniform','Log-uniform']:
+			dist.addItem(disttype)
+		p1 = QLineEdit(self.gui)
+		p2 = QLineEdit(self.gui)
+		p1.setValidator(QDoubleValidator(-1e300, 1e300, 12))
+		p2.setValidator(QDoubleValidator(-1e300, 1e300, 12))
+		grid.addWidget(QLabel(label),position[0],position[1]+0)
+		grid.addWidget(dist,position[0],position[1]+1)
+		grid.addWidget(p1,position[0],position[1]+2)
+		grid.addWidget(p2,position[0],position[1]+3)
+
+		dist.setCurrentText(str(self.gui.maven.prefs[pref+'.type']))
+		p1.setText(str(self.gui.maven.prefs[pref+'.p1']))
+		p2.setText(str(self.gui.maven.prefs[pref+'.p2']))
+		self.widgets.append([['biasd prior',dist,p1,p2],pref])
 
 	def add_spin_box(self, label, grid, position, pref= None, range = None):
 		grid.addWidget(QLabel(label), position[0], position[1])
@@ -368,3 +414,57 @@ def dialog_ebhmm(gui,fxn,model_selection=False):
 
 	gui.model_dialog = model_dialog
 	gui.model_dialog.run.clicked.connect(fxn)
+
+def dialog_biasdsetup(gui,fxn):
+	model_dialog = model_dialog_base(gui)
+
+	groupbox1 = QGroupBox("MCMC parameters")
+	grid1 = QGridLayout()
+	model_dialog.add_line_edit("Tau:", grid1, [0,0], pref='modeler.biasd.tau', validate = 'double')
+	model_dialog.add_combo_box("Likelihood type:", grid1, [1,0], ['Python','C','CUDA'], pref='modeler.biasd.likelihood')
+	model_dialog.add_spin_box("Num. Walkers:", grid1, [2,0], pref='modeler.biasd.nwalkers')
+	model_dialog.add_line_edit("Data Thinning:", grid1, [3,0], pref='modeler.biasd.thin',validate='int')
+	model_dialog.add_line_edit("MCMC Steps:", grid1, [4,0], pref='modeler.biasd.steps',validate='int')
+	model_dialog.add_file("File Name",grid1,[7,0],'modeler.biasd.filename')
+	groupbox1.setLayout(grid1)
+	model_dialog.grid.addWidget(groupbox1, 1, 0)
+
+	groupbox2 = QGroupBox("BIASD Priors")
+	grid2 = QGridLayout()
+	model_dialog.add_biasd_prior("Epsilon_1",grid2,[1,0],'modeler.biasd.prior.e1')
+	model_dialog.add_biasd_prior("Epsilon_2",grid2,[2,0],'modeler.biasd.prior.e2')
+	model_dialog.add_biasd_prior("Sigma_1",grid2,[3,0],'modeler.biasd.prior.sigma1')
+	model_dialog.add_biasd_prior("Sigma_2",grid2,[4,0],'modeler.biasd.prior.sigma2')
+	model_dialog.add_biasd_prior("k_1",grid2,[5,0],'modeler.biasd.prior.k1')
+	model_dialog.add_biasd_prior("k_2",grid2,[6,0],'modeler.biasd.prior.k2')
+	groupbox2.setLayout(grid2)
+	model_dialog.grid.addWidget(groupbox2, 0, 0)
+
+	groupbox_data = QGroupBox("Data parameters")
+	grid_data = QGridLayout()
+	model_dialog.add_combo_box("Data Source:", grid_data, [0,0], ['FRET','Sum','0','1','2','3','Rel 0','Rel 1','Rel 2','Rel 3'],pref='modeler.dtype')
+	model_dialog.add_combo_box("Clip Data?", grid_data, [1,0],['True','False'], pref='modeler.clip')
+	groupbox_data.setLayout(grid_data)
+	model_dialog.grid.addWidget(groupbox_data, 2, 0)
+
+	def confirm_and_execute():
+		model_dialog.update_prefs()
+		success,fname = gui.maven.modeler.run_biasd_checkfname()
+		if success:
+			from PyQt5.QtWidgets import QMessageBox
+
+			reply = QMessageBox.question(
+				gui.model_dialog,
+				'Confirm Overwrite',
+				f'This will overwrite the existing file: {fname}.\nAre you sure you want to continue???',
+				QMessageBox.Yes | QMessageBox.No,
+				QMessageBox.No
+			)
+			if reply == QMessageBox.Yes:
+				fxn()
+		else:
+			fxn()
+
+	model_dialog.run.setText('Create')
+	gui.model_dialog = model_dialog
+	gui.model_dialog.run.clicked.connect(confirm_and_execute)

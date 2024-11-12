@@ -40,11 +40,9 @@ def build_menu(gui):
 # 	indone.addAction('vbHMM', lambda: launchers.launch_vbhmm_one(gui))
 
 	menu_modeler.addSeparator()
-	#menu_modeler.addAction('Calculate Dwell Times', lambda: analyze_dwells(gui))
-	menu_modeler.addAction('Analyze Dwell Times', lambda: launch_dwell_analysis(gui))
+	
 
-	menu_modeler.addSeparator()
-
+	# menu_modeler.addSeparator()
 
 	ens = menu_modeler.addMenu("Models")
 	
@@ -67,6 +65,20 @@ def build_menu(gui):
 	globalhmm.addAction('ebHMM', lambda: launchers.launch_ebhmm(gui))
 	globalhmm.addAction('ebHMM + Model selection', lambda: launchers.launch_ebhmm_modelselection(gui))
 
+	#menu_modeler.addAction('Calculate Dwell Times', lambda: analyze_dwells(gui))
+	menu_modeler.addAction('Analyze Dwell Times', lambda: launch_dwell_analysis(gui))
+
+	exptl = menu_modeler.addMenu("Experimental")
+	biasd = exptl.addMenu('BIASD')
+	biasd.addAction("Setup", lambda : launchers.launch_biasd_setup(gui))
+	biasd.addAction("Run MCMC", lambda: gui.maven.modeler.run_biasd_mcmc(stochastic=False))
+	biasd.addAction("Run MCMC (Stochastic)", lambda: gui.maven.modeler.run_biasd_mcmc(stochastic=True))
+	biasd.addAction("Randomize All Walkers", lambda: gui.maven.modeler.run_biasd_randomizep0(justdead=False))
+	biasd.addAction("Randomize Dead Walkers", lambda: gui.maven.modeler.run_biasd_randomizep0(justdead=True))
+	biasd.addAction("Analyze Chain", lambda: gui.maven.modeler.run_biasd_analyze())
+
+	# hhmm = exptl.addMenu('hHMM')
+	# hhmm.addAction('Coming Soon', lambda: print('Coming Soon'))
 
 	return menu_modeler
 

@@ -143,7 +143,6 @@ def launch_threshold_vbconhmm(gui):
 	gui.model_dialog.start()
 
 def launch_vbhmm_one(gui):
-	
 	keep = gui.maven.modeler.get_traces()
 	if keep.sum() != 1:
 		from PyQt5.QtWidgets import QMessageBox
@@ -153,6 +152,13 @@ def launch_vbhmm_one(gui):
 	fxn = gui.maven.modeler.run_vbhmm_one
 	logger.info(f'Launching {method_name} dialog')
 	dialogs.dialog_vbhmm(gui, lambda: general_fxn(gui,method_name,fxn),method_name,model_selection=False,threshold=True)
+	gui.model_dialog.start()
+
+def launch_biasd_setup(gui):
+	method_name = 'BIASD Setup'
+	fxn = gui.maven.modeler.run_biasd_setupfile
+	logger.info(f'Launching {method_name} dialog')
+	dialogs.dialog_biasdsetup(gui, lambda: general_fxn(gui,method_name,fxn))
 	gui.model_dialog.start()
 
 def general_fxn(gui,method_name,run_fxn):
