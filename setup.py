@@ -17,7 +17,7 @@ CLASSIFIERS = [
 	"Environment :: X11 Applications :: Qt",
 ]
 INSTALL_REQUIRES = [
-	"numpy>=1.21.0",
+	"numpy>=1.21.0,<2.0.0",
 	"numba>=0.51.0",
 	"scipy>=1.7.0",
 	"matplotlib>=3.5.0",
@@ -25,7 +25,7 @@ INSTALL_REQUIRES = [
 	"PyQt5>=5.15.0",
 	"appdirs",
 	"importlib_resources",
-	"biasd @ git+https://github.com/ckinzthompson/biasd.git@main#egg=biasd",
+	"biasd @ git+https://github.com/ckinzthompson/biasd.git@main",
 ]
 EXTRAS_REQUIRE = {
 	"docs": [

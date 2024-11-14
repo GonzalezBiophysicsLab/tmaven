@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tmaven"
+description = "Description extracted from __init__.py"
+version = "Version extracted from __init__.py"
+license = { text = "License extracted from __init__.py" }
+authors = [
+    { name = "Author extracted from __init__.py" }
+]
+keywords = ["gui", "single molecule", "science", "chemistry", "physics", "biology"]
+dependencies = [
+    "numpy>=1.21.0,<2.0.0",
+    "numba>=0.51.0",
+    "scipy>=1.7.0",
+    "matplotlib>=3.5.0",
+    "h5py>=3.6.0",
+    "PyQt5>=5.15.0",
+    "appdirs",
+    "importlib_resources",
+    "biasd @ git+https://github.com/ckinzthompson/biasd.git@main"
+]
+optional-dependencies = {
+    docs = [],
+    tests = [],
+    release = [],
+    dev = []
+}
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Biology",
+    "Topic :: Scientific/Engineering :: Chemistry",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Environment :: X11 Applications :: Qt"
+]
+requires-python = ">=3.6"
+
+[project.urls]
+homepage = "URL extracted from __init__.py"
+repository = "URL extracted from __init__.py"
+
+[tool.setuptools.package-data]
+"" = ["*.png", "*.svg"]
+
+[project.scripts]
+tmaven = "tmaven.bin.tmaven_gui:main"
