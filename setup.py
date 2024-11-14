@@ -24,7 +24,8 @@ INSTALL_REQUIRES = [
 	"h5py>=3.6.0",
 	"PyQt5>=5.15.0",
 	"appdirs",
-	"importlib_resources"
+	"importlib_resources",
+	"biasd @ git+https://github.com/ckinzthompson/biasd.git@main#egg=biasd",
 ]
 EXTRAS_REQUIRE = {
 	"docs": [
