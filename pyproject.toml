@@ -22,12 +22,7 @@ dependencies = [
     "importlib_resources",
     "biasd @ git+https://github.com/ckinzthompson/biasd.git@main"
 ]
-optional-dependencies = {
-    docs = [],
-    tests = [],
-    release = [],
-    dev = []
-}
+
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
