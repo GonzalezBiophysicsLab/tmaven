@@ -43,7 +43,7 @@ def calculate_dwells(result, first_flag):
 	logger.info('Dwell time calculated')
 
 
-@nb.njit(cache=True)
+# @nb.njit(cache=True)
 def survival(dist):
 	if dist.size == 0:
 		return np.array([0]), np.array([0.0])
