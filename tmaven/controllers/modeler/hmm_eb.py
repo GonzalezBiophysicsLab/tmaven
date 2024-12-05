@@ -469,9 +469,6 @@ def eb_outer_loop(xind,xdata,nstates,maxiters,threshold,mu_prior,beta_prior,a_pr
 				if vbiteration == vblikelihood.shape[0]:
 					vbiteration -= 1
 				L_sum += vblikelihood[vbiteration,0]
-
-			V_x = E_xx - E_x**2
-			emp_mu[nr], emp_beta[nr], emp_a[nr], emp_b[nr], emp_pi[nr], emp_tm[nr] =  h_step(pos_mu, pos_beta, pos_a, pos_b, pos_tm, pos_pi, E_z, E_z1, E_zz, E_x, V_x, mu_prior, beta_prior, a_prior, b_prior, tm_prior, pi_prior)
 			
 			# if np.any(np.isnan(emp_mu)):
 			# 	print(emp_mu)
@@ -481,20 +478,26 @@ def eb_outer_loop(xind,xdata,nstates,maxiters,threshold,mu_prior,beta_prior,a_pr
 			# Data processing
 			L_global[nr,iteration[nr]] = L_sum
 
-			print(nr, iteration[nr], emp_mu[nr])
+			# print(nr, iteration[nr], emp_mu[nr],L_sum, np.abs(L_global[nr,iteration[nr]] - L_global[nr,iteration[nr]-1]), threshold * np.abs(L_global[nr,iteration[nr]-1]))
 			if np.isnan(L_global[nr,iteration[nr]]):
 			# 	# L_global[nr,iteration[nr]] = -np.inf
 				break
 
-			if (iteration[nr] >= 2) and ((L_global[nr,iteration[nr]] - L_global[nr,iteration[nr]-1]) < threshold * np.abs(L_global[nr,iteration[nr]]) or (L_global[nr,iteration[nr]] - L_global[nr,iteration[nr]-1]) < 0.1):
+			if (iteration[nr] >= 2) and (np.abs(L_global[nr,iteration[nr]] - L_global[nr,iteration[nr]-1]) < threshold * np.abs(L_global[nr,iteration[nr]-1]) or np.abs(L_global[nr,iteration[nr]] - L_global[nr,iteration[nr]-1]) < 0.01):
 				break
 
 			iteration[nr] += 1
+			V_x = E_xx - E_x**2
+			emp_mu[nr], emp_beta[nr], emp_a[nr], emp_b[nr], emp_pi[nr], emp_tm[nr] =  h_step(pos_mu, pos_beta, pos_a, pos_b, pos_tm, pos_pi, E_z, E_z1, E_zz, E_x, V_x, mu_prior, beta_prior, a_prior, b_prior, tm_prior, pi_prior)
+
 		E_z_out[nr] = E_z
 
 	Lbest = np.zeros(nrestarts)
 	for nr in range(nrestarts):
-		Lbest[nr] = L_global[nr, iteration[nr]]
+		which_iter = iteration[nr]
+		if which_iter >= maxiters:
+			which_iter = maxiters-1
+		Lbest[nr] = L_global[nr, which_iter]
 
 	# Initialize `best` with a placeholder index
 	best = -1
@@ -509,7 +512,7 @@ def eb_outer_loop(xind,xdata,nstates,maxiters,threshold,mu_prior,beta_prior,a_pr
 			if np.isfinite(Lbest[nr]) and Lbest[nr] > Lbest[best]:
 				best = nr
 
-	print(best, Lbest[best])
+	# print(best, Lbest[best])
 
 	# print(nstates,Lbest,L_global[best,iteration[best]-1],iteration, best)
 	return emp_mu[best], emp_beta[best], emp_a[best], emp_b[best], emp_pi[best], emp_tm[best], L_global[best,:iteration[best]], iteration[best], E_z_out[best]

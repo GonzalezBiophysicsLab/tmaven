@@ -220,7 +220,7 @@ def dialog_dwell_analysis(gui,model):
 	elif model.rate_type == "Dwell Analysis":
 		if dwell_dialog.active_state in model.rates:
 			rate = model.rates[dwell_dialog.active_state]
-			rate_str = "Rates = \n {} \n".format(str(rate['As']))
+			rate_str = "Rates = \n {} \n".format(str(rate['ks']))
 			rate_str += "Error = \n {} \n".format(str(rate['error'][0]))
 			rate_str += "Coefficients = \n {} \n".format(str(rate['As']))
 			rate_str += "Error = \n {} \n".format(str(rate['error'][-1]))
