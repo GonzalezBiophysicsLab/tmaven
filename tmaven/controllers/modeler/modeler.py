@@ -1573,7 +1573,7 @@ class controller_modeler(object):
 	
 
 	def run_biasd_safeimports(self):
-		# try:
+		try:
 			import biasd as b
 
 			import tempfile
@@ -1583,10 +1583,10 @@ class controller_modeler(object):
 			import h5py
 			import os
 			return b,tempfile,shutil,emcee,time,h5py,os
-		# except:
-		# 	print('You need BIASD installed to run BIASD')
-		# 	print('see https://github.com/ckinzthompson/biasd')
-		# 	return None,None,None,None,None,None,None
+		except:
+			print('You need BIASD installed to run BIASD')
+			print('see https://github.com/ckinzthompson/biasd')
+			return None,None,None,None,None,None,None
 
 	def run_biasd_checkfname(self):
 		import os

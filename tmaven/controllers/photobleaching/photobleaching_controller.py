@@ -95,7 +95,7 @@ class controller_photobleaching(object):
 			qq = self.maven.data.corrected.sum(2) ## sum of all...
 		else:
 			qq = self.maven.data.corrected[:,:,-1] ## otherwise use 'red'
-		keep = self.maven.modeler.get_traces()
+		success,keep,_ = self.maven.modeler.get_traces()
 
 		a = self.maven.prefs['photobleach.prior.a']
 		b = self.maven.prefs['photobleach.prior.b']
