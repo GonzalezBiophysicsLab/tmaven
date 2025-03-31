@@ -362,6 +362,13 @@ class controller_modeler(object):
 
 			return [mu_prior, beta_prior, a_prior, b_prior, pi_prior, tm_prior]
 
+	def get_model_specs(self):
+		maxiters = self.maven.prefs['modeler.maxiters']
+		converge = self.maven.prefs['modeler.converge']
+		nrestarts = self.maven.prefs['modeler.nrestarts']
+		ncpu = self.maven.prefs['ncpu']
+
+		return maxiters, converge, nrestarts, ncpu
 
 	def make_report(self,model):
 		#model_dict = model.__dict__
@@ -479,10 +486,7 @@ class controller_modeler(object):
 		if not success:
 			return
 
-		maxiters = self.maven.prefs['modeler.maxiters']
-		converge = self.maven.prefs['modeler.converge']
-		nrestarts = self.maven.prefs['modeler.nrestarts']
-		ncpu = self.maven.prefs['ncpu']
+		maxiters, converge, nrestarts, ncpu = self.get_model_specs()
 		priors = self.get_priors('modeler.vbgmm')
 
 		from .gmm_vb import vb_em_gmm,vb_em_gmm_parallel
@@ -505,10 +509,7 @@ class controller_modeler(object):
 		if not success:
 			return
 
-		maxiters = self.maven.prefs['modeler.maxiters']
-		converge = self.maven.prefs['modeler.converge']
-		nrestarts = self.maven.prefs['modeler.nrestarts']
-		ncpu = self.maven.prefs['ncpu']
+		maxiters, converge, nrestarts, ncpu = self.get_model_specs()
 		priors = self.get_priors('modeler.vbgmm')
 
 
@@ -542,10 +543,7 @@ class controller_modeler(object):
 		if not success:
 			return
 
-		maxiters = self.maven.prefs['modeler.maxiters']
-		converge = self.maven.prefs['modeler.converge']
-		nrestarts = self.maven.prefs['modeler.nrestarts']
-		ncpu = self.maven.prefs['ncpu']
+		maxiters, converge, nrestarts, ncpu = self.get_model_specs()
 
 		from .gmm_ml import ml_em_gmm,ml_em_gmm_parallel
 		result = ml_em_gmm_parallel(np.concatenate(y),nstates,maxiters,converge,nrestarts,ncpu)
@@ -566,10 +564,7 @@ class controller_modeler(object):
 		if not success:
 			return
 
-		maxiters = self.maven.prefs['modeler.maxiters']
-		converge = self.maven.prefs['modeler.converge']
-		nrestarts = self.maven.prefs['modeler.nrestarts']
-		ncpu = self.maven.prefs['ncpu']
+		maxiters, converge, nrestarts, ncpu = self.get_model_specs()
 
 		from .fxns.hmm import viterbi
 		from .model_container import trace_model_container
@@ -611,10 +606,7 @@ class controller_modeler(object):
 		if not success:
 			return
 		
-		maxiters = self.maven.prefs['modeler.maxiters']
-		converge = self.maven.prefs['modeler.converge']
-		nrestarts = self.maven.prefs['modeler.nrestarts']
-		ncpu = self.maven.prefs['ncpu']
+		maxiters, converge, nrestarts, ncpu = self.get_model_specs()
 
 		from .fxns.hmm import viterbi
 		from .model_container import trace_model_container
@@ -672,10 +664,8 @@ class controller_modeler(object):
 		if keep.sum() != 1:
 			#Warning "Error: Run all, Apply all","You have more than one molecule turned on")
 			return
-		maxiters = self.maven.prefs['modeler.maxiters']
-		converge = self.maven.prefs['modeler.converge']
-		nrestarts = self.maven.prefs['modeler.nrestarts']
-		ncpu = self.maven.prefs['ncpu']
+		
+		maxiters, converge, nrestarts, ncpu = self.get_model_specs()
 
 		from .hmm_ml import ml_em_hmm, ml_em_hmm_parallel
 		result = ml_em_hmm_parallel(y[0].astype('double'),nstates,maxiters,converge,nrestarts,ncpu)
@@ -694,10 +684,7 @@ class controller_modeler(object):
 		if not success:
 			return
 		
-		maxiters = self.maven.prefs['modeler.maxiters']
-		converge = self.maven.prefs['modeler.converge']
-		nrestarts = self.maven.prefs['modeler.nrestarts']
-		ncpu = self.maven.prefs['ncpu']
+		maxiters, converge, nrestarts, ncpu = self.get_model_specs()
 
 		priors = self.get_priors('modeler.vbconhmm', nstates, np.concatenate(y))
 		from .hmm_vb_consensus import consensus_vb_em_hmm, consensus_vb_em_hmm_parallel
@@ -725,10 +712,7 @@ class controller_modeler(object):
 		if not success:
 			return
 		
-		maxiters = self.maven.prefs['modeler.maxiters']
-		converge = self.maven.prefs['modeler.converge']
-		nrestarts = self.maven.prefs['modeler.nrestarts']
-		ncpu = self.maven.prefs['ncpu']
+		maxiters, converge, nrestarts, ncpu = self.get_model_specs()
 
 		nmol = self.maven.data.nmol
 		nt = self.maven.data.nt
@@ -767,10 +751,7 @@ class controller_modeler(object):
 		if not success:
 			return
 		
-		maxiters = self.maven.prefs['modeler.maxiters']
-		converge = self.maven.prefs['modeler.converge']
-		nrestarts = self.maven.prefs['modeler.nrestarts']
-		ncpu = self.maven.prefs['ncpu']
+		maxiters, converge, nrestarts, ncpu = self.get_model_specs()
 
 		priors = self.get_priors('modeler.vbconhmm', nstates, np.concatenate(y))
 
@@ -812,10 +793,7 @@ class controller_modeler(object):
 		if not success:
 			return
 
-		maxiters = self.maven.prefs['modeler.maxiters']
-		converge = self.maven.prefs['modeler.converge']
-		nrestarts = self.maven.prefs['modeler.nrestarts']
-		ncpu = self.maven.prefs['ncpu']
+		maxiters, converge, nrestarts, ncpu = self.get_model_specs()
 
 		priors = self.get_priors('modeler.vbhmm', nstates, np.concatenate(y))
 
@@ -863,10 +841,7 @@ class controller_modeler(object):
 		if not success:
 			return
 
-		maxiters = self.maven.prefs['modeler.maxiters']
-		converge = self.maven.prefs['modeler.converge']
-		nrestarts = self.maven.prefs['modeler.nrestarts']
-		ncpu = self.maven.prefs['ncpu']
+		maxiters, converge, nrestarts, ncpu = self.get_model_specs()
 
 		from .fxns.hmm import viterbi
 		from .model_container import trace_model_container
@@ -915,10 +890,7 @@ class controller_modeler(object):
 		if not success:
 			return
 
-		maxiters = self.maven.prefs['modeler.maxiters']
-		converge = self.maven.prefs['modeler.converge']
-		nrestarts = self.maven.prefs['modeler.nrestarts']
-		ncpu = self.maven.prefs['ncpu']
+		maxiters, converge, nrestarts, ncpu = self.get_model_specs()
 
 		from .fxns.hmm import viterbi
 		from .model_container import trace_model_container
@@ -983,10 +955,7 @@ class controller_modeler(object):
 		if not success:
 			return
 
-		maxiters = self.maven.prefs['modeler.maxiters']
-		converge = self.maven.prefs['modeler.converge']
-		nrestarts = self.maven.prefs['modeler.nrestarts']
-		ncpu = self.maven.prefs['ncpu']
+		maxiters, converge, nrestarts, ncpu = self.get_model_specs()
 
 		from .fxns.hmm import viterbi
 		from .model_container import trace_model_container
@@ -1071,10 +1040,7 @@ class controller_modeler(object):
 		if not success:
 			return
 
-		maxiters = self.maven.prefs['modeler.maxiters']
-		converge = self.maven.prefs['modeler.converge']
-		nrestarts = self.maven.prefs['modeler.nrestarts']
-		ncpu = self.maven.prefs['ncpu']
+		maxiters, converge, nrestarts, ncpu = self.get_model_specs()
 
 		from .fxns.hmm import viterbi
 		from .model_container import trace_model_container
@@ -1154,10 +1120,7 @@ class controller_modeler(object):
 		if not success:
 			return
 
-		maxiters = self.maven.prefs['modeler.maxiters']
-		converge = self.maven.prefs['modeler.converge']
-		nrestarts = self.maven.prefs['modeler.nrestarts']
-		ncpu = self.maven.prefs['ncpu']
+		maxiters, converge, nrestarts, ncpu = self.get_model_specs()
 
 		from .fxns.hmm import viterbi
 		from .model_container import trace_model_container
@@ -1175,7 +1138,6 @@ class controller_modeler(object):
 			results = []
 			for k in range(1,nstates+1):
 				priors = self.get_priors('modeler.vbhmm', k, y_flat)
-
 				results.append(vb_em_hmm_parallel(yi,k,maxiters,converge,nrestarts,priors=priors,ncpu=ncpu))
 
 			elbos = np.array([ri.likelihood[-1,0] for ri in results])
@@ -1215,10 +1177,7 @@ class controller_modeler(object):
 		if not success:
 			return
 
-		maxiters = self.maven.prefs['modeler.maxiters']
-		converge = self.maven.prefs['modeler.converge']
-		nrestarts = self.maven.prefs['modeler.nrestarts']
-		ncpu = self.maven.prefs['ncpu']
+		maxiters, converge, nrestarts, ncpu = self.get_model_specs()
 
 		priors = self.get_priors('modeler.ebhmm', nstates, np.concatenate(y))
 
@@ -1275,10 +1234,7 @@ class controller_modeler(object):
 		if not success:
 			return
 
-		maxiters = self.maven.prefs['modeler.maxiters']
-		converge = self.maven.prefs['modeler.converge']
-		nrestarts = self.maven.prefs['modeler.nrestarts']
-		ncpu = self.maven.prefs['ncpu']
+		maxiters, converge, nrestarts, ncpu = self.get_model_specs()
 
 		results = []
 
@@ -1426,10 +1382,7 @@ class controller_modeler(object):
 			## WARNING:"Error: Run all, Apply all","You have more than one molecule turned on"
 			return
 		
-		maxiters = self.maven.prefs['modeler.maxiters']
-		converge = self.maven.prefs['modeler.converge']
-		nrestarts = self.maven.prefs['modeler.nrestarts']
-		ncpu = self.maven.prefs['ncpu']
+		maxiters, converge, nrestarts, ncpu = self.get_model_specs()
 
 		priors = self.get_priors('modeler.vbhmm', nstates, np.concatenate(y))
 
