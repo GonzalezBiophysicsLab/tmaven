@@ -1,7 +1,6 @@
 import numpy as np
 import logging
 logger = logging.getLogger(__name__)
-import types
 import h5py as h
 from .model_container import model_container
 from .modeler_io import export_dict_to_group, load_group_to_dict
@@ -189,10 +188,7 @@ class controller_modeler(object):
 		import time
 
 		result = self.model
-		# print(result.type)
 		model_dict = result.convert_to_dict()
-		# print(result.type)
-
 
 		with h.File(fn,'a') as f:
 
@@ -215,7 +211,6 @@ class controller_modeler(object):
 			f.close()
 
 		logger.info('saved result in {}'.format(fn))
-		# print(result)
 		return True
 
 	def load_result_from_hdf5(self,fn):
@@ -371,33 +366,24 @@ class controller_modeler(object):
 		return maxiters, converge, nrestarts, ncpu
 
 	def make_report(self,model):
-		#model_dict = model.__dict__
-
-		#for i in ['idealize','idealized','ran']:
-			#model_dict.pop(i)
 
 		type = model.type
 		s = '\nModel type = {}\n'.format(type)
-		#model_dict.pop('type')
 
 		N = len(model.ran)
 		s += 'Model ran on {} traces\n'.format(N)
 
 		nstates = model.nstates
 		s += 'nstates = {}\n'.format(nstates)
-		#model_dict.pop('nstates')
 
 		mean = model.mean
 		s += 'means = {}\n'.format(mean)
-		#model_dict.pop('mean')
 
 		var = model.var
 		s += 'vars = {}\n'.format(var)
-		#model_dict.pop('var')
 
 		frac = model.frac
 		s += 'fracs = {}\n'.format(frac)
-		#model_dict.pop('nstates')
 
 		if not model.tmatrix is None:
 			tmatrix = model.tmatrix
@@ -568,7 +554,7 @@ class controller_modeler(object):
 
 		from .fxns.hmm import viterbi
 		from .model_container import trace_model_container
-		from .hmm_ml import ml_em_hmm, ml_em_hmm_parallel
+		from .hmm_ml import ml_em_hmm_parallel
 
 		mu = np.ones(nstates)*np.nan
 		var = mu.copy()
@@ -610,7 +596,7 @@ class controller_modeler(object):
 
 		from .fxns.hmm import viterbi
 		from .model_container import trace_model_container
-		from .hmm_ml import ml_em_hmm, ml_em_hmm_parallel
+		from .hmm_ml import ml_em_hmm_parallel
 
 		idealized = np.zeros_like(self.maven.data.corrected[:,:,0]) + np.nan
 		ran = np.nonzero(keep)[0].tolist()
@@ -633,7 +619,7 @@ class controller_modeler(object):
 		from .kmeans import kmeans
 		vits = np.concatenate(idealized)
 		vits = vits[np.isfinite(vits)]
-		result =kmeans(vits,nstates)
+		result = kmeans(vits,nstates)
 		result.trace_level = trace_level
 		result.type = "kmeans + ml HMM"
 		result.ran = ran
@@ -667,7 +653,7 @@ class controller_modeler(object):
 		
 		maxiters, converge, nrestarts, ncpu = self.get_model_specs()
 
-		from .hmm_ml import ml_em_hmm, ml_em_hmm_parallel
+		from .hmm_ml import ml_em_hmm_parallel
 		result = ml_em_hmm_parallel(y[0].astype('double'),nstates,maxiters,converge,nrestarts,ncpu)
 		result.ran = [np.nonzero(keep)[0]]
 		result.dtype = dtype
@@ -687,7 +673,7 @@ class controller_modeler(object):
 		maxiters, converge, nrestarts, ncpu = self.get_model_specs()
 
 		priors = self.get_priors('modeler.vbconhmm', nstates, np.concatenate(y))
-		from .hmm_vb_consensus import consensus_vb_em_hmm, consensus_vb_em_hmm_parallel
+		from .hmm_vb_consensus import consensus_vb_em_hmm_parallel
 		result = consensus_vb_em_hmm_parallel(y,nstates,maxiters,converge,nrestarts,priors=priors,ncpu=ncpu)
 
 		result.ran = np.nonzero(keep)[0].tolist()
@@ -716,7 +702,7 @@ class controller_modeler(object):
 
 		nmol = self.maven.data.nmol
 		nt = self.maven.data.nt
-		from .hmm_vb_consensus import consensus_vb_em_hmm, consensus_vb_em_hmm_parallel
+		from .hmm_vb_consensus import consensus_vb_em_hmm_parallel
 
 		results = []
 		for nstates in range(nstates_min,nstates_max+1):
@@ -755,9 +741,7 @@ class controller_modeler(object):
 
 		priors = self.get_priors('modeler.vbconhmm', nstates, np.concatenate(y))
 
-		nmol = self.maven.data.nmol
-		nt = self.maven.data.nt
-		from .hmm_vb_consensus import consensus_vb_em_hmm, consensus_vb_em_hmm_parallel
+		from .hmm_vb_consensus import consensus_vb_em_hmm_parallel
 
 		result = consensus_vb_em_hmm_parallel(y,nstates,maxiters,converge,nrestarts,priors=priors,ncpu=ncpu)
 		result.dtype = dtype
@@ -800,7 +784,7 @@ class controller_modeler(object):
 
 		from .fxns.hmm import viterbi
 		from .model_container import trace_model_container
-		from .hmm_vb import vb_em_hmm,vb_em_hmm_parallel
+		from .hmm_vb import vb_em_hmm_parallel
 
 		mu = np.ones(nstates)*np.nan
 		var = mu.copy()
@@ -845,7 +829,7 @@ class controller_modeler(object):
 
 		from .fxns.hmm import viterbi
 		from .model_container import trace_model_container
-		from .hmm_vb import vb_em_hmm,vb_em_hmm_parallel
+		from .hmm_vb import vb_em_hmm_parallel
 
 		mu = np.ones(nstates_max)*np.nan
 		var = mu.copy()
@@ -894,7 +878,7 @@ class controller_modeler(object):
 
 		from .fxns.hmm import viterbi
 		from .model_container import trace_model_container
-		from .hmm_vb import vb_em_hmm,vb_em_hmm_parallel
+		from .hmm_vb import vb_em_hmm_parallel
 
 		idealized = np.zeros_like(self.maven.data.corrected[:,:,0]) + np.nan
 		ran = np.nonzero(keep)[0].tolist()
@@ -959,7 +943,7 @@ class controller_modeler(object):
 
 		from .fxns.hmm import viterbi
 		from .model_container import trace_model_container
-		from .hmm_vb import vb_em_hmm,vb_em_hmm_parallel
+		from .hmm_vb import vb_em_hmm_parallel
 
 		idealized = np.zeros_like(self.maven.data.corrected[:,:,0]) + np.nan
 		ran = np.nonzero(keep)[0].tolist()
@@ -972,7 +956,6 @@ class controller_modeler(object):
 			results = []
 			for k in range(1,nstates+1):
 				priors = self.get_priors('modeler.vbhmm', k, y_flat)
-
 				results.append(vb_em_hmm_parallel(yi,k,maxiters,converge,nrestarts,priors=priors,ncpu=ncpu))
 
 			elbos = np.array([ri.likelihood[-1,0] for ri in results])
@@ -1044,7 +1027,7 @@ class controller_modeler(object):
 
 		from .fxns.hmm import viterbi
 		from .model_container import trace_model_container
-		from .hmm_vb import vb_em_hmm,vb_em_hmm_parallel
+		from .hmm_vb import vb_em_hmm_parallel
 
 		idealized = np.zeros_like(self.maven.data.corrected[:,:,0]) + np.nan
 		ran = np.nonzero(keep)[0].tolist()
@@ -1124,7 +1107,7 @@ class controller_modeler(object):
 
 		from .fxns.hmm import viterbi
 		from .model_container import trace_model_container
-		from .hmm_vb import vb_em_hmm,vb_em_hmm_parallel
+		from .hmm_vb import vb_em_hmm_parallel
 
 		idealized = np.zeros_like(self.maven.data.corrected[:,:,0]) + np.nan
 		ran = np.nonzero(keep)[0].tolist()
@@ -1181,43 +1164,22 @@ class controller_modeler(object):
 
 		priors = self.get_priors('modeler.ebhmm', nstates, np.concatenate(y))
 
-		from .hmm_eb import eb_em_hmm
+		from .hmm_eb import eb_em_hmm, trace_level_eb
 		result, vbs = eb_em_hmm(y,nstates,maxiters,nrestarts,converge,priors=priors,ncpu=ncpu)
 		result.ran = np.nonzero(keep)[0].tolist()
 		result.dtype = dtype
 
-		idealized = np.zeros_like(self.maven.data.corrected[:,:,0]) + np.nan
-		chain = np.zeros_like(idealized).astype('int')
-
-		trace_level = {}
-		rs = []
-
-		from .fxns.hmm import viterbi
-		from .model_container import trace_model_container
-
-		for i in range(len(y)):
-			yi = y[i].astype('double')
-			r = vbs[i]
-			rs.append(r.r)
-			ii = result.ran[i]
-			pre = self.maven.data.pre_list[ii]
-			post = self.maven.data.post_list[ii]
-
-			idealpath = viterbi(yi,r.mean,r.var,r.tmatrix,r.frac).astype('int')
-			vit = r.mean[idealpath]
-			idealized[ii,pre:post] = vit
-			chain[ii,pre:post] = idealpath.copy()
-			trace_level_inst = trace_model_container(r, ii)
-			trace_level_inst.dtype = dtype
-			trace_level_inst.idealized = idealized[ii]
-			trace_level_inst.chain = chain[ii]
-			trace_level[str(ii)] = trace_level_inst
+		trace_level, rs, idealized, chain = trace_level_eb(y, vbs, result.ran, 
+													 	   self.maven.data.pre_list, self.maven.data.post_list,
+														   self.maven.data.nmol, self.maven.data.nt,
+														   dtype)
 
 		result.trace_level = trace_level
 		result.r = rs
 		self.recast_rs(result)
 		result.idealized = idealized
 		result.chain = chain
+
 		self.model = result
 		self.make_report(result)
 		self.maven.emit_data_update()
@@ -1238,9 +1200,7 @@ class controller_modeler(object):
 
 		results = []
 
-		from .fxns.hmm import viterbi
-		from .model_container import trace_model_container
-		from .hmm_eb import eb_em_hmm
+		from .hmm_eb import eb_em_hmm, trace_level_eb
 
 		for nstates in range(nstates_min,nstates_max+1):
 			priors = self.get_priors('modeler.ebhmm', nstates, np.concatenate(y))
@@ -1249,29 +1209,10 @@ class controller_modeler(object):
 			result.ran = np.nonzero(keep)[0].tolist()
 			result.dtype = dtype
 
-			idealized = np.zeros_like(self.maven.data.corrected[:,:,0]) + np.nan
-			chain = np.zeros_like(idealized).astype('int')
-
-			trace_level = {}
-			rs = []
-
-			for i in range(len(y)):
-				yi = y[i].astype('double')
-				r = vbs[i]
-				rs.append(r.r)
-				ii = result.ran[i]
-				pre = self.maven.data.pre_list[ii]
-				post = self.maven.data.post_list[ii]
-
-				idealpath = viterbi(yi,r.mean,r.var,r.tmatrix,r.frac).astype('int')
-				vit = r.mean[idealpath]
-				idealized[ii,pre:post] = vit
-				chain[ii,pre:post] = idealpath.copy()
-				trace_level_inst = trace_model_container(r, ii)
-				trace_level_inst.dtype = dtype
-				trace_level_inst.idealized = idealized[ii]
-				trace_level_inst.chain = chain[ii]
-				trace_level[str(ii)] = trace_level_inst
+			trace_level, rs, idealized, chain = trace_level_eb(y, vbs, result.ran, 
+													  		   self.maven.data.pre_list, self.maven.data.post_list,
+															   self.maven.data.nmol, self.maven.data.nt,
+															   dtype)
 
 			result.trace_level = trace_level
 			result.idealized = idealized
@@ -1386,7 +1327,7 @@ class controller_modeler(object):
 
 		priors = self.get_priors('modeler.vbhmm', nstates, np.concatenate(y))
 
-		from .hmm_vb import vb_em_hmm,vb_em_hmm_parallel
+		from .hmm_vb import vb_em_hmm_parallel
 		result = vb_em_hmm_parallel(y[0].astype('double'),nstates,maxiters,converge,nrestarts,priors=priors,ncpu=ncpu)
 		result.dtype = dtype
 		result.ran = [np.nonzero(keep)[0]]

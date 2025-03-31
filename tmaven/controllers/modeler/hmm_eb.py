@@ -595,3 +595,33 @@ def eb_em_hmm(x,nstates,maxiters=1000,nrestarts=1,threshold=1e-10,priors=None,nc
 
 	# print(nstates, likelihood[-1])
 	return out, vb_results
+
+def trace_level_eb(y, vbs, ran, pre_list, post_list, nmol, nt, dtype):
+	idealized = np.zeros((nmol,nt,1)) + np.nan
+	chain = np.zeros_like(idealized).astype('int')
+
+	trace_level = {}
+	rs = []
+
+	from .fxns.hmm import viterbi
+	from .model_container import trace_model_container
+
+	for i in range(len(y)):
+		yi = y[i].astype('double')
+		res = vbs[i]
+		rs.append(res.r)
+		ii = ran[i]
+		pre = pre_list[ii]
+		post = post_list[ii]
+
+		idealpath = np.array([viterbi(yi,res.mean,res.var,res.tmatrix,res.frac)]).astype('int').T
+		vit = res.mean[idealpath]
+		idealized[ii,pre:post] = vit
+		chain[ii,pre:post] = idealpath.copy()
+		trace_level_inst = trace_model_container(res, ii)
+		trace_level_inst.dtype = dtype
+		trace_level_inst.idealized = idealized[ii]
+		trace_level_inst.chain = chain[ii]
+		trace_level[str(ii)] = trace_level_inst
+
+	return 	trace_level, rs, idealized, chain
