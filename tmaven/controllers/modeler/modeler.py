@@ -4,6 +4,7 @@ logger = logging.getLogger(__name__)
 import types
 import h5py as h
 from .model_container import model_container
+from .modeler_io import export_dict_to_group, load_group_to_dict
 
 default_prefs = {
 	'modeler.nrestarts':5,
@@ -91,29 +92,6 @@ default_prefs = {
 
 	'modeler.kmeans.nstates':2,
 }
-
-def export_dict_to_group(h_group, dicty, attributes=[]):
-	for k in dicty.keys():
-		if k in attributes:
-			pass
-		elif not dicty[k] is None:
-			if isinstance(dicty[k], dict):
-				hh_group = h_group.create_group(k)
-				export_dict_to_group(hh_group, dicty[k])
-			elif np.isscalar(dicty[k]):
-				h_group.create_dataset(k,data=dicty[k])
-			elif not isinstance(dicty[k],types.FunctionType):
-				h_group.create_dataset(k,data=dicty[k],compression='gzip')
-
-
-def load_group_to_dict(h_group):
-	dicty = {}
-	for key, item in h_group.items():
-		if isinstance(item, h._hl.dataset.Dataset):
-			dicty[key] = item[()]
-		elif isinstance(item, h._hl.group.Group):
-			dicty[key] = load_group_to_dict(item)
-	return dicty
 
 class controller_modeler(object):
 	''' Handles modeling data
@@ -364,6 +342,25 @@ class controller_modeler(object):
 		from .dwells import survival
 		tau, survival_norm = survival(np.array(dwells_model[str(state)]))
 		return tau, survival_norm
+	
+	def get_priors(self, model_type, nstates = None, y_flat = None):
+
+		prior_beta = self.maven.prefs[model_type + '.prior.beta']
+		prior_a = self.maven.prefs[model_type + '.prior.a']
+		prior_b = self.maven.prefs[model_type + '.prior.b']
+		prior_pi = self.maven.prefs[model_type + '.prior.pi']
+
+		if "gmm" in model_type:
+			return np.array([prior_beta, prior_a, prior_b, prior_pi])
+		elif "hmm" in model_type:
+			mu_prior = np.percentile(y_flat,np.linspace(0,100,nstates+2))[1:-1]
+			beta_prior = np.ones_like(mu_prior)*prior_beta
+			a_prior = np.ones_like(mu_prior)*prior_a
+			b_prior = np.ones_like(mu_prior)*prior_b
+			pi_prior = np.ones_like(mu_prior)*prior_pi
+			tm_prior = np.ones((nstates,nstates))*self.maven.prefs[model_type + '.prior.alpha']
+
+			return [mu_prior, beta_prior, a_prior, b_prior, pi_prior, tm_prior]
 
 
 	def make_report(self,model):
@@ -486,7 +483,7 @@ class controller_modeler(object):
 		converge = self.maven.prefs['modeler.converge']
 		nrestarts = self.maven.prefs['modeler.nrestarts']
 		ncpu = self.maven.prefs['ncpu']
-		priors = np.array([self.maven.prefs[sss] for sss in ['modeler.vbgmm.prior.beta','modeler.vbgmm.prior.a','modeler.vbgmm.prior.b','modeler.vbgmm.prior.pi']])
+		priors = self.get_priors('modeler.vbgmm')
 
 		from .gmm_vb import vb_em_gmm,vb_em_gmm_parallel
 		result = vb_em_gmm_parallel(np.concatenate(y),nstates,maxiters,converge,nrestarts,priors,ncpu)
@@ -512,7 +509,8 @@ class controller_modeler(object):
 		converge = self.maven.prefs['modeler.converge']
 		nrestarts = self.maven.prefs['modeler.nrestarts']
 		ncpu = self.maven.prefs['ncpu']
-		priors = np.array([self.maven.prefs[sss] for sss in ['modeler.vbgmm.prior.beta','modeler.vbgmm.prior.a','modeler.vbgmm.prior.b','modeler.vbgmm.prior.pi']])
+		priors = self.get_priors('modeler.vbgmm')
+
 
 		from .gmm_vb import vb_em_gmm,vb_em_gmm_parallel
 		results = []
@@ -701,15 +699,7 @@ class controller_modeler(object):
 		nrestarts = self.maven.prefs['modeler.nrestarts']
 		ncpu = self.maven.prefs['ncpu']
 
-		mu_prior = np.percentile(np.concatenate(y),np.linspace(0,100,nstates+2))[1:-1]
-		beta_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbconhmm.prior.beta']
-		a_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbconhmm.prior.a']
-		b_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbconhmm.prior.b']
-		pi_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbconhmm.prior.pi']
-		tm_prior = np.ones((nstates,nstates))*self.maven.prefs['modeler.vbconhmm.prior.alpha']
-
-		priors = [mu_prior, beta_prior, a_prior, b_prior, pi_prior, tm_prior]
-
+		priors = self.get_priors('modeler.vbconhmm', nstates, np.concatenate(y))
 		from .hmm_vb_consensus import consensus_vb_em_hmm, consensus_vb_em_hmm_parallel
 		result = consensus_vb_em_hmm_parallel(y,nstates,maxiters,converge,nrestarts,priors=priors,ncpu=ncpu)
 
@@ -746,14 +736,7 @@ class controller_modeler(object):
 
 		results = []
 		for nstates in range(nstates_min,nstates_max+1):
-			mu_prior = np.percentile(np.concatenate(y),np.linspace(0,100,nstates+2))[1:-1]
-			beta_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbconhmm.prior.beta']
-			a_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbconhmm.prior.a']
-			b_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbconhmm.prior.b']
-			pi_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbconhmm.prior.pi']
-			tm_prior = np.ones((nstates,nstates))*self.maven.prefs['modeler.vbconhmm.prior.alpha']
-
-			priors = [mu_prior, beta_prior, a_prior, b_prior, pi_prior, tm_prior]
+			priors = self.get_priors('modeler.vbconhmm', nstates, np.concatenate(y))
 
 			result = consensus_vb_em_hmm_parallel(y,nstates,maxiters,converge,nrestarts,priors=priors,ncpu=ncpu)
 			result.idealized = np.zeros((nmol,nt)) + np.nan
@@ -789,14 +772,7 @@ class controller_modeler(object):
 		nrestarts = self.maven.prefs['modeler.nrestarts']
 		ncpu = self.maven.prefs['ncpu']
 
-		mu_prior = np.percentile(np.concatenate(y),np.linspace(0,100,nstates+2))[1:-1]
-		beta_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbconhmm.prior.beta']
-		a_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbconhmm.prior.a']
-		b_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbconhmm.prior.b']
-		pi_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbconhmm.prior.pi']
-		tm_prior = np.ones((nstates,nstates))*self.maven.prefs['modeler.vbconhmm.prior.alpha']
-
-		priors = [mu_prior, beta_prior, a_prior, b_prior, pi_prior, tm_prior]
+		priors = self.get_priors('modeler.vbconhmm', nstates, np.concatenate(y))
 
 		nmol = self.maven.data.nmol
 		nt = self.maven.data.nt
@@ -841,14 +817,8 @@ class controller_modeler(object):
 		nrestarts = self.maven.prefs['modeler.nrestarts']
 		ncpu = self.maven.prefs['ncpu']
 
-		mu_prior = np.percentile(np.concatenate(y),np.linspace(0,100,nstates+2))[1:-1]
-		beta_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.beta']
-		a_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.a']
-		b_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.b']
-		pi_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.pi']
-		tm_prior = np.ones((nstates,nstates))*self.maven.prefs['modeler.vbhmm.prior.alpha']
+		priors = self.get_priors('modeler.vbhmm', nstates, np.concatenate(y))
 
-		priors = [mu_prior, beta_prior, a_prior, b_prior, pi_prior, tm_prior]
 
 		from .fxns.hmm import viterbi
 		from .model_container import trace_model_container
@@ -917,15 +887,7 @@ class controller_modeler(object):
 			results = []
 			yi = y[i].astype('double')
 			for nstates in range(nstates_min,nstates_max+1):
-				mu_prior = np.percentile(y_flat,np.linspace(0,100,nstates+2))[1:-1]
-				beta_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.beta']
-				a_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.a']
-				b_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.b']
-				pi_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.pi']
-				tm_prior = np.ones((nstates,nstates))*self.maven.prefs['modeler.vbhmm.prior.alpha']
-
-				priors = [mu_prior, beta_prior, a_prior, b_prior, pi_prior, tm_prior]
-
+				priors = self.get_priors('modeler.vbhmm', nstates, y_flat)
 				results.append(vb_em_hmm_parallel(yi,nstates,maxiters,converge,nrestarts,priors=priors,ncpu=ncpu))
 
 			elbos = np.array([ri.likelihood[-1,0] for ri in results])
@@ -973,14 +935,8 @@ class controller_modeler(object):
 			yi = y[i].astype('double')
 			results = []
 			for k in range(1,nstates+1):
-				mu_prior = np.percentile(y_flat,np.linspace(0,100,k+2))[1:-1]
-				beta_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.beta']
-				a_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.a']
-				b_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.b']
-				pi_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.pi']
-				tm_prior = np.ones((k,k))*self.maven.prefs['modeler.vbhmm.prior.alpha']
+				priors = self.get_priors('modeler.vbhmm', k, y_flat)
 
-				priors = [mu_prior, beta_prior, a_prior, b_prior, pi_prior, tm_prior]
 				results.append(vb_em_hmm_parallel(yi,k,maxiters,converge,nrestarts,priors=priors,ncpu=ncpu))
 
 			elbos = np.array([ri.likelihood[-1,0] for ri in results])
@@ -1046,14 +1002,8 @@ class controller_modeler(object):
 			yi = y[i].astype('double')
 			results = []
 			for k in range(1,nstates+1):
-				mu_prior = np.percentile(y_flat,np.linspace(0,100,k+2))[1:-1]
-				beta_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.beta']
-				a_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.a']
-				b_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.b']
-				pi_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.pi']
-				tm_prior = np.ones((k,k))*self.maven.prefs['modeler.vbhmm.prior.alpha']
+				priors = self.get_priors('modeler.vbhmm', k, y_flat)
 
-				priors = [mu_prior, beta_prior, a_prior, b_prior, pi_prior, tm_prior]
 				results.append(vb_em_hmm_parallel(yi,k,maxiters,converge,nrestarts,priors=priors,ncpu=ncpu))
 
 			elbos = np.array([ri.likelihood[-1,0] for ri in results])
@@ -1072,7 +1022,7 @@ class controller_modeler(object):
 
 		vits = np.concatenate(idealized)
 		vits = vits[np.isfinite(vits)]
-		priors = np.array([self.maven.prefs[sss] for sss in ['modeler.vbgmm.prior.beta','modeler.vbgmm.prior.a','modeler.vbgmm.prior.b','modeler.vbgmm.prior.pi']])
+		priors = self.get_priors('modeler.vbgmm')
 
 		from .gmm_vb import vb_em_gmm,vb_em_gmm_parallel
 
@@ -1143,14 +1093,8 @@ class controller_modeler(object):
 				yi = y[i].astype('double')
 				results = []
 				for k in range(1,nstates+1):
-					mu_prior = np.percentile(y_flat,np.linspace(0,100,k+2))[1:-1]
-					beta_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.beta']
-					a_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.a']
-					b_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.b']
-					pi_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.pi']
-					tm_prior = np.ones((k,k))*self.maven.prefs['modeler.vbhmm.prior.alpha']
+					priors = self.get_priors('modeler.vbhmm', k, y_flat)
 
-					priors = [mu_prior, beta_prior, a_prior, b_prior, pi_prior, tm_prior]
 					results.append(vb_em_hmm_parallel(yi,k,maxiters,converge,nrestarts,priors=priors,ncpu=ncpu))
 
 				elbos = np.array([ri.likelihood[-1,0] for ri in results])
@@ -1169,7 +1113,7 @@ class controller_modeler(object):
 
 			vits = np.concatenate(idealized)
 			vits = vits[np.isfinite(vits)]
-			priors = np.array([self.maven.prefs[sss] for sss in ['modeler.vbgmm.prior.beta','modeler.vbgmm.prior.a','modeler.vbgmm.prior.b','modeler.vbgmm.prior.pi']])
+			priors = self.get_priors('modeler.vbgmm')
 
 			from .gmm_vb import vb_em_gmm,vb_em_gmm_parallel
 			result = vb_em_gmm_parallel(vits,nstates,maxiters,converge,nrestarts,priors=priors,ncpu=ncpu)
@@ -1230,14 +1174,8 @@ class controller_modeler(object):
 			yi = y[i].astype('double')
 			results = []
 			for k in range(1,nstates+1):
-				mu_prior = np.percentile(y_flat,np.linspace(0,100,k+2))[1:-1]
-				beta_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.beta']
-				a_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.a']
-				b_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.b']
-				pi_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.pi']
-				tm_prior = np.ones((k,k))*self.maven.prefs['modeler.vbhmm.prior.alpha']
+				priors = self.get_priors('modeler.vbhmm', k, y_flat)
 
-				priors = [mu_prior, beta_prior, a_prior, b_prior, pi_prior, tm_prior]
 				results.append(vb_em_hmm_parallel(yi,k,maxiters,converge,nrestarts,priors=priors,ncpu=ncpu))
 
 			elbos = np.array([ri.likelihood[-1,0] for ri in results])
@@ -1282,14 +1220,7 @@ class controller_modeler(object):
 		nrestarts = self.maven.prefs['modeler.nrestarts']
 		ncpu = self.maven.prefs['ncpu']
 
-		mu_prior = np.percentile(np.concatenate(y),np.linspace(0,100,nstates+2))[1:-1]
-		beta_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.ebhmm.prior.beta']
-		a_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.ebhmm.prior.a']
-		b_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.ebhmm.prior.b']
-		pi_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.ebhmm.prior.pi']
-		tm_prior = np.ones((nstates,nstates))*self.maven.prefs['modeler.ebhmm.prior.alpha']
-
-		priors = [mu_prior, beta_prior, a_prior, b_prior, pi_prior, tm_prior]
+		priors = self.get_priors('modeler.ebhmm', nstates, np.concatenate(y))
 
 		from .hmm_eb import eb_em_hmm
 		result, vbs = eb_em_hmm(y,nstates,maxiters,nrestarts,converge,priors=priors,ncpu=ncpu)
@@ -1356,14 +1287,7 @@ class controller_modeler(object):
 		from .hmm_eb import eb_em_hmm
 
 		for nstates in range(nstates_min,nstates_max+1):
-			mu_prior = np.percentile(np.concatenate(y),np.linspace(0,100,nstates+2))[1:-1]
-			beta_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.ebhmm.prior.beta']
-			a_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.ebhmm.prior.a']
-			b_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.ebhmm.prior.b']
-			pi_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.ebhmm.prior.pi']
-			tm_prior = np.ones((nstates,nstates))*self.maven.prefs['modeler.ebhmm.prior.alpha']
-
-			priors = [mu_prior, beta_prior, a_prior, b_prior, pi_prior, tm_prior]
+			priors = self.get_priors('modeler.ebhmm', nstates, np.concatenate(y))
 
 			result, vbs = eb_em_hmm(y,nstates,maxiters,nrestarts,converge,priors=priors,ncpu=ncpu)
 			result.ran = np.nonzero(keep)[0].tolist()
@@ -1507,14 +1431,7 @@ class controller_modeler(object):
 		nrestarts = self.maven.prefs['modeler.nrestarts']
 		ncpu = self.maven.prefs['ncpu']
 
-		mu_prior = np.percentile(np.concatenate(y),np.linspace(0,100,nstates+2))[1:-1]
-		beta_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.beta']
-		a_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.a']
-		b_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.b']
-		pi_prior = np.ones_like(mu_prior)*self.maven.prefs['modeler.vbhmm.prior.pi']
-		tm_prior = np.ones((nstates,nstates))*self.maven.prefs['modeler.vbhmm.prior.alpha']
-
-		priors = [mu_prior, beta_prior, a_prior, b_prior, pi_prior, tm_prior]
+		priors = self.get_priors('modeler.vbhmm', nstates, np.concatenate(y))
 
 		from .hmm_vb import vb_em_hmm,vb_em_hmm_parallel
 		result = vb_em_hmm_parallel(y[0].astype('double'),nstates,maxiters,converge,nrestarts,priors=priors,ncpu=ncpu)
