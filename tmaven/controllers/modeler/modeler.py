@@ -9,8 +9,10 @@ default_prefs = {
 	'modeler.nrestarts':5,
 	'modeler.converge':1e-8,
 	'modeler.maxiters':100,
+
 	'modeler.mlgmm.nstates':2,
 	'modeler.mlhmm.nstates':2,
+
 	'modeler.vbgmm.prior.beta':0.25,
 	'modeler.vbgmm.prior.a':0.1,
 	'modeler.vbgmm.prior.b':0.01,
@@ -18,6 +20,7 @@ default_prefs = {
 	'modeler.vbgmm.nstates':2,
 	'modeler.vbgmm.nstates_min':1,
 	'modeler.vbgmm.nstates_max':6,
+
 	'modeler.vbhmm.prior.beta':0.25,
 	'modeler.vbhmm.prior.a':2.5,
 	'modeler.vbhmm.prior.b':0.01,
@@ -26,6 +29,7 @@ default_prefs = {
 	'modeler.vbhmm.nstates':2,
 	'modeler.vbhmm.nstates_min':1,
 	'modeler.vbhmm.nstates_max':6,
+
 	'modeler.vbconhmm.prior.beta':0.25,
 	'modeler.vbconhmm.prior.a':2.5,
 	'modeler.vbconhmm.prior.b':0.01,
@@ -34,6 +38,7 @@ default_prefs = {
 	'modeler.vbconhmm.nstates':2,
 	'modeler.vbconhmm.nstates_min':1,
 	'modeler.vbconhmm.nstates_max':6,
+
 	'modeler.ebhmm.prior.beta':0.25,
 	'modeler.ebhmm.prior.a':2.5,
 	'modeler.ebhmm.prior.b':0.01,
@@ -42,6 +47,7 @@ default_prefs = {
 	'modeler.ebhmm.nstates':2,
 	'modeler.ebhmm.nstates_min':1,
 	'modeler.ebhmm.nstates_max':6,
+
 	'modeler.hhmm.tolerance': 1e-4,
     'modeler.hhmm.maxiters':100,
     'modeler.hhmm.restarts':2,
@@ -74,11 +80,15 @@ default_prefs = {
     'modeler.dwells.include_first':True,
     'modeler.dwells.include_last':False,
     'modeler.dwells.fix_norm':False,
+
 	'modeler.clip':True,
 	'modeler.clip_min':-1.,
 	'modeler.clip_max':2.0,
+
 	'modeler.threshold':0.5,
+
 	'modeler.dtype':'FRET',
+
 	'modeler.kmeans.nstates':2,
 }
 
@@ -86,7 +96,6 @@ def export_dict_to_group(h_group, dicty, attributes=[]):
 	for k in dicty.keys():
 		if k in attributes:
 			pass
-		#print(k)
 		elif not dicty[k] is None:
 			if isinstance(dicty[k], dict):
 				hh_group = h_group.create_group(k)
@@ -94,7 +103,6 @@ def export_dict_to_group(h_group, dicty, attributes=[]):
 			elif np.isscalar(dicty[k]):
 				h_group.create_dataset(k,data=dicty[k])
 			elif not isinstance(dicty[k],types.FunctionType):
-				# print(k)
 				h_group.create_dataset(k,data=dicty[k],compression='gzip')
 
 
@@ -526,7 +534,6 @@ class controller_modeler(object):
 				self._active_model_index = len(self.models)-1
 				self.make_report(results[i])
 
-		#self.model = result
 		self.maven.emit_data_update()
 
 	def run_mlgmm(self):
@@ -615,8 +622,7 @@ class controller_modeler(object):
 		from .model_container import trace_model_container
 		from .hmm_ml import ml_em_hmm, ml_em_hmm_parallel
 
-		data = self.maven.calc_relative()[:,:,1]
-		idealized = np.zeros_like(data) + np.nan
+		idealized = np.zeros_like(self.maven.data.corrected[:,:,0]) + np.nan
 		ran = np.nonzero(keep)[0].tolist()
 
 		trace_level = {}
@@ -853,8 +859,7 @@ class controller_modeler(object):
 		frac = mu.copy()
 		result = self.model_container(type='vb HMM',nstates=nstates,mean=mu,var =var,frac=frac)
 
-		data = self.maven.calc_relative()[:,:,1]
-		result.idealized = np.zeros_like(data) + np.nan
+		result.idealized = np.zeros_like(self.maven.data.corrected[:,:,0]) + np.nan
 		trace_level = {}
 		result.ran = np.nonzero(keep)[0].tolist()
 		result.dtype = dtype
@@ -902,8 +907,7 @@ class controller_modeler(object):
 		frac = mu.copy()
 		result = self.model_container(type='vb HMM_model selection',nstates=nstates_max,mean=mu,var =var,frac=frac)
 
-		data = self.maven.calc_relative()[:,:,1]
-		result.idealized = np.zeros_like(data) + np.nan
+		result.idealized = np.zeros_like(self.maven.data.corrected[:,:,0]) + np.nan
 		trace_level = {}
 		result.ran = np.nonzero(keep)[0].tolist()
 		result.dtype = dtype
@@ -958,8 +962,7 @@ class controller_modeler(object):
 		from .model_container import trace_model_container
 		from .hmm_vb import vb_em_hmm,vb_em_hmm_parallel
 
-		data = self.maven.calc_relative()[:,:,1]
-		idealized = np.zeros_like(data) + np.nan
+		idealized = np.zeros_like(self.maven.data.corrected[:,:,0]) + np.nan
 		ran = np.nonzero(keep)[0].tolist()
 
 		trace_level = {}
@@ -1033,8 +1036,7 @@ class controller_modeler(object):
 		from .model_container import trace_model_container
 		from .hmm_vb import vb_em_hmm,vb_em_hmm_parallel
 
-		data = self.maven.calc_relative()[:,:,1]
-		idealized = np.zeros_like(data) + np.nan
+		idealized = np.zeros_like(self.maven.data.corrected[:,:,0]) + np.nan
 		ran = np.nonzero(keep)[0].tolist()
 
 		trace_level = {}
@@ -1128,8 +1130,7 @@ class controller_modeler(object):
 		from .model_container import trace_model_container
 		from .hmm_vb import vb_em_hmm,vb_em_hmm_parallel
 
-		data = self.maven.calc_relative()[:,:,1]
-		idealized = np.zeros_like(data) + np.nan
+		idealized = np.zeros_like(self.maven.data.corrected[:,:,0]) + np.nan
 		ran = np.nonzero(keep)[0].tolist()
 		results_ens = []
 		y_flat = np.concatenate(y)
@@ -1218,9 +1219,7 @@ class controller_modeler(object):
 		from .model_container import trace_model_container
 		from .hmm_vb import vb_em_hmm,vb_em_hmm_parallel
 
-
-		data = self.maven.calc_relative()[:,:,1]
-		idealized = np.zeros_like(data) + np.nan
+		idealized = np.zeros_like(self.maven.data.corrected[:,:,0]) + np.nan
 		ran = np.nonzero(keep)[0].tolist()
 
 		trace_level = {}
@@ -1297,8 +1296,7 @@ class controller_modeler(object):
 		result.ran = np.nonzero(keep)[0].tolist()
 		result.dtype = dtype
 
-		data = self.maven.calc_relative()[:,:,1]
-		idealized = np.zeros_like(data) + np.nan
+		idealized = np.zeros_like(self.maven.data.corrected[:,:,0]) + np.nan
 		chain = np.zeros_like(idealized).astype('int')
 
 		trace_level = {}
@@ -1351,7 +1349,6 @@ class controller_modeler(object):
 		nrestarts = self.maven.prefs['modeler.nrestarts']
 		ncpu = self.maven.prefs['ncpu']
 
-		data = self.maven.calc_relative()[:,:,1]
 		results = []
 
 		from .fxns.hmm import viterbi
@@ -1372,8 +1369,7 @@ class controller_modeler(object):
 			result.ran = np.nonzero(keep)[0].tolist()
 			result.dtype = dtype
 
-			data = self.maven.calc_relative()[:,:,1]
-			idealized = np.zeros_like(data) + np.nan
+			idealized = np.zeros_like(self.maven.data.corrected[:,:,0]) + np.nan
 			chain = np.zeros_like(idealized).astype('int')
 
 			trace_level = {}
