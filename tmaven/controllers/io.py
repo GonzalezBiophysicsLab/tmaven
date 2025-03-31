@@ -77,14 +77,27 @@ class controller_io(object):
 		return smd_container()
 
 	def load_smdtmaven_hdf5(self,fname,gname):
+		'''
+		Loads SMDs and tmaven-specific data into tmaven SMD data container.
+		Mainly used for scripting.
+		'''
+
+		# Loading the SMD
 		smd = self.load_smd_hdf5(fname,gname)
 		if self.maven.prefs['io.force_double']:
 			smd.raw = smd.raw.astype('double')
+
+		# Loading tmaven data
 		tmaven = self.load_tmaven_hdf5(fname,gname)
+
+		# Adding both to data container
 		self.add_data(smd,tmaven)
 		self.maven.emit_data_update()
 
 	def load_smd_hdf5(self,fname,gname):
+		'''
+		A wrapper for loading just the 'unaltered' SMDs (as defined in [REF])
+		'''
 		try:
 			success,smd = load_smd_in_hdf5(fname,gname)
 			if success:
@@ -94,6 +107,9 @@ class controller_io(object):
 		raise Exception('smdload was not successful {}/{}'.format(fname,gname))
 
 	def load_tmaven_hdf5(self,fname,gname):
+		'''
+		Loads tmaven-specific data (pre-, post-times, classes) from an HDF5 file
+		'''
 		success = False
 		try:
 			with h5py.File(fname,'r') as f:
