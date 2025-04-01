@@ -117,7 +117,7 @@ def tracelevel_mlhmm(y, keep, nstates, specs, nmol, nt, pre_list, post_list, dty
 		post = post_list[ii]
 		vit = res.mean[viterbi(yi,res.mean,res.var,res.tmatrix,res.frac).astype('int')]
 		idealized[ii,pre:post] = vit
-		trace_level_inst = trace_model_container(r, ii)
+		trace_level_inst = trace_model_container(res, ii)
 		trace_level_inst.idealized = idealized[ii]
 		trace_level_inst.dtype = dtype
 		trace_level[str(ii)] = trace_level_inst
