@@ -1,4 +1,6 @@
 import numpy as np
+import types
+import h5py as h
 
 def export_dict_to_group(h_group, dicty, attributes=[]):
 	for k in dicty.keys():

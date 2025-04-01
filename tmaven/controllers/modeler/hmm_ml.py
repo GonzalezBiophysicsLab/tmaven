@@ -96,3 +96,30 @@ def ml_em_hmm_parallel(x,nstates,maxiters=1000,threshold=1e-10,nrestarts=1,ncpu=
 	# 	best = 0
 	# return results[best]
 	return ml_em_hmm(x,nstates,maxiters,threshold,True)
+
+def tracelevel_mlhmm(y, keep, nstates, specs, nmol, nt, pre_list, post_list, dtype):
+	
+	from .fxns.hmm import viterbi
+	from .model_container import trace_model_container
+
+	maxiters, converge, nrestarts, ncpu = specs
+
+	idealized = np.zeros((nmol,nt)) + np.nan
+	ran = np.nonzero(keep)[0].tolist()
+
+	trace_level = {}
+
+	for i in range(len(y)):
+		yi = y[i].astype('double')
+		res = ml_em_hmm_parallel(yi,nstates,maxiters,converge,nrestarts,ncpu)
+		ii = ran[i]
+		pre = pre_list[ii]
+		post = post_list[ii]
+		vit = res.mean[viterbi(yi,res.mean,res.var,res.tmatrix,res.frac).astype('int')]
+		idealized[ii,pre:post] = vit
+		trace_level_inst = trace_model_container(r, ii)
+		trace_level_inst.idealized = idealized[ii]
+		trace_level_inst.dtype = dtype
+		trace_level[str(ii)] = trace_level_inst
+	
+	return trace_level, idealized, ran

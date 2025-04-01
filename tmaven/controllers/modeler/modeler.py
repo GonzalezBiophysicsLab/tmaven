@@ -151,6 +151,11 @@ class controller_modeler(object):
 		else:
 			self.__dict__[name] = value
 
+	
+	'''
+	-------------------------- Accessories --------------------------
+	'''
+
 	def set_model(self,i):
 		n = len(self.models)
 		if i is None:
@@ -427,6 +432,10 @@ class controller_modeler(object):
 			post = self.maven.data.post_list[ii]
 			result.r[ii,pre:post] = rs[i]
 
+	'''
+	-------------------------- Models --------------------------
+	'''
+
 	def run_threshold(self):
 		dtype = self.maven.prefs['modeler.dtype']
 		threshold = self.maven.prefs['modeler.threshold']
@@ -444,6 +453,10 @@ class controller_modeler(object):
 		self.make_report(result)
 		self.maven.emit_data_update()
 
+	'''
+	######################### Mixtures ######################### 
+	'''
+
 	def run_kmeans(self):
 		nstates = self.maven.prefs['modeler.kmeans.nstates']
 
@@ -458,6 +471,27 @@ class controller_modeler(object):
 		result.ran = np.nonzero(keep)[0].tolist()
 		# print(result.ran)
 		result.idealize = lambda : self.idealize_kmeans(result)
+		result.idealize()
+		self.recast_rs(result)
+		self.model = result
+		self.make_report(result)
+		self.maven.emit_data_update()
+
+	def run_mlgmm(self):
+		nstates = self.maven.prefs['modeler.mlgmm.nstates']
+
+		dtype = self.maven.prefs['modeler.dtype']
+		success,keep,y = self.get_traces(dtype)
+		if not success:
+			return
+
+		maxiters, converge, nrestarts, ncpu = self.get_model_specs()
+
+		from .gmm_ml import ml_em_gmm,ml_em_gmm_parallel
+		result = ml_em_gmm_parallel(np.concatenate(y),nstates,maxiters,converge,nrestarts,ncpu)
+		result.ran = np.nonzero(keep)[0].tolist()
+		result.dtype = dtype
+		result.idealize = lambda : self.idealize_gmm(result)
 		result.idealize()
 		self.recast_rs(result)
 		self.model = result
@@ -498,8 +532,7 @@ class controller_modeler(object):
 		maxiters, converge, nrestarts, ncpu = self.get_model_specs()
 		priors = self.get_priors('modeler.vbgmm')
 
-
-		from .gmm_vb import vb_em_gmm,vb_em_gmm_parallel
+		from .gmm_vb import vb_em_gmm_parallel
 		results = []
 		for nstates in range(nstates_min,nstates_max+1):
 			result = vb_em_gmm_parallel(np.concatenate(y),nstates,maxiters,converge,nrestarts,priors,ncpu)
@@ -521,68 +554,10 @@ class controller_modeler(object):
 
 		self.maven.emit_data_update()
 
-	def run_mlgmm(self):
-		nstates = self.maven.prefs['modeler.mlgmm.nstates']
 
-		dtype = self.maven.prefs['modeler.dtype']
-		success,keep,y = self.get_traces(dtype)
-		if not success:
-			return
-
-		maxiters, converge, nrestarts, ncpu = self.get_model_specs()
-
-		from .gmm_ml import ml_em_gmm,ml_em_gmm_parallel
-		result = ml_em_gmm_parallel(np.concatenate(y),nstates,maxiters,converge,nrestarts,ncpu)
-		result.ran = np.nonzero(keep)[0].tolist()
-		result.dtype = dtype
-		result.idealize = lambda : self.idealize_gmm(result)
-		result.idealize()
-		self.recast_rs(result)
-		self.model = result
-		self.make_report(result)
-		self.maven.emit_data_update()
-
-	def run_mlhmm(self):
-		nstates = self.maven.prefs['modeler.mlhmm.nstates']
-
-		dtype = self.maven.prefs['modeler.dtype']
-		success,keep,y = self.get_traces(dtype)
-		if not success:
-			return
-
-		maxiters, converge, nrestarts, ncpu = self.get_model_specs()
-
-		from .fxns.hmm import viterbi
-		from .model_container import trace_model_container
-		from .hmm_ml import ml_em_hmm_parallel
-
-		mu = np.ones(nstates)*np.nan
-		var = mu.copy()
-		frac = mu.copy()
-		result = self.model_container(type='ml HMM',nstates=nstates,mean=mu,var =var,frac=frac)
-		nmol = self.maven.data.nmol
-		nt = self.maven.data.nt
-		result.idealized = np.zeros((nmol,nt)) + np.nan
-		trace_level = {}
-		result.ran = np.nonzero(keep)[0].tolist()
-		result.dtype = dtype
-
-		for i in range(len(y)):
-			yi = y[i].astype('double')
-			r = ml_em_hmm_parallel(yi,nstates,maxiters,converge,nrestarts,ncpu)
-			ii = result.ran[i]
-			pre = self.maven.data.pre_list[ii]
-			post = self.maven.data.post_list[ii]
-			result.idealized[ii,pre:post] = r.mean[viterbi(yi,r.mean,r.var,r.tmatrix,r.frac).astype('int')]
-			trace_level_inst = trace_model_container(r, ii)
-			trace_level_inst.dtype = dtype
-			trace_level_inst.idealized = result.idealized[ii]
-			trace_level[str(ii)] = trace_level_inst
-
-		result.trace_level = trace_level
-		self.model = result
-		self.make_report(result)
-		self.maven.emit_data_update()
+	'''
+	######################### Composite HMMs ######################### 
+	'''
 
 	def run_kmeans_mlhmm(self):
 		nstates = self.maven.prefs['modeler.mlhmm.nstates']
@@ -592,30 +567,14 @@ class controller_modeler(object):
 		if not success:
 			return
 		
-		maxiters, converge, nrestarts, ncpu = self.get_model_specs()
+		specs = self.get_model_specs()
 
-		from .fxns.hmm import viterbi
-		from .model_container import trace_model_container
-		from .hmm_ml import ml_em_hmm_parallel
+		from .hmm_ml import tracelevel_mlhmm
 
-		idealized = np.zeros_like(self.maven.data.corrected[:,:,0]) + np.nan
-		ran = np.nonzero(keep)[0].tolist()
-
-		trace_level = {}
-
-		for i in range(len(y)):
-			yi = y[i].astype('double')
-			r = ml_em_hmm_parallel(yi,nstates,maxiters,converge,nrestarts,ncpu)
-			ii = ran[i]
-			pre = self.maven.data.pre_list[ii]
-			post = self.maven.data.post_list[ii]
-			vit = r.mean[viterbi(yi,r.mean,r.var,r.tmatrix,r.frac).astype('int')]
-			idealized[ii,pre:post] = vit
-			trace_level_inst = trace_model_container(r, ii)
-			trace_level_inst.idealized = idealized[ii]
-			trace_level_inst.dtype = dtype
-			trace_level[str(ii)] = trace_level_inst
-
+		trace_level, idealized, ran = tracelevel_mlhmm(y, keep, nstates, specs,
+													   self.maven.data.nmol, self.maven.data.nt,
+													   self.maven.data.pre_list, self.maven.data.post_list,
+													   dtype)
 		from .kmeans import kmeans
 		vits = np.concatenate(idealized)
 		vits = vits[np.isfinite(vits)]
@@ -639,28 +598,203 @@ class controller_modeler(object):
 		self.make_report(result)
 		self.maven.emit_data_update()
 
-	def run_mlhmm_one(self):
-		nstates = self.maven.prefs['modeler.mlhmm.nstates']
+	def run_kmeans_vbhmm(self):
+		nstates = self.maven.prefs['modeler.vbhmm.nstates']
 
 		dtype = self.maven.prefs['modeler.dtype']
 		success,keep,y = self.get_traces(dtype)
 		if not success:
 			return
 		
-		if keep.sum() != 1:
-			#Warning "Error: Run all, Apply all","You have more than one molecule turned on")
+		from .hmm_vb import tracelevel_vbhmm_modelselection
+
+		specs = self.get_model_specs()
+		trace_level, idealized, ran = tracelevel_vbhmm_modelselection(y, keep, nstates, self.get_priors, specs,
+																	self.maven.data.nmol, self.maven.data.nt,
+																	self.maven.data.pre_list, self.maven.data.post_list,
+														   			dtype)
+		from .kmeans import kmeans
+		vits = np.concatenate(idealized)
+		vits = vits[np.isfinite(vits)]
+		result = kmeans(vits,nstates)
+		result.trace_level = trace_level
+		result.type = "kmeans + vb HMM"
+		result.ran = ran
+
+		result.rate_type = "Transition Matrix"
+		from .fxns.hmm import compose_tmatrix, normalize_tmatrix,convert_tmatrix 
+		tmatrix = compose_tmatrix(y,result)
+		result.tmatrix = tmatrix
+		result.norm_tmatrix = normalize_tmatrix(tmatrix)
+		result.rates = convert_tmatrix(tmatrix)
+		
+		result.idealize = lambda : self.idealize_kmeans_viterbi(result,idealized)
+		result.idealize()
+		self.recast_rs(result)
+		self.model = result
+		self.make_report(result)
+		self.maven.emit_data_update()
+
+
+	def run_vbgmm_vbhmm(self):
+		nstates = self.maven.prefs['modeler.vbhmm.nstates']
+
+		dtype = self.maven.prefs['modeler.dtype']
+		success,keep,y = self.get_traces(dtype)
+		if not success:
+			return
+
+		from .hmm_vb import tracelevel_vbhmm_modelselection
+
+		specs = self.get_model_specs()
+		maxiters, converge, nrestarts, ncpu = specs
+		y_flat = np.concatenate(y)
+
+		trace_level, idealized, ran = tracelevel_vbhmm_modelselection(y, keep, nstates, self.get_priors, specs,
+																	self.maven.data.nmol, self.maven.data.nt,
+																	self.maven.data.pre_list, self.maven.data.post_list,
+														   			dtype)
+		vits = np.concatenate(idealized)
+		vits = vits[np.isfinite(vits)]
+		priors = self.get_priors('modeler.vbgmm')
+
+		from .gmm_vb import vb_em_gmm_parallel
+
+		result = vb_em_gmm_parallel(vits,nstates,maxiters,converge,nrestarts,priors=priors,ncpu=ncpu)
+		result.trace_level = trace_level
+		result.type = "vb GMM + vb HMM"
+		result.dtype = dtype
+		result.ran = ran
+
+		result.rate_type = "Transition Matrix"
+		from .fxns.hmm import compose_tmatrix, normalize_tmatrix,convert_tmatrix 
+		tmatrix = compose_tmatrix(y,result)
+		result.tmatrix = tmatrix
+		result.norm_tmatrix = normalize_tmatrix(tmatrix)
+		result.rates = convert_tmatrix(tmatrix)
+
+		result.idealize = lambda : self.idealize_gmm_viterbi(result,idealized)
+		result.idealize()
+
+		viterbi_var = result.var
+		#var = (result.r*((y_flat[:,None] - result.mean[None,:])**2)).sum(0)/(result.r).sum()
+		var = np.zeros_like(result.mean)
+		for i,state in enumerate(np.argmax(result.r, axis = 1)):
+			var[state] += (y_flat[i] - result.mean[state])**2
+
+		var /= result.r.sum()
+
+		result.var = var
+		result.viterbi_var = viterbi_var
+		self.recast_rs(result)
+
+		self.model = result
+		self.make_report(result)
+		self.maven.emit_data_update()
+
+	def run_vbgmm_vbhmm_modelselection(self):
+		nstates_min = self.maven.prefs['modeler.vbhmm.nstates_min']
+		nstates_max = self.maven.prefs['modeler.vbhmm.nstates_max']
+		if nstates_min > nstates_max:
+			logger.info('nstates min > max')
+			return
+
+		dtype = self.maven.prefs['modeler.dtype']
+		success,keep,y = self.get_traces(dtype)
+		if not success:
+			return
+
+		specs = self.get_model_specs()
+		maxiters, converge, nrestarts, ncpu = specs
+		results_ens = []
+		y_flat = np.concatenate(y)
+
+		from .hmm_vb import tracelevel_vbhmm_modelselection
+
+		for nstates in range(nstates_min,nstates_max+1):
+			trace_level, idealized, ran = tracelevel_vbhmm_modelselection(y, keep, nstates, self.get_priors, specs,
+																		self.maven.data.nmol, self.maven.data.nt,
+																		self.maven.data.pre_list, self.maven.data.post_list,
+														   				dtype)
+
+			vits = np.concatenate(idealized)
+			vits = vits[np.isfinite(vits)]
+			priors = self.get_priors('modeler.vbgmm')
+
+			from .gmm_vb import vb_em_gmm_parallel
+			result = vb_em_gmm_parallel(vits,nstates,maxiters,converge,nrestarts,priors=priors,ncpu=ncpu)
+			result.trace_level = trace_level
+			result.type = "vb GMM + vb HMM"
+			result.dtype = dtype
+			result.ran = ran
+
+			result.rate_type = "Transition Matrix"
+			from .fxns.hmm import compose_tmatrix, normalize_tmatrix,convert_tmatrix 
+			tmatrix = compose_tmatrix(y,result)
+			result.tmatrix = tmatrix
+			result.norm_tmatrix = normalize_tmatrix(tmatrix)
+			result.rates = convert_tmatrix(tmatrix)
+
+			result.idealize = lambda : self.idealize_gmm_viterbi(result,idealized)
+			result.idealize()
+
+			viterbi_var = result.var
+			#var = (result.r*((y_flat[:,None] - result.mean[None,:])**2)).sum(0)/(result.r).sum()
+			var = np.zeros_like(result.mean)
+			for i,state in enumerate(np.argmax(result.r, axis = 1)):
+				var[state] += (y_flat[i] - result.mean[state])**2
+
+			var /= result.r.sum()
+
+			result.var = var
+			result.viterbi_var = viterbi_var
+			self.recast_rs(result)
+			results_ens.append(result)
+
+		elbos = np.array([ri.likelihood[-1,0] for ri in results_ens])
+		modelmax = np.argmax(elbos)
+		logger.info('VB HMM->VB GMM - best elbo: %f, nstates=%d'%(elbos[modelmax],results_ens[modelmax].nstates))
+		for i in range(len(results_ens)):
+			self.models.append(results_ens[i])
+			if i == modelmax:
+				self._active_model_index = len(self.models)-1
+				self.make_report(results_ens[i])
+		self.maven.emit_data_update()
+
+
+	def run_threshold_vbhmm(self):
+		nstates = self.maven.prefs['modeler.vbhmm.nstates']
+		threshold = self.maven.prefs['modeler.threshold']
+
+		dtype = self.maven.prefs['modeler.dtype']
+		success,keep,y = self.get_traces(dtype)
+		if not success:
 			return
 		
-		maxiters, converge, nrestarts, ncpu = self.get_model_specs()
+		from .hmm_vb import tracelevel_vbhmm_modelselection
 
-		from .hmm_ml import ml_em_hmm_parallel
-		result = ml_em_hmm_parallel(y[0].astype('double'),nstates,maxiters,converge,nrestarts,ncpu)
-		result.ran = [np.nonzero(keep)[0]]
+		specs = self.get_model_specs()
+		trace_level, idealized, ran = tracelevel_vbhmm_modelselection(y, keep, nstates, self.get_priors, specs,
+																	self.maven.data.nmol, self.maven.data.nt,
+																	self.maven.data.pre_list, self.maven.data.post_list,
+														   			dtype)
+		vits = np.concatenate(idealized)
+		vits = vits[np.isfinite(vits)]
+		from .threshold import calc_threshold
+		result = calc_threshold(vits,threshold)
+		result.trace_level = trace_level
+		result.type = "threshold + vb HMM"
 		result.dtype = dtype
-		result.idealize = lambda : self.idealize_hmm(result)
+		result.ran = ran
+		result.idealize = lambda : self.idealize_threshold_viterbi(result,idealized)
 		result.idealize()
 		self.model = result
+		self.make_report(result)
 		self.maven.emit_data_update()
+
+	'''
+	######################### Global HMMs ######################### 
+	'''
 
 	def run_vbconhmm(self):
 		nstates = self.maven.prefs['modeler.vbconhmm.nstates']
@@ -768,390 +902,6 @@ class controller_modeler(object):
 		self.make_report(result)
 		self.maven.emit_data_update()
 
-
-	def run_vbhmm(self):
-		nstates = self.maven.prefs['modeler.vbhmm.nstates']
-
-		dtype = self.maven.prefs['modeler.dtype']
-		success,keep,y = self.get_traces(dtype)
-		if not success:
-			return
-
-		maxiters, converge, nrestarts, ncpu = self.get_model_specs()
-
-		priors = self.get_priors('modeler.vbhmm', nstates, np.concatenate(y))
-
-
-		from .fxns.hmm import viterbi
-		from .model_container import trace_model_container
-		from .hmm_vb import vb_em_hmm_parallel
-
-		mu = np.ones(nstates)*np.nan
-		var = mu.copy()
-		frac = mu.copy()
-		result = self.model_container(type='vb HMM',nstates=nstates,mean=mu,var =var,frac=frac)
-
-		result.idealized = np.zeros_like(self.maven.data.corrected[:,:,0]) + np.nan
-		trace_level = {}
-		result.ran = np.nonzero(keep)[0].tolist()
-		result.dtype = dtype
-
-		for i in range(len(y)):
-			yi = y[i].astype('double')
-			r = vb_em_hmm_parallel(yi,nstates,maxiters,converge,nrestarts,priors=priors,ncpu=ncpu)
-			ii = result.ran[i]
-			pre = self.maven.data.pre_list[ii]
-			post = self.maven.data.post_list[ii]
-			result.idealized[ii,pre:post] = r.mean[viterbi(yi,r.mean,r.var,r.tmatrix,r.frac).astype('int')]
-			trace_level_inst = trace_model_container(r, ii)
-			trace_level_inst.idealized = result.idealized[ii]
-			trace_level_inst.dtype = dtype
-			trace_level[str(ii)] = trace_level_inst
-
-		result.trace_level = trace_level
-		self.model = result
-		self.make_report(result)
-		self.maven.emit_data_update()
-
-	def run_vbhmm_modelselection(self):
-		nstates_min = self.maven.prefs['modeler.vbhmm.nstates_min']
-		nstates_max = self.maven.prefs['modeler.vbhmm.nstates_max']
-		if nstates_min > nstates_max:
-			logger.info('nstates min > max')
-			return
-
-		dtype = self.maven.prefs['modeler.dtype']
-		success,keep,y = self.get_traces(dtype)
-		if not success:
-			return
-
-		maxiters, converge, nrestarts, ncpu = self.get_model_specs()
-
-		from .fxns.hmm import viterbi
-		from .model_container import trace_model_container
-		from .hmm_vb import vb_em_hmm_parallel
-
-		mu = np.ones(nstates_max)*np.nan
-		var = mu.copy()
-		frac = mu.copy()
-		result = self.model_container(type='vb HMM_model selection',nstates=nstates_max,mean=mu,var =var,frac=frac)
-
-		result.idealized = np.zeros_like(self.maven.data.corrected[:,:,0]) + np.nan
-		trace_level = {}
-		result.ran = np.nonzero(keep)[0].tolist()
-		result.dtype = dtype
-		y_flat = np.concatenate(y)
-
-		for i in range(len(y)):
-			results = []
-			yi = y[i].astype('double')
-			for nstates in range(nstates_min,nstates_max+1):
-				priors = self.get_priors('modeler.vbhmm', nstates, y_flat)
-				results.append(vb_em_hmm_parallel(yi,nstates,maxiters,converge,nrestarts,priors=priors,ncpu=ncpu))
-
-			elbos = np.array([ri.likelihood[-1,0] for ri in results])
-			modelmax = np.argmax(elbos)
-			r = results[modelmax]
-			ii = result.ran[i]
-			pre = self.maven.data.pre_list[ii]
-			post = self.maven.data.post_list[ii]
-			result.idealized[ii,pre:post] = r.mean[viterbi(yi,r.mean,r.var,r.tmatrix,r.frac).astype('int')]
-			trace_level_inst = trace_model_container(r, ii)
-			trace_level_inst.dtype = dtype
-			trace_level_inst.idealized = result.idealized[ii]
-			trace_level[str(ii)] = trace_level_inst
-
-		result.trace_level = trace_level
-		self.model = result
-		self.make_report(result)
-		self.maven.emit_data_update()
-
-	def run_kmeans_vbhmm(self):
-		nstates = self.maven.prefs['modeler.vbhmm.nstates']
-
-		dtype = self.maven.prefs['modeler.dtype']
-		success,keep,y = self.get_traces(dtype)
-		if not success:
-			return
-
-		maxiters, converge, nrestarts, ncpu = self.get_model_specs()
-
-		from .fxns.hmm import viterbi
-		from .model_container import trace_model_container
-		from .hmm_vb import vb_em_hmm_parallel
-
-		idealized = np.zeros_like(self.maven.data.corrected[:,:,0]) + np.nan
-		ran = np.nonzero(keep)[0].tolist()
-
-		trace_level = {}
-
-		y_flat = np.concatenate(y)
-
-		for i in range(len(y)):
-			yi = y[i].astype('double')
-			results = []
-			for k in range(1,nstates+1):
-				priors = self.get_priors('modeler.vbhmm', k, y_flat)
-
-				results.append(vb_em_hmm_parallel(yi,k,maxiters,converge,nrestarts,priors=priors,ncpu=ncpu))
-
-			elbos = np.array([ri.likelihood[-1,0] for ri in results])
-			modelmax = np.argmax(elbos)
-			r = results[modelmax]
-			ii = ran[i]
-			pre = self.maven.data.pre_list[ii]
-			post = self.maven.data.post_list[ii]
-
-			vit = r.mean[viterbi(yi,r.mean,r.var,r.norm_tmatrix,r.frac).astype('int')]
-			idealized[ii,pre:post] = vit
-			trace_level_inst = trace_model_container(r, ii)
-			trace_level_inst.dtype = dtype
-			trace_level_inst.idealized = idealized[ii]
-			trace_level[str(ii)] = trace_level_inst
-
-		from .kmeans import kmeans
-		vits = np.concatenate(idealized)
-		vits = vits[np.isfinite(vits)]
-		result = kmeans(vits,nstates)
-		result.trace_level = trace_level
-		result.type = "kmeans + vb HMM"
-		result.ran = ran
-
-		result.rate_type = "Transition Matrix"
-		from .fxns.hmm import compose_tmatrix, normalize_tmatrix,convert_tmatrix 
-		tmatrix = compose_tmatrix(y,result)
-		result.tmatrix = tmatrix
-		result.norm_tmatrix = normalize_tmatrix(tmatrix)
-		result.rates = convert_tmatrix(tmatrix)
-		
-		result.idealize = lambda : self.idealize_kmeans_viterbi(result,idealized)
-		result.idealize()
-		self.recast_rs(result)
-		self.model = result
-		self.make_report(result)
-		self.maven.emit_data_update()
-
-	def run_vbgmm_vbhmm(self):
-		nstates = self.maven.prefs['modeler.vbhmm.nstates']
-
-		dtype = self.maven.prefs['modeler.dtype']
-		success,keep,y = self.get_traces(dtype)
-		if not success:
-			return
-
-		maxiters, converge, nrestarts, ncpu = self.get_model_specs()
-
-		from .fxns.hmm import viterbi
-		from .model_container import trace_model_container
-		from .hmm_vb import vb_em_hmm_parallel
-
-		idealized = np.zeros_like(self.maven.data.corrected[:,:,0]) + np.nan
-		ran = np.nonzero(keep)[0].tolist()
-
-		trace_level = {}
-		y_flat = np.concatenate(y)
-
-		for i in range(len(y)):
-			yi = y[i].astype('double')
-			results = []
-			for k in range(1,nstates+1):
-				priors = self.get_priors('modeler.vbhmm', k, y_flat)
-				results.append(vb_em_hmm_parallel(yi,k,maxiters,converge,nrestarts,priors=priors,ncpu=ncpu))
-
-			elbos = np.array([ri.likelihood[-1,0] for ri in results])
-			modelmax = np.argmax(elbos)
-			r = results[modelmax]
-			ii = ran[i]
-			pre = self.maven.data.pre_list[ii]
-			post = self.maven.data.post_list[ii]
-
-			vit = r.mean[viterbi(yi,r.mean,r.var,r.tmatrix,r.frac).astype('int')]
-			idealized[ii,pre:post] = vit
-			trace_level_inst = trace_model_container(r, ii)
-			trace_level_inst.idealized = idealized[ii]
-			trace_level_inst.dtype = dtype
-			trace_level[str(ii)] = trace_level_inst
-
-		vits = np.concatenate(idealized)
-		vits = vits[np.isfinite(vits)]
-		priors = self.get_priors('modeler.vbgmm')
-
-		from .gmm_vb import vb_em_gmm,vb_em_gmm_parallel
-
-		result = vb_em_gmm_parallel(vits,nstates,maxiters,converge,nrestarts,priors=priors,ncpu=ncpu)
-		result.trace_level = trace_level
-		result.type = "vb GMM + vb HMM"
-		result.dtype = dtype
-		result.ran = ran
-
-		result.rate_type = "Transition Matrix"
-		from .fxns.hmm import compose_tmatrix, normalize_tmatrix,convert_tmatrix 
-		tmatrix = compose_tmatrix(y,result)
-		result.tmatrix = tmatrix
-		result.norm_tmatrix = normalize_tmatrix(tmatrix)
-		result.rates = convert_tmatrix(tmatrix)
-
-		result.idealize = lambda : self.idealize_gmm_viterbi(result,idealized)
-		result.idealize()
-
-		viterbi_var = result.var
-		#var = (result.r*((y_flat[:,None] - result.mean[None,:])**2)).sum(0)/(result.r).sum()
-		var = np.zeros_like(result.mean)
-		for i,state in enumerate(np.argmax(result.r, axis = 1)):
-			var[state] += (y_flat[i] - result.mean[state])**2
-
-		var /= result.r.sum()
-
-		# print(viterbi_var,var)
-		result.var = var
-		result.viterbi_var = viterbi_var
-		self.recast_rs(result)
-
-		self.model = result
-		self.make_report(result)
-		self.maven.emit_data_update()
-
-	def run_vbgmm_vbhmm_modelselection(self):
-		nstates_min = self.maven.prefs['modeler.vbhmm.nstates_min']
-		nstates_max = self.maven.prefs['modeler.vbhmm.nstates_max']
-		if nstates_min > nstates_max:
-			logger.info('nstates min > max')
-			return
-
-		dtype = self.maven.prefs['modeler.dtype']
-		success,keep,y = self.get_traces(dtype)
-		if not success:
-			return
-
-		maxiters, converge, nrestarts, ncpu = self.get_model_specs()
-
-		from .fxns.hmm import viterbi
-		from .model_container import trace_model_container
-		from .hmm_vb import vb_em_hmm_parallel
-
-		idealized = np.zeros_like(self.maven.data.corrected[:,:,0]) + np.nan
-		ran = np.nonzero(keep)[0].tolist()
-		results_ens = []
-		y_flat = np.concatenate(y)
-
-
-		for nstates in range(nstates_min,nstates_max+1):
-			trace_level = {}
-
-			for i in range(len(y)):
-				yi = y[i].astype('double')
-				results = []
-				for k in range(1,nstates+1):
-					priors = self.get_priors('modeler.vbhmm', k, y_flat)
-
-					results.append(vb_em_hmm_parallel(yi,k,maxiters,converge,nrestarts,priors=priors,ncpu=ncpu))
-
-				elbos = np.array([ri.likelihood[-1,0] for ri in results])
-				modelmax = np.argmax(elbos)
-				r = results[modelmax]
-				ii = ran[i]
-				pre = self.maven.data.pre_list[ii]
-				post = self.maven.data.post_list[ii]
-
-				vit = r.mean[viterbi(yi,r.mean,r.var,r.tmatrix,r.frac).astype('int')]
-				idealized[ii,pre:post] = vit
-				trace_level_inst = trace_model_container(r, ii)
-				trace_level_inst.dtype = dtype
-				trace_level_inst.idealized = idealized[ii]
-				trace_level[str(ii)] = trace_level_inst
-
-			vits = np.concatenate(idealized)
-			vits = vits[np.isfinite(vits)]
-			priors = self.get_priors('modeler.vbgmm')
-
-			from .gmm_vb import vb_em_gmm,vb_em_gmm_parallel
-			result = vb_em_gmm_parallel(vits,nstates,maxiters,converge,nrestarts,priors=priors,ncpu=ncpu)
-			result.trace_level = trace_level
-			result.type = "vb GMM + vb HMM"
-			result.dtype = dtype
-			result.ran = ran
-
-			result.rate_type = "Transition Matrix"
-			from .fxns.hmm import compose_tmatrix, normalize_tmatrix,convert_tmatrix 
-			tmatrix = compose_tmatrix(y,result)
-			result.tmatrix = tmatrix
-			result.norm_tmatrix = normalize_tmatrix(tmatrix)
-			result.rates = convert_tmatrix(tmatrix)
-
-			result.idealize = lambda : self.idealize_gmm_viterbi(result,idealized)
-			result.idealize()
-			self.recast_rs(result)
-			results_ens.append(result)
-
-		elbos = np.array([ri.likelihood[-1,0] for ri in results_ens])
-		modelmax = np.argmax(elbos)
-		logger.info('VB HMM->VB GMM - best elbo: %f, nstates=%d'%(elbos[modelmax],results_ens[modelmax].nstates))
-		for i in range(len(results_ens)):
-			self.models.append(results_ens[i])
-			if i == modelmax:
-				self._active_model_index = len(self.models)-1
-				self.make_report(results_ens[i])
-		self.maven.emit_data_update()
-
-
-	def run_threshold_vbhmm(self):
-		nstates = self.maven.prefs['modeler.vbhmm.nstates']
-		threshold = self.maven.prefs['modeler.threshold']
-
-		dtype = self.maven.prefs['modeler.dtype']
-		success,keep,y = self.get_traces(dtype)
-		if not success:
-			return
-
-		maxiters, converge, nrestarts, ncpu = self.get_model_specs()
-
-		from .fxns.hmm import viterbi
-		from .model_container import trace_model_container
-		from .hmm_vb import vb_em_hmm_parallel
-
-		idealized = np.zeros_like(self.maven.data.corrected[:,:,0]) + np.nan
-		ran = np.nonzero(keep)[0].tolist()
-
-		trace_level = {}
-
-		y_flat = np.concatenate(y)
-
-		for i in range(len(y)):
-			yi = y[i].astype('double')
-			results = []
-			for k in range(1,nstates+1):
-				priors = self.get_priors('modeler.vbhmm', k, y_flat)
-				results.append(vb_em_hmm_parallel(yi,k,maxiters,converge,nrestarts,priors=priors,ncpu=ncpu))
-
-			elbos = np.array([ri.likelihood[-1,0] for ri in results])
-			modelmax = np.argmax(elbos)
-			r = results[modelmax]
-			ii = ran[i]
-			pre = self.maven.data.pre_list[ii]
-			post = self.maven.data.post_list[ii]
-
-			vit = r.mean[viterbi(yi,r.mean,r.var,r.tmatrix,r.frac).astype('int')]
-			idealized[ii,pre:post] = vit
-			trace_level_inst = trace_model_container(r, ii)
-			trace_level_inst.dtype = dtype
-			trace_level_inst.idealized = idealized[ii]
-			trace_level[str(ii)] = trace_level_inst
-
-		vits = np.concatenate(idealized)
-		vits = vits[np.isfinite(vits)]
-		from .threshold import calc_threshold
-		result = calc_threshold(vits,threshold)
-		result.trace_level = trace_level
-		result.type = "threshold + vb HMM"
-		result.dtype = dtype
-		result.ran = ran
-		result.idealize = lambda : self.idealize_threshold_viterbi(result,idealized)
-		result.idealize()
-		self.model = result
-		self.make_report(result)
-		self.maven.emit_data_update()
-
-
 	def run_ebhmm(self):
 		nstates = self.maven.prefs['modeler.ebhmm.nstates']
 
@@ -1230,6 +980,55 @@ class controller_modeler(object):
 				self._active_model_index = len(self.models)-1
 				self.make_report(results[i])
 		self.maven.emit_data_update()
+
+	'''
+	######################### Dwell analysis ######################### 
+	'''
+	
+	def run_dwell_analysis(self, ftype, state, fix_A = False):
+		tau,surv = self.get_survival_dwells(state)
+
+		from .dwells import optimize_single_surv, optimize_double_surv, optimize_triple_surv, optimize_stretch_surv
+		fxns = {
+			'Single Exponential':optimize_single_surv,
+			'Double Exponential':optimize_double_surv,
+			'Triple Exponential':optimize_triple_surv,
+			'Stretched Exponential':optimize_stretch_surv,
+		}
+		rates = fxns[ftype](tau,surv,fix_A)
+
+		model = self.model
+
+		if model.rate_type in ["Transition Matrix", "N/A"]:
+			model.rate_type = "Dwell Analysis"
+			model.rates = {}
+
+		model.rates[state] = {}
+		model.rates[state]['ks'] = rates[0]
+		model.rates[state]['As'] = rates[-3]
+		model.rates[state]['error'] = rates[-2]
+		model.rates[state]['R2'] = rates[-1]
+
+		if ftype == "Stretched Exponential":
+			model.rates[state]["betas"] = rates[1]
+		elif "betas" in model.rates:
+			model.rates.pop('betas')
+
+		self.model = model
+
+	def run_tmatrix(self):
+		model = self.model
+
+		if not model.tmatrix is None:
+			from .fxns.hmm import convert_tmatrix
+			model.rates = convert_tmatrix(model.tmatrix)
+			model.rate_type = "Transition Matrix"
+		else:
+			return
+
+	'''
+	######################### Experimental ######################### 
+	'''
 
 	def run_hhmm(self):
 		dtype = self.maven.prefs['modeler.dtype']
@@ -1312,72 +1111,6 @@ class controller_modeler(object):
 		self.make_report(result)
 		self.maven.emit_data_update()
 
-	def run_vbhmm_one(self):
-		nstates = self.maven.prefs['modeler.vbhmm.nstates']
-
-		dtype = self.maven.prefs['modeler.dtype']
-		success,keep,y = self.get_traces(dtype)
-		if not success:
-			return
-		if keep.sum() != 1:
-			## WARNING:"Error: Run all, Apply all","You have more than one molecule turned on"
-			return
-		
-		maxiters, converge, nrestarts, ncpu = self.get_model_specs()
-
-		priors = self.get_priors('modeler.vbhmm', nstates, np.concatenate(y))
-
-		from .hmm_vb import vb_em_hmm_parallel
-		result = vb_em_hmm_parallel(y[0].astype('double'),nstates,maxiters,converge,nrestarts,priors=priors,ncpu=ncpu)
-		result.dtype = dtype
-		result.ran = [np.nonzero(keep)[0]]
-		result.idealize = lambda : self.idealize_hmm(result)
-		result.idealize()
-		self.model = result
-		self.make_report(result)
-		self.maven.emit_data_update()
-
-	def run_dwell_analysis(self, ftype, state, fix_A = False):
-		tau,surv = self.get_survival_dwells(state)
-
-		from .dwells import optimize_single_surv, optimize_double_surv, optimize_triple_surv, optimize_stretch_surv
-		fxns = {
-			'Single Exponential':optimize_single_surv,
-			'Double Exponential':optimize_double_surv,
-			'Triple Exponential':optimize_triple_surv,
-			'Stretched Exponential':optimize_stretch_surv,
-		}
-		rates = fxns[ftype](tau,surv,fix_A)
-
-		model = self.model
-
-		if model.rate_type in ["Transition Matrix", "N/A"]:
-			model.rate_type = "Dwell Analysis"
-			model.rates = {}
-
-		model.rates[state] = {}
-		model.rates[state]['ks'] = rates[0]
-		model.rates[state]['As'] = rates[-3]
-		model.rates[state]['error'] = rates[-2]
-		model.rates[state]['R2'] = rates[-1]
-
-		if ftype == "Stretched Exponential":
-			model.rates[state]["betas"] = rates[1]
-		elif "betas" in model.rates:
-			model.rates.pop('betas')
-
-		self.model = model
-
-	def run_tmatrix(self):
-		model = self.model
-
-		if not model.tmatrix is None:
-			from .fxns.hmm import convert_tmatrix
-			model.rates = convert_tmatrix(model.tmatrix)
-			model.rate_type = "Transition Matrix"
-		else:
-			return
-	
 
 	def run_biasd_safeimports(self):
 		try:
@@ -1701,6 +1434,11 @@ class controller_modeler(object):
 		plt.tight_layout()
 		plt.show()
 
+
+	'''
+	-------------------------- Idealization --------------------------
+	'''
+
 	def idealize_threshold(self,result):
 		success,data = self.get_data(result.dtype)
 		if not success:
@@ -1722,9 +1460,7 @@ class controller_modeler(object):
 		result.idealized = np.zeros_like(data) + np.nan
 		result.chain = np.zeros_like(result.idealized).astype('int')
 
-		# print(result.mean)
 		for ii in result.ran:
-			#ii = result.ran[i]
 			pre = self.maven.data.pre_list[ii]
 			post = self.maven.data.post_list[ii]
 			idealpath = np.abs(data[ii,pre:post,None] - result.mean[None,:]).argmin(1).astype('int64')
@@ -1799,3 +1535,194 @@ class controller_modeler(object):
 			if post[i]-pre[i]>=2:
 				result.chain[i,pre[i]:post[i]] = viterbi(data[i][pre[i]:post[i]],result.mean,result.var,result.norm_tmatrix,result.frac).astype('int')
 				result.idealized[i,pre[i]:post[i]] = result.mean[result.chain[i,pre[i]:post[i]]]
+
+
+	'''
+	def run_mlhmm(self):
+		nstates = self.maven.prefs['modeler.mlhmm.nstates']
+
+		dtype = self.maven.prefs['modeler.dtype']
+		success,keep,y = self.get_traces(dtype)
+		if not success:
+			return
+
+		maxiters, converge, nrestarts, ncpu = self.get_model_specs()
+
+		from .fxns.hmm import viterbi
+		from .model_container import trace_model_container
+		from .hmm_ml import ml_em_hmm_parallel
+
+		mu = np.ones(nstates)*np.nan
+		var = mu.copy()
+		frac = mu.copy()
+		result = self.model_container(type='ml HMM',nstates=nstates,mean=mu,var =var,frac=frac)
+		nmol = self.maven.data.nmol
+		nt = self.maven.data.nt
+		result.idealized = np.zeros((nmol,nt)) + np.nan
+		trace_level = {}
+		result.ran = np.nonzero(keep)[0].tolist()
+		result.dtype = dtype
+
+		for i in range(len(y)):
+			yi = y[i].astype('double')
+			r = ml_em_hmm_parallel(yi,nstates,maxiters,converge,nrestarts,ncpu)
+			ii = result.ran[i]
+			pre = self.maven.data.pre_list[ii]
+			post = self.maven.data.post_list[ii]
+			result.idealized[ii,pre:post] = r.mean[viterbi(yi,r.mean,r.var,r.tmatrix,r.frac).astype('int')]
+			trace_level_inst = trace_model_container(r, ii)
+			trace_level_inst.dtype = dtype
+			trace_level_inst.idealized = result.idealized[ii]
+			trace_level[str(ii)] = trace_level_inst
+
+		result.trace_level = trace_level
+		self.model = result
+		self.make_report(result)
+		self.maven.emit_data_update()
+
+	def run_vbhmm(self):
+		nstates = self.maven.prefs['modeler.vbhmm.nstates']
+
+		dtype = self.maven.prefs['modeler.dtype']
+		success,keep,y = self.get_traces(dtype)
+		if not success:
+			return
+
+		maxiters, converge, nrestarts, ncpu = self.get_model_specs()
+
+		priors = self.get_priors('modeler.vbhmm', nstates, np.concatenate(y))
+
+
+		from .fxns.hmm import viterbi
+		from .model_container import trace_model_container
+		from .hmm_vb import vb_em_hmm_parallel
+
+		mu = np.ones(nstates)*np.nan
+		var = mu.copy()
+		frac = mu.copy()
+		result = self.model_container(type='vb HMM',nstates=nstates,mean=mu,var =var,frac=frac)
+
+		result.idealized = np.zeros_like(self.maven.data.corrected[:,:,0]) + np.nan
+		trace_level = {}
+		result.ran = np.nonzero(keep)[0].tolist()
+		result.dtype = dtype
+
+		for i in range(len(y)):
+			yi = y[i].astype('double')
+			r = vb_em_hmm_parallel(yi,nstates,maxiters,converge,nrestarts,priors=priors,ncpu=ncpu)
+			ii = result.ran[i]
+			pre = self.maven.data.pre_list[ii]
+			post = self.maven.data.post_list[ii]
+			result.idealized[ii,pre:post] = r.mean[viterbi(yi,r.mean,r.var,r.tmatrix,r.frac).astype('int')]
+			trace_level_inst = trace_model_container(r, ii)
+			trace_level_inst.idealized = result.idealized[ii]
+			trace_level_inst.dtype = dtype
+			trace_level[str(ii)] = trace_level_inst
+
+		result.trace_level = trace_level
+		self.model = result
+		self.make_report(result)
+		self.maven.emit_data_update()
+
+	def run_vbhmm_modelselection(self):
+		nstates_min = self.maven.prefs['modeler.vbhmm.nstates_min']
+		nstates_max = self.maven.prefs['modeler.vbhmm.nstates_max']
+		if nstates_min > nstates_max:
+			logger.info('nstates min > max')
+			return
+
+		dtype = self.maven.prefs['modeler.dtype']
+		success,keep,y = self.get_traces(dtype)
+		if not success:
+			return
+
+		maxiters, converge, nrestarts, ncpu = self.get_model_specs()
+
+		from .fxns.hmm import viterbi
+		from .model_container import trace_model_container
+		from .hmm_vb import vb_em_hmm_parallel
+
+		mu = np.ones(nstates_max)*np.nan
+		var = mu.copy()
+		frac = mu.copy()
+		result = self.model_container(type='vb HMM_model selection',nstates=nstates_max,mean=mu,var =var,frac=frac)
+
+		result.idealized = np.zeros_like(self.maven.data.corrected[:,:,0]) + np.nan
+		trace_level = {}
+		result.ran = np.nonzero(keep)[0].tolist()
+		result.dtype = dtype
+		y_flat = np.concatenate(y)
+
+		for i in range(len(y)):
+			results = []
+			yi = y[i].astype('double')
+			for nstates in range(nstates_min,nstates_max+1):
+				priors = self.get_priors('modeler.vbhmm', nstates, y_flat)
+				results.append(vb_em_hmm_parallel(yi,nstates,maxiters,converge,nrestarts,priors=priors,ncpu=ncpu))
+
+			elbos = np.array([ri.likelihood[-1,0] for ri in results])
+			modelmax = np.argmax(elbos)
+			r = results[modelmax]
+			ii = result.ran[i]
+			pre = self.maven.data.pre_list[ii]
+			post = self.maven.data.post_list[ii]
+			result.idealized[ii,pre:post] = r.mean[viterbi(yi,r.mean,r.var,r.tmatrix,r.frac).astype('int')]
+			trace_level_inst = trace_model_container(r, ii)
+			trace_level_inst.dtype = dtype
+			trace_level_inst.idealized = result.idealized[ii]
+			trace_level[str(ii)] = trace_level_inst
+
+		result.trace_level = trace_level
+		self.model = result
+		self.make_report(result)
+		self.maven.emit_data_update()
+	
+	def run_vbhmm_one(self):
+		nstates = self.maven.prefs['modeler.vbhmm.nstates']
+
+		dtype = self.maven.prefs['modeler.dtype']
+		success,keep,y = self.get_traces(dtype)
+		if not success:
+			return
+		if keep.sum() != 1:
+			## WARNING:"Error: Run all, Apply all","You have more than one molecule turned on"
+			return
+		
+		maxiters, converge, nrestarts, ncpu = self.get_model_specs()
+
+		priors = self.get_priors('modeler.vbhmm', nstates, np.concatenate(y))
+
+		from .hmm_vb import vb_em_hmm_parallel
+		result = vb_em_hmm_parallel(y[0].astype('double'),nstates,maxiters,converge,nrestarts,priors=priors,ncpu=ncpu)
+		result.dtype = dtype
+		result.ran = [np.nonzero(keep)[0]]
+		result.idealize = lambda : self.idealize_hmm(result)
+		result.idealize()
+		self.model = result
+		self.make_report(result)
+		self.maven.emit_data_update()
+
+	def run_mlhmm_one(self):
+		nstates = self.maven.prefs['modeler.mlhmm.nstates']
+
+		dtype = self.maven.prefs['modeler.dtype']
+		success,keep,y = self.get_traces(dtype)
+		if not success:
+			return
+		
+		if keep.sum() != 1:
+			#Warning "Error: Run all, Apply all","You have more than one molecule turned on")
+			return
+		
+		maxiters, converge, nrestarts, ncpu = self.get_model_specs()
+
+		from .hmm_ml import ml_em_hmm_parallel
+		result = ml_em_hmm_parallel(y[0].astype('double'),nstates,maxiters,converge,nrestarts,ncpu)
+		result.ran = [np.nonzero(keep)[0]]
+		result.dtype = dtype
+		result.idealize = lambda : self.idealize_hmm(result)
+		result.idealize()
+		self.model = result
+		self.maven.emit_data_update()
+
+	'''
