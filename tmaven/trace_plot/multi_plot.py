@@ -150,14 +150,14 @@ class multi_canvas(FigureCanvas):
 		self.gui.maven.prefs['plot.ylabel_text2'] = r'E$_{\rm{FRET}}$'
 		self.update_plots(self.gui.index)
 
-	def relative_prefs(self):
+	def ndrelative_prefs(self):
 		self.gui.maven.prefs['plot.channel_colors'] = [colors.fret_green,colors.fret_red,"cyan","purple"]
 		self.gui.maven.prefs['plot.relative_colors'] = [colors.fret_green,colors.fret_red,"cyan","purple"]
 		self.gui.maven.prefs['plot.ylabel_text1'] = r'Intensity (A.U.)'
 		self.gui.maven.prefs['plot.ylabel_text2'] = r'Relative'
 		self.update_plots(self.gui.index)
 	
-	def nd_prefs(self):
+	def ndraw_prefs(self):
 		self.gui.maven.prefs['plot.channel_colors'] = [colors.fret_green,colors.fret_red,"cyan","purple"]
 		self.gui.maven.prefs['plot.relative_colors'] = ["none","none","none","none"]
 		self.gui.maven.prefs['plot.ylabel_text1'] = r'Intensity (A.U.)'
@@ -165,12 +165,19 @@ class multi_canvas(FigureCanvas):
 		self.gui.maven.prefs['plot.fig_height'] /= 2.
 		self.update_plots(self.gui.index)
 
+	def normalized_prefs(self):
+		self.gui.maven.prefs['plot.channel_colors'] = [colors.fret_green,colors.fret_red,"cyan","purple"]
+		self.gui.maven.prefs['plot.relative_colors'] = [colors.fret_blue,"none","none","none"]
+		self.gui.maven.prefs['plot.ylabel_text1'] = r'Intensity (A.U.)'
+		self.gui.maven.prefs['plot.ylabel_text2'] = r'Normalised Intensity'
+		self.update_plots(self.gui.index)
+	
 	def sizeHint(self):
 		qs = QSize(int(self.gui.maven.prefs['plot.fig_width']*self.dpi), int(self.gui.maven.prefs['plot.fig_height']*self.dpi))
 		return qs
 
 	def build_menu(self):
-		self.menu_trajplot = QMenu('Plot',gui)
+		self.menu_trajplot = QMenu('Plot',self.gui)
 
 		action_redraw = QAction('Refresh', self.gui)
 		action_redraw.triggered.connect(lambda event: self.redrawplot())
@@ -391,7 +398,7 @@ class multi_canvas(FigureCanvas):
 		'''
 		p = self.gui.maven.prefs
 		self.figure.subplots_adjust(left=p['plot.subplots_left'],right=p['plot.subplots_right'],top=p['plot.subplots_top'],bottom=p['plot.subplots_bottom'],hspace=p['plot.subplots_hspace'],wspace=p['plot.subplots_wspace'])		
-		if self.plot_mode == 'ND':
+		if self.plot_mode == 'ND Raw':
 			[aa.set_visible(False) for aa in self.ax[0]]
 			for i in range(2):
 				pos0 = np.array(self.ax[0,i].get_position().get_points())
@@ -436,7 +443,7 @@ class multi_canvas(FigureCanvas):
 		self.figure.canvas.update()
 
 	def get_axis_inds(self):
-		int_ind = 1 if self.plot_mode == 'ND' else 0
+		int_ind = 1 if self.plot_mode == 'ND Raw' else 0
 		rel_ind = int(not int_ind)
 		model_ind = 1 #if self.plot_mode == 'ND' else 1
 		return int_ind,rel_ind,model_ind
@@ -765,13 +772,19 @@ class multi_canvas(FigureCanvas):
 
 	def calc_trajectory(self,index):
 		''' get data for current trajectory '''
-		intensities = self.gui.maven.data.corrected[index].copy()
+		if self.plot_mode == "Normalized":
+			intensities = self.gui.maven.data.raw[index].copy()
+		else:
+			intensities = self.gui.maven.data.corrected[index].copy()
 		t = np.arange(intensities.shape[0])*self.gui.maven.prefs['plot.time_dt'] + self.gui.maven.prefs['plot.time_offset']
 
 		pbtime = int(self.gui.maven.data.post_list[index])
 		pretime = int(self.gui.maven.data.pre_list[index])
 
-		rel = self.gui.maven.calc_relative(index).copy()
+		if self.plot_mode == "Normalized":
+			rel = self.gui.maven.data.corrected[index].copy()
+		else:
+			rel = self.gui.maven.calc_relative(index).copy()
 		return t,intensities,rel,pretime,pbtime
 
 	def calc_histograms(self,intensities,rel,pretime,pbtime):

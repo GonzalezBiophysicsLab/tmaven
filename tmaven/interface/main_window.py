@@ -186,7 +186,7 @@ class main_window(QMainWindow):
 			self.button_lock.setIcon(load_icon('unlocked.png'))
 
 	def reset_menus(self):
-		from . import ui_io, ui_scripts, ui_cull, ui_corrections, ui_selection, ui_photobleaching, ui_trace_filter, ui_experimental
+		from . import ui_io, ui_scripts, ui_cull, ui_corrections, ui_normalize, ui_selection, ui_photobleaching, ui_trace_filter, ui_experimental
 		from .modeler import ui_modeler
 
 		logger.info('Building Menus')
@@ -204,6 +204,7 @@ class main_window(QMainWindow):
 		self.trace_filter = ui_trace_filter.container_trace_filter(self)
 		self.menu_cull = ui_cull.build_menu(self)
 		self.menu_corrections,self.menu_correction_filters = ui_corrections.build_menu(self)
+		self.menu_normalize = ui_normalize.build_menu(self)
 		self.menu_selection, self.menu_order, self.menu_classes = ui_selection.build_menu(self)
 		self.menu_photobleaching = ui_photobleaching.build_menu(self)
 		self.menu_modeler = ui_modeler.build_menu(self)
@@ -220,9 +221,15 @@ class main_window(QMainWindow):
 		self.menu_view.addAction('Reset GUI',self.session_default)
 
 		self.menu_traj = self.menu_view.addMenu('Plot Type')
-		self.menu_traj.addAction('ND',lambda : self.plot_container.change_mode('ND'))
-		self.menu_traj.addAction('Relative',lambda : self.plot_container.change_mode('Relative'))
-		self.menu_traj.addAction('smFRET',lambda : self.plot_container.change_mode('smFRET'))
+
+		self.menu_rel = self.menu_traj.addMenu('Relative')
+		self.menu_rel.addAction('Relative ND',lambda : self.plot_container.change_mode('ND Relative'))
+		self.menu_rel.addAction('smFRET',lambda : self.plot_container.change_mode('smFRET'))
+
+		self.menu_abs = self.menu_traj.addMenu('Intensities')
+		self.menu_abs.addAction('Raw ND',lambda : self.plot_container.change_mode('ND Raw'))
+		self.menu_abs.addAction('Normalized',lambda : self.plot_container.change_mode('Normalized'))
+
 		self.menu_theme = self.menu_view.addMenu('Theme')
 		self.menu_theme.addAction('Light',self.change_theme_light)
 		self.menu_theme.addAction('Dark',self.change_theme_dark)
@@ -243,6 +250,7 @@ class main_window(QMainWindow):
 		self.menu_tools.addMenu(self.menu_cull)
 		self.menu_tools.addMenu(self.menu_corrections)
 		self.menu_corrections.addMenu(self.menu_correction_filters)
+		self.menu_tools.addMenu(self.menu_normalize)
 		self.menu_tools.addMenu(self.menu_photobleaching)
 		self.menu_tools.addAction('Filter Traces',self.trace_filter.launch,shortcut='Ctrl+F')
 
