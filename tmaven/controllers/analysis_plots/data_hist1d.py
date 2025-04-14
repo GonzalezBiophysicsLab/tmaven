@@ -4,7 +4,7 @@ logger = logging.getLogger(__name__)
 
 from .base import controller_base_analysisplot
 
-class controller_fret_hist1d(controller_base_analysisplot):
+class controller_data_hist1d(controller_base_analysisplot):
 	'''
 	Notes
 	-----
@@ -85,8 +85,8 @@ class controller_fret_hist1d(controller_base_analysisplot):
 
 	def plot(self,fig,ax):
 		## Decide if we should be plotting at all
-		if not self.maven.data.ncolors == 2:
-			logger.error('more than 2 colors not implemented')
+		#if not self.maven.data.ncolors == 2:
+			#logger.error('more than 2 colors not implemented')
 			# return
 
 		## Setup
@@ -94,15 +94,21 @@ class controller_fret_hist1d(controller_base_analysisplot):
 		self.fix_ax(fig,ax)
 
 		if self.prefs['idealized']:
-			self.fpb = self.get_idealized_data()
-			if self.fpb is None:
-				self.fpb = np.array(())
+			self.dpb = self.get_idealized_data()
+			if self.dpb is None:
+				self.dpb = np.array(())
 		else:
-			try:
-				self.fpb = self.get_plot_fret()[:,:,1].copy()
-			except:
-				self.fpb = np.array(())
-		fpb = self.fpb[np.isfinite(self.fpb)].flatten()
+			if self.plot_mode == 'smFRET':
+				index = 1
+			else:
+				index = self.prefs['source_axis']
+			if 1:
+			#try:
+				self.dpb = self.get_plot_data()[:,:,index].copy()
+			#except:
+			else:
+				self.dpb = np.array(())
+		dpb = self.dpb[np.isfinite(self.dpb)].flatten()
 
 		## Plot Histogram
 		from matplotlib import colors
@@ -113,7 +119,7 @@ class controller_fret_hist1d(controller_base_analysisplot):
 			ecolor = self.prefs['hist_edgecolor']
 			if not colors.is_color_like(ecolor):
 				ecolor = 'black'
-			self.hist_y, self.hist_x = ax.hist(fpb,bins=self.prefs['fret_nbins'],
+			self.hist_y, self.hist_x = ax.hist(dpb,bins=self.prefs['fret_nbins'],
 				range=(self.prefs['fret_min'], self.prefs['fret_max']),
 				histtype=self.prefs['hist_type'], alpha=.8, density=True,
 				color=color, edgecolor=ecolor, log=self.prefs['hist_log_y'])[:2]
@@ -169,7 +175,7 @@ class controller_fret_hist1d(controller_base_analysisplot):
 		ax.yaxis.set_label_coords(self.prefs['ylabel_offset'], 0.5)
 		ax.xaxis.set_label_coords(0.5, self.prefs['xlabel_offset'])
 		bbox_props = dict(boxstyle="square", fc="w", alpha=1.0,lw=1./dpr)
-		lstr = 'N = %d'%(self.fpb.shape[0])
+		lstr = 'N = %d'%(self.dpb.shape[0])
 		ax.annotate(lstr,xy=(self.prefs['textbox_x'], self.prefs['textbox_y']),
 			xycoords='axes fraction', ha='right', color='k',
 			bbox=bbox_props, fontsize=self.prefs['textbox_fontsize']/dpr,

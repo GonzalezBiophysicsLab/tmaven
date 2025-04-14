@@ -19,9 +19,9 @@ import numpy as np
 
 
 class colors(object):
-	fret_green = "#0EA52F"
-	fret_red = "#EE0000"
-	fret_blue = '#023bf9'
+	fret_green =  "#0EA52F" # '#6AD531'
+	fret_red =  "#EE0000"  # '#D5415A' 
+	fret_blue = "#023BF9"
 
 class multi_canvas(FigureCanvas):
 
@@ -167,7 +167,7 @@ class multi_canvas(FigureCanvas):
 
 	def normalized_prefs(self):
 		self.gui.maven.prefs['plot.channel_colors'] = [colors.fret_green,colors.fret_red,"cyan","purple"]
-		self.gui.maven.prefs['plot.relative_colors'] = [colors.fret_blue,"none","none","none"]
+		self.gui.maven.prefs['plot.relative_colors'] = [colors.fret_green,colors.fret_red,"cyan","purple"]
 		self.gui.maven.prefs['plot.ylabel_text1'] = r'Intensity (A.U.)'
 		self.gui.maven.prefs['plot.ylabel_text2'] = r'Normalised Intensity'
 		self.update_plots(self.gui.index)
@@ -593,7 +593,7 @@ class multi_canvas(FigureCanvas):
 			for i in range(len(fret_hists)):
 				self.draw_fret_hist(i,*fret_hists[i])
 
-			if self.plot_mode == 'ND':
+			if self.plot_mode == 'ND Raw':
 				[aa.set_visible(False) for aa in self.ax[0]]
 
 			self.restore_blits()

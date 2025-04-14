@@ -39,7 +39,7 @@ class controller_normalizations(controller_corrections):
 		self.maven.prefs.add_dictionary(default_prefs)
 	
 	def normalize_minmax_ind(self):
-		self.reset()
+		#self.reset()
 		norm = np.zeros_like(self.maven.data.corrected)
 		pre = self.maven.data.pre_list
 		post = self.maven.data.post_list
@@ -55,13 +55,13 @@ class controller_normalizations(controller_corrections):
 		self.correction_update()
 
 	def normalize_minmax_ckfilt_ind(self):
-		self.reset()
+		#self.reset()
 		self.normalize_minmax_ind()
 		self.filter_chungkennedy()
 		self.normalize_minmax_ind()
 		
 	def normalize_minmax_glob(self):
-		self.reset()
+		#self.reset()
 		norm = np.zeros_like(self.maven.data.corrected)
 		pre = self.maven.data.pre_list
 		post = self.maven.data.post_list
