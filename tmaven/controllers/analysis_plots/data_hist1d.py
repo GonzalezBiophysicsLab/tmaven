@@ -92,6 +92,7 @@ class controller_data_hist1d(controller_base_analysisplot):
 		## Setup
 		ax.cla()
 		self.fix_ax(fig,ax)
+		self.plot_mode = self.maven.gui.plot_container.plot.plot_mode
 
 		if self.prefs['idealized']:
 			self.dpb = self.get_idealized_data()

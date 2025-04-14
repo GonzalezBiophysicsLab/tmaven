@@ -7,7 +7,6 @@ from ..prefs import prefs_object
 class controller_base_analysisplot(object):
 	def __init__(self,maven):
 		self.maven = maven
-		self.plot_mode = maven.gui.plot_container.plot.plot_mode
 		##These are the default preferences for all plots
 		self.prefs = prefs_object()
 		self.prefs.add_dictionary({'fig_width':2.5,
