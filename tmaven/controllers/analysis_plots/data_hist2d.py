@@ -99,7 +99,7 @@ class controller_data_hist2d(controller_base_analysisplot):
 	def interpolate_histogram(self,z):
 		'''interpolate/smooth the histogram `z`'''
 		from scipy.ndimage import gaussian_filter,uniform_filter,median_filter
-		from scipy.interpolate import interp2d
+		from scipy.interpolate import RectBivariateSpline
 
 		# smooth histogram
 		x = np.linspace(0.,z.shape[0]-1,z.shape[0])
@@ -110,12 +110,12 @@ class controller_data_hist2d(controller_base_analysisplot):
 				z = median_filter(z,(3,3))
 			z = gaussian_filter(z,(self.prefs['hist_smoothx'],self.prefs['hist_smoothy']))
 
-			## interpolate histogram - interp2d is backwards...
+			## interpolate histogram - ported over from interp2d. Transposes to make the result identical to legacy code
 			if self.prefs['hist_interp_res'] > 0:
-				f =  interp2d(y,x,z, kind='cubic')
+				interspline = RectBivariateSpline(y,x,z.T)
 				x = np.linspace(0.,z.shape[0]-1,self.prefs['hist_interp_res'])#*self.prefs['time_dt']
 				y = np.linspace(self.prefs['fret_min'],self.prefs['fret_max'],self.prefs['hist_interp_res']+1)
-				z = f(y,x)
+				z = interspline(y,x).T
 				z[z<0] = 0.
 
 			if self.prefs['hist_normalizeframe']:
