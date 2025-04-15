@@ -256,7 +256,7 @@ class main_window(QMainWindow):
 
 		self.popplots = {'1D':None,'2D':None,'TDP':None,'TM':None,'VB':None,'Dwell':None}
 		self.menu_plots.addAction('Histogram 1D',lambda : self.popplot_launch('1D'))
-		self.menu_plots.addAction('FRET Hist 2D',lambda : self.popplot_launch('2D'))
+		self.menu_plots.addAction('Histogram 2D',lambda : self.popplot_launch('2D'))
 		self.menu_plots.addAction('FRET TDP',lambda : self.popplot_launch('TDP'))
 		self.menu_plots.addAction('Transition Prob Hist',lambda : self.popplot_launch('TM'))
 		self.menu_plots.addAction('vb Model States',lambda : self.popplot_launch('VB'))
@@ -280,7 +280,7 @@ class main_window(QMainWindow):
 			if popplottype == '1D':
 				self.popplots[popplottype] = popplot_container(self,self.maven.plots.data_hist1d)
 			elif popplottype == '2D':
-				self.popplots[popplottype] = popplot_container(self,self.maven.plots.fret_hist2d)
+				self.popplots[popplottype] = popplot_container(self,self.maven.plots.data_hist2d)
 			elif popplottype == 'TDP':
 				self.popplots[popplottype] = popplot_container(self,self.maven.plots.fret_tdp)
 			elif popplottype == 'TM':

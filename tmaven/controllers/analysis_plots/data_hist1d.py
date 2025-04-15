@@ -102,13 +102,13 @@ class controller_data_hist1d(controller_base_analysisplot):
 			if self.plot_mode == 'smFRET':
 				index = 1
 			else:
-				index = self.prefs['source_axis']
-			if 1:
-			#try:
+				index = self.prefs['plot_channel']
+				
+			try:
 				self.dpb = self.get_plot_data()[:,:,index].copy()
-			#except:
-			else:
+			except:
 				self.dpb = np.array(())
+			
 		dpb = self.dpb[np.isfinite(self.dpb)].flatten()
 
 		## Plot Histogram

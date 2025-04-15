@@ -5,7 +5,7 @@ logger = logging.getLogger(__name__)
 
 from .base import controller_base_analysisplot
 
-class controller_fret_hist2d(controller_base_analysisplot):
+class controller_data_hist2d(controller_base_analysisplot):
 	''' Plots 2D histogram (heat map) in window.ax
 	color_floor : double
 		lowest floor value for colomap
@@ -104,7 +104,8 @@ class controller_fret_hist2d(controller_base_analysisplot):
 		# smooth histogram
 		x = np.linspace(0.,z.shape[0]-1,z.shape[0])
 		y = np.linspace(self.prefs['fret_min'],self.prefs['fret_max'],z.shape[1])
-		try:
+		#try:
+		if 1:
 			if self.prefs['hist_smooth_med']:
 				z = median_filter(z,(3,3))
 			z = gaussian_filter(z,(self.prefs['hist_smoothx'],self.prefs['hist_smoothy']))
@@ -123,7 +124,8 @@ class controller_fret_hist2d(controller_base_analysisplot):
 
 			if self.prefs['hist_log']:
 				z = np.log10(z)
-		except:
+		#except:
+		else:
 			pass
 		return x,y,z
 
@@ -153,8 +155,14 @@ class controller_fret_hist2d(controller_base_analysisplot):
 			number of frames on the LHS of the synchronization point
 
 		'''
-		try:
-			fpb = self.get_plot_fret()[:,:,1].copy()
+		#try:
+		if 1:
+			if self.plot_mode == 'smFRET':
+				index = 1
+			else:
+				index = self.prefs['plot_channel']
+				
+			dpb = self.get_plot_data()[:,:,index].copy()
 
 			if (not self.maven.modeler.model is None) and self.prefs['sync_postsync']: ## postsync time
 				viterbis = self.get_idealized_data()
@@ -171,32 +179,34 @@ class controller_fret_hist2d(controller_base_analysisplot):
 
 				nmol = np.unique(synclist[:,0]).size
 				npoints = synclist.shape[0]
-				out = histogram_sync_list(synclist, fpb, self.prefs['time_nbins'],
+				out = histogram_sync_list(synclist, dpb, self.prefs['time_nbins'],
 					self.prefs['sync_preframe'], self.prefs['fret_min'],
 					self.prefs['fret_max'], self.prefs['fret_nbins'])
 
 			else: ## not post-sync
 				if self.prefs['sync_start']:
-					fpb = sync_start(fpb,self.maven.data.pre_list, self.maven.data.post_list)
-				nmol = fpb.shape[0] - np.all(np.isnan(fpb),axis=1).sum()
+					dpb = sync_start(dpb,self.maven.data.pre_list, self.maven.data.post_list)
+				nmol = dpb.shape[0] - np.all(np.isnan(dpb),axis=1).sum()
 				npoints = nmol
-				out = histogram_raw(fpb, self.prefs['time_nbins'], 0,
+				out = histogram_raw(dpb, self.prefs['time_nbins'], 0,
 					self.prefs['fret_min'], self.prefs['fret_max'],
 					self.prefs['fret_nbins'])
 			return out,nmol,npoints
 
-		except:
+		else:
+		#except:
 			return np.zeros((self.prefs['time_nbins'],self.prefs['fret_nbins'])),0,0
 
 	def plot(self,fig,ax):
 		## Decide if we should be plotting at all
-		if not self.maven.data.ncolors == 2:
-			logger.error('more than 2 colors not implemented')
+		#if not self.maven.data.ncolors == 2:
+			#logger.error('more than 2 colors not implemented')
 
 		## Setup
 		if len(fig.axes)>1:
 			[aa.remove() for aa in fig.axes[1:]]
 		self.fix_ax(fig,ax)
+		self.plot_mode = self.maven.gui.plot_container.plot.plot_mode
 
 		hist,nmol,npoints = self.get_data()
 		x,y,z = self.interpolate_histogram(hist)

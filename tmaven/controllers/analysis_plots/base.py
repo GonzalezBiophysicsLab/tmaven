@@ -36,7 +36,7 @@ class controller_base_analysisplot(object):
 			'color_floor':0.05,
 			'color_nticks':5,
 			'color_dblfloor':.2,
-			'source_axis':0})
+			'plot_channel':0})
 
 	def plot(self,fig,ax):
 		## override this
