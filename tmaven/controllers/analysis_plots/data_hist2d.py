@@ -27,11 +27,11 @@ class controller_data_hist2d(controller_base_analysisplot):
 		number of 2d histogram bins in the time dimension (x)
 	time_nticks : int
 		number of ticks on x axis
-	fret_min : double
+	signal_min : double
 		min of y axis
-	fret_max : double
+	signal_max : double
 		max of y axis
-	fret_nticks : int
+	signal_nticks : int
 		number of ticks on y axis
 	'''
 	def __init__(self,maven):
@@ -40,23 +40,25 @@ class controller_data_hist2d(controller_base_analysisplot):
 
 	def defaults(self):
 		self.prefs.add_dictionary({
-			'fig_height':2.500000,
-			'fig_width':2.500000,
-			'subplots_wspace':0.030000,
-			'subplots_hspace':0.040000,
-			'subplots_bottom':0.170000,
-			'subplots_top':0.970000,
+			'fig_height':2.5,
+			'fig_width':2.5,
+
+			'subplots_wspace':0.03,
+			'subplots_hspace':0.04,
+			'subplots_bottom':0.17,
+			'subplots_top':0.97,
 			'subplots_right':0.85,
 			'subplots_left':0.22,
+
 			'axes_topright':'True',
 
 			'colorbar_widthpercent':5,
 			'colorbar_padpercent':2,
 
-			'tick_fontsize':10.000000,
+			'tick_fontsize':10.,
 			'xlabel_text':r'Time (s)',
 			'ylabel_text':r'E$_{\rm{FRET}}$',
-			'label_fontsize':10.000000,
+			'label_fontsize':10.,
 			'xlabel_offset':-0.14,
 			'ylabel_offset':-0.34,
 
@@ -65,8 +67,6 @@ class controller_data_hist2d(controller_base_analysisplot):
 			'textbox_fontsize':7.,
 			'textbox_nmol':True,
 
-			# 'time_min':0,
-			# 'time_max':200,
 			'time_nbins':100,
 			'time_shift':0.0,
 			'time_nticks':5,
@@ -81,10 +81,10 @@ class controller_data_hist2d(controller_base_analysisplot):
 			'sync_singledwell':True,
 			# 'sync_ignoreends':True,
 
-			'fret_min':-.2,
-			'fret_max':1.2,
-			'fret_nbins':61,
-			'fret_nticks':7,
+			'signal_min':-.2,
+			'signal_max':1.2,
+			'signal_nbins':61,
+			'signal_nticks':7,
 
 			'hist_smooth_med':True,
 			'hist_smoothx':.5,
@@ -103,7 +103,7 @@ class controller_data_hist2d(controller_base_analysisplot):
 
 		# smooth histogram
 		x = np.linspace(0.,z.shape[0]-1,z.shape[0])
-		y = np.linspace(self.prefs['fret_min'],self.prefs['fret_max'],z.shape[1])
+		y = np.linspace(self.prefs['signal_min'],self.prefs['signal_max'],z.shape[1])
 		#try:
 		if 1:
 			if self.prefs['hist_smooth_med']:
@@ -114,7 +114,7 @@ class controller_data_hist2d(controller_base_analysisplot):
 			if self.prefs['hist_interp_res'] > 0:
 				interspline = RectBivariateSpline(y,x,z.T)
 				x = np.linspace(0.,z.shape[0]-1,self.prefs['hist_interp_res'])#*self.prefs['time_dt']
-				y = np.linspace(self.prefs['fret_min'],self.prefs['fret_max'],self.prefs['hist_interp_res']+1)
+				y = np.linspace(self.prefs['signal_min'],self.prefs['signal_max'],self.prefs['hist_interp_res']+1)
 				z = interspline(y,x).T
 				z[z<0] = 0.
 
@@ -180,8 +180,8 @@ class controller_data_hist2d(controller_base_analysisplot):
 				nmol = np.unique(synclist[:,0]).size
 				npoints = synclist.shape[0]
 				out = histogram_sync_list(synclist, dpb, self.prefs['time_nbins'],
-					self.prefs['sync_preframe'], self.prefs['fret_min'],
-					self.prefs['fret_max'], self.prefs['fret_nbins'])
+					self.prefs['sync_preframe'], self.prefs['signal_min'],
+					self.prefs['signal_max'], self.prefs['signal_nbins'])
 
 			else: ## not post-sync
 				if self.prefs['sync_start']:
@@ -189,13 +189,13 @@ class controller_data_hist2d(controller_base_analysisplot):
 				nmol = dpb.shape[0] - np.all(np.isnan(dpb),axis=1).sum()
 				npoints = nmol
 				out = histogram_raw(dpb, self.prefs['time_nbins'], 0,
-					self.prefs['fret_min'], self.prefs['fret_max'],
-					self.prefs['fret_nbins'])
+					self.prefs['signal_min'], self.prefs['signal_max'],
+					self.prefs['signal_nbins'])
 			return out,nmol,npoints
 
 		else:
 		#except:
-			return np.zeros((self.prefs['time_nbins'],self.prefs['fret_nbins'])),0,0
+			return np.zeros((self.prefs['time_nbins'],self.prefs['signal_nbins'])),0,0
 
 	def plot(self,fig,ax):
 		## Decide if we should be plotting at all
@@ -273,7 +273,7 @@ class controller_data_hist2d(controller_base_analysisplot):
 	def garnish(self,fig,ax):
 		dpr = self.devicePixelRatio()
 		tticks = self.best_ticks(self.tmin,self.tmax,self.prefs['time_nticks'])
-		fticks = self.best_ticks(self.prefs['fret_min'],self.prefs['fret_max'],self.prefs['fret_nticks'])
+		fticks = self.best_ticks(self.prefs['signal_min'],self.prefs['signal_max'],self.prefs['signal_nticks'])
 		ax.set_xticks(tticks)
 		ax.set_yticks(fticks)
 		fs = self.prefs['label_fontsize']/dpr

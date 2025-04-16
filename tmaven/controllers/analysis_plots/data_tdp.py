@@ -23,10 +23,10 @@ class controller_data_tdp(controller_base_analysisplot):
 			'colorbar_widthpercent':5,
 			'colorbar_padpercent':2,
 
-			'fret_min':-.25,
-			'fret_max':1.25,
-			'fret_nbins':101,
-			'fret_nticks':7,
+			'signal_min':-.25,
+			'signal_max':1.25,
+			'signal_nbins':101,
+			'signal_nticks':7,
 
 			'hist_smoothx':1.,
 			'hist_smoothy':1.,
@@ -154,8 +154,8 @@ class controller_data_tdp(controller_base_analysisplot):
 		ax.yaxis.set_label_coords(self.prefs['ylabel_offset'], 0.5)
 		ax.xaxis.set_label_coords(0.5, self.prefs['xlabel_offset'])
 
-		ax.set_xticks(self.best_ticks(self.prefs['fret_min'],self.prefs['fret_max'],self.prefs['fret_nticks']))
-		ax.set_yticks(self.best_ticks(self.prefs['fret_min'],self.prefs['fret_max'],self.prefs['fret_nticks']))
+		ax.set_xticks(self.best_ticks(self.prefs['signal_min'],self.prefs['signal_max'],self.prefs['signal_nticks']))
+		ax.set_yticks(self.best_ticks(self.prefs['signal_min'],self.prefs['signal_max'],self.prefs['signal_nticks']))
 
 		bbox_props = dict(boxstyle="square", fc="w", alpha=1.0,lw=1./dpr)
 		lstr = 'n = %d'%(self.d1.size)
@@ -237,18 +237,18 @@ class controller_data_tdp(controller_base_analysisplot):
 		Returns
 		-------
 		x : np.ndarray
-			(fret_nbins) the x axis bin locations
+			(signal_nbins) the x axis bin locations
 		y : np.ndarray
-			(fret_nbins) the y axis bin locations
+			(signal_nbins) the y axis bin locations
 		z : np.ndarray
-			(fret_nbins,fret_nbins) the histogram
+			(signal_nbins,signal_nbins) the histogram
 
 		'''
 		from scipy.ndimage import gaussian_filter
 		from scipy.interpolate import RectBivariateSpline
 
 		## make histogram
-		x = np.linspace(self.prefs['fret_min'],self.prefs['fret_max'],self.prefs['fret_nbins'])
+		x = np.linspace(self.prefs['signal_min'],self.prefs['signal_max'],self.prefs['signal_nbins'])
 		z,hx,hy = np.histogram2d(d1,d2,bins=[x.size,x.size],range=[[x.min(),x.max()],[x.min(),x.max()]])
 
 		## smooth histogram
@@ -257,7 +257,7 @@ class controller_data_tdp(controller_base_analysisplot):
 		## interpolate histogram
 		if self.prefs['hist_interp_res'] > 0:
 			interspline = RectBivariateSpline(x,x,z.T)
-			x = np.linspace(self.prefs['fret_min'],self.prefs['fret_max'],self.prefs['hist_interp_res'])
+			x = np.linspace(self.prefs['signal_min'],self.prefs['signal_max'],self.prefs['hist_interp_res'])
 			z = interspline(x,x).T
 			z[z<0] = 0.
 
