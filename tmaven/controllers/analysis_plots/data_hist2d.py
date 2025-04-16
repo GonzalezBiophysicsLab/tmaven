@@ -206,7 +206,10 @@ class controller_data_hist2d(controller_base_analysisplot):
 		if len(fig.axes)>1:
 			[aa.remove() for aa in fig.axes[1:]]
 		self.fix_ax(fig,ax)
-		self.plot_mode = self.maven.gui.plot_container.plot.plot_mode
+		try:
+			self.plot_mode = self.maven.gui.plot_container.plot.plot_mode
+		except:
+			self.plot_mode = 'smFRET'
 
 		hist,nmol,npoints = self.get_data()
 		x,y,z = self.interpolate_histogram(hist)

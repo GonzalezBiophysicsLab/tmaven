@@ -74,7 +74,10 @@ class controller_data_tdp(controller_base_analysisplot):
 			[aa.remove() for aa in fig.axes[1:]]
 		ax.cla()
 		self.fix_ax(fig,ax)
-		self.plot_mode = self.maven.gui.plot_container.plot.plot_mode
+		try:
+			self.plot_mode = self.maven.gui.plot_container.plot.plot_mode
+		except:
+			self.plot_mode = 'smFRET'
 
 		## This is protected and shouldn't crash
 		d1,d2,N = self.get_neighbor_data()
