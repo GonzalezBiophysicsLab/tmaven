@@ -4,7 +4,7 @@ logger = logging.getLogger(__name__)
 
 from .base import controller_base_analysisplot
 
-class controller_fret_tdp(controller_base_analysisplot):
+class controller_data_tdp(controller_base_analysisplot):
 	def __init__(self,maven):
 		super().__init__(maven)
 		self.defaults()
@@ -30,7 +30,7 @@ class controller_fret_tdp(controller_base_analysisplot):
 
 			'hist_smoothx':1.,
 			'hist_smoothy':1.,
-			'hist_interp_res':800,
+			'hist_interp_res':0,
 			'hist_rawsignal':True,
 			'hist_normalize':True,
 			'hist_log':True,
@@ -74,6 +74,7 @@ class controller_fret_tdp(controller_base_analysisplot):
 			[aa.remove() for aa in fig.axes[1:]]
 		ax.cla()
 		self.fix_ax(fig,ax)
+		self.plot_mode = self.maven.gui.plot_container.plot.plot_mode
 
 		## This is protected and shouldn't crash
 		d1,d2,N = self.get_neighbor_data()
@@ -195,11 +196,17 @@ class controller_fret_tdp(controller_base_analysisplot):
 			if true use raw data, otherwise will use idealized
 
 		'''
-		try:
-			fpb = self.get_plot_fret()[:,:,1]
-			N = fpb.shape[0]
+		#try:
+		if 1:
+			if self.plot_mode == 'smFRET':
+				index = 1
+			else:
+				index = self.prefs['plot_channel']
+
+			dpb = self.get_plot_data()[:,:,index]
+			N = dpb.shape[0]
 			nskip = self.prefs['nskip']
-			d = np.array([[fpb[i,:-nskip],fpb[i,nskip:]] for i in range(fpb.shape[0])])
+			d = np.array([[dpb[i,:-nskip],dpb[i,nskip:]] for i in range(dpb.shape[0])])
 
 			if not self.maven.modeler.model is None:
 				v = self.get_idealized_data()
@@ -220,7 +227,8 @@ class controller_fret_tdp(controller_base_analysisplot):
 			cut = np.isfinite(d1)*np.isfinite(d2)
 
 			return d1[cut],d2[cut],N
-		except:
+		#except:
+		else:
 			return np.array(()),np.array(()),0
 
 	def gen_histogram(self,d1,d2):
@@ -237,7 +245,7 @@ class controller_fret_tdp(controller_base_analysisplot):
 
 		'''
 		from scipy.ndimage import gaussian_filter
-		from scipy.interpolate import interp2d
+		from scipy.interpolate import RectBivariateSpline
 
 		## make histogram
 		x = np.linspace(self.prefs['fret_min'],self.prefs['fret_max'],self.prefs['fret_nbins'])
@@ -247,10 +255,11 @@ class controller_fret_tdp(controller_base_analysisplot):
 		z = gaussian_filter(z,(self.prefs['hist_smoothx'],self.prefs['hist_smoothy']))
 
 		## interpolate histogram
-		f =  interp2d(x,x,z, kind='cubic')
-		x = np.linspace(self.prefs['fret_min'],self.prefs['fret_max'],self.prefs['hist_interp_res'])
-		z = f(x,x)
-		z[z<0] = 0.
+		if self.prefs['hist_interp_res'] > 0:
+			interspline = RectBivariateSpline(x,x,z.T)
+			x = np.linspace(self.prefs['fret_min'],self.prefs['fret_max'],self.prefs['hist_interp_res'])
+			z = interspline(x,x).T
+			z[z<0] = 0.
 
 		if self.prefs['hist_normalize']:
 			z /= z.max()

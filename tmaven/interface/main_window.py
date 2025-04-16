@@ -255,12 +255,12 @@ class main_window(QMainWindow):
 		self.menu_tools.addAction('Filter Traces',self.trace_filter.launch,shortcut='Ctrl+F')
 
 		self.popplots = {'1D':None,'2D':None,'TDP':None,'TM':None,'VB':None,'Dwell':None}
-		self.menu_plots.addAction('Histogram 1D',lambda : self.popplot_launch('1D'))
-		self.menu_plots.addAction('Histogram 2D',lambda : self.popplot_launch('2D'))
-		self.menu_plots.addAction('FRET TDP',lambda : self.popplot_launch('TDP'))
+		self.menu_plots.addAction('1D Histogram',lambda : self.popplot_launch('1D'))
+		self.menu_plots.addAction('2D Histogram',lambda : self.popplot_launch('2D'))
+		self.menu_plots.addAction('Transition Density Plot',lambda : self.popplot_launch('TDP'))
 		self.menu_plots.addAction('Transition Prob Hist',lambda : self.popplot_launch('TM'))
 		self.menu_plots.addAction('vb Model States',lambda : self.popplot_launch('VB'))
-		self.menu_plots.addAction('Dwell Times',lambda : self.popplot_launch('Dwell'))
+		self.menu_plots.addAction('Dwell Times Plot',lambda : self.popplot_launch('Dwell'))
 
 		# for menu in [self.menu_file,self.menu_tools,self.menu_other,self.menu_view,self.menu_prefs,self.menu_scripts,self.menu_plots]:
 			# menu.setStyleSheet(stylesheet.ss_qmenu)
@@ -282,7 +282,7 @@ class main_window(QMainWindow):
 			elif popplottype == '2D':
 				self.popplots[popplottype] = popplot_container(self,self.maven.plots.data_hist2d)
 			elif popplottype == 'TDP':
-				self.popplots[popplottype] = popplot_container(self,self.maven.plots.fret_tdp)
+				self.popplots[popplottype] = popplot_container(self,self.maven.plots.data_tdp)
 			elif popplottype == 'TM':
 				self.popplots[popplottype] = popplot_container(self,self.maven.plots.tm_hist)
 			elif popplottype == 'VB':
