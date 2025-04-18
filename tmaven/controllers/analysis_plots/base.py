@@ -28,14 +28,7 @@ class controller_base_analysisplot(object):
 			'subplots_bottom':0.155,
 			'subplots_hspace':0.04,
 			'subplots_wspace':0.03,
-			'color_cmap':'jet',
-			'color_floorcolor':r'#FFFFCC',
-			'color_dblfloorcolor':'white',
-			'color_dbl':True,
-			'color_ceiling':0.8,
-			'color_floor':0.05,
-			'color_nticks':5,
-			'color_dblfloor':.2,
+
 			'plot_channel':0})
 
 	def plot(self,fig,ax):

@@ -93,6 +93,14 @@ class controller_data_hist2d(controller_base_analysisplot):
 			'hist_interp_res':0,
 			'hist_log':False,
 
+			'color_cmap':'jet',
+			'color_floorcolor':r'#FFFFCC',
+			'color_dblfloorcolor':'white',
+			'color_dbl':True,
+			'color_ceiling':0.8,
+			'color_floor':0.05,
+			'color_nticks':5,
+			'color_dblfloor':.2,
 		})
 
 
@@ -122,8 +130,9 @@ class controller_data_hist2d(controller_base_analysisplot):
 				z /= np.nanmax(z,axis=1)[:,None]+1
 			z /= np.nanmax(z)
 
-			if self.prefs['hist_log']:
-				z = np.log10(z)
+			#if self.prefs['hist_log']:
+				#z = np.log10(z)
+
 		#except:
 		else:
 			pass
@@ -228,8 +237,14 @@ class controller_data_hist2d(controller_base_analysisplot):
 			tmin = self.prefs['time_shift']
 			tmax = self.prefs['time_nbins']*tau + self.prefs['time_shift']
 
-		pc = ax.imshow(z.T, cmap=cm, origin='lower',interpolation='none',
-			extent=[tmin,tmax,y.min(),y.max()], aspect='auto', vmin=vmin, vmax=vmax)
+		if self.prefs['hist_log']:
+			from matplotlib.colors import LogNorm
+			pc = ax.imshow(z.T, cmap=cm, origin='lower',interpolation='none',
+				  extent=[tmin,tmax,y.min(),y.max()], aspect='auto', 
+				  norm = LogNorm(vmin=np.max((1./(1+hist.size),vmin)),vmax=vmax))
+		else:
+			pc = ax.imshow(z.T, cmap=cm, origin='lower',interpolation='none',
+				extent=[tmin,tmax,y.min(),y.max()], aspect='auto', vmin=vmin, vmax=vmax)
 
 		# for pcc in pc.collections:
 			# pcc.set_edgecolor("face")
