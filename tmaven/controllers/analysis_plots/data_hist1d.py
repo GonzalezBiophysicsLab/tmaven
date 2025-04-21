@@ -22,7 +22,7 @@ class controller_data_hist1d(controller_base_analysisplot):
 		number of bins in FRET histogram
 	prefs['histtype'] : str
 		matplotlib histogram type
-	prefs['hist_logy'] : bool
+	prefs['hist_log'] : bool
 		whether to log10 scale the y axis of the histogram
 	prefs['hmm_on'] : bool
 		whether to plot the HMM overlay
@@ -71,7 +71,7 @@ class controller_data_hist1d(controller_base_analysisplot):
 			'signal_nbins':151,
 			'signal_nticks':6,
 
-			'hist_logy':False,
+			'hist_log':False,
 			'hist_auto_ylim':True,
 			'hist_ymax':5.0,
 			'hist_ymin':0.0,
@@ -133,8 +133,8 @@ class controller_data_hist1d(controller_base_analysisplot):
 			self.hist_y, self.hist_x = ax.hist(dpb,bins=self.prefs['signal_nbins'],
 				range=(self.prefs['signal_min'], self.prefs['signal_max']),
 				histtype=self.prefs['hist_type'], alpha=.8, density=True,
-				color=color, edgecolor=ecolor, log=self.prefs['hist_logy'])[:2]
-			if self.prefs['hist_logy']:
+				color=color, edgecolor=ecolor, log=self.prefs['hist_log'])[:2]
+			if self.prefs['hist_log']:
 				ax.set_yscale('log')
 
 		if self.prefs['model_on']:
@@ -167,7 +167,7 @@ class controller_data_hist1d(controller_base_analysisplot):
 				ymin = self.hist_y[self.hist_y>0].min() if np.sum(self.hist_y>0) > 0 else 0
 				ymax = self.hist_y.max()*1.1 +1e-6
 				ax.set_ylim(ymin,ymax)
-		if not self.prefs['hist_logy']:
+		if not self.prefs['hist_log']:
 			if not self.prefs['hist_auto_ylim']:
 				ticks = self.best_ticks(self.prefs['hist_ymin'], self.prefs['hist_ymax'], self.prefs['hist_nticks'])
 			else:

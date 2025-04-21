@@ -45,6 +45,9 @@ class popplot_container(QMainWindow):
 		self.menubar.setNativeMenuBar(False)
 		self.menubar.addAction('Refresh',self.plot)
 		self.menubar.addAction('Reset Preferences',self.reset_prefs)
+		self.menubar.addAction('Toggle Log', self.toggle_log)
+		self.menubar.addAction('Toggle Model', self.toggle_model)
+
 
 		qw = QWidget()
 		vbox = QVBoxLayout()
@@ -109,3 +112,14 @@ class popplot_container(QMainWindow):
 			self.prefs_widget.le_filter.setFocus()
 			return
 		super().keyPressEvent(event)
+
+	def toggle_log(self):
+		if 'hist_log' in self.maven_plot.prefs.keys():
+			self.maven_plot.prefs['hist_log'] = not self.maven_plot.prefs['hist_log']
+			self.prefs_widget.proxy_model.layoutChanged.emit()
+			
+	def toggle_model(self):
+		if 'model_on' in self.maven_plot.prefs.keys():
+			self.maven_plot.prefs['model_on'] = not self.maven_plot.prefs['model_on']
+			self.prefs_widget.proxy_model.layoutChanged.emit()
+			
