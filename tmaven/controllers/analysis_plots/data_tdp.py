@@ -58,7 +58,38 @@ class controller_data_tdp(controller_base_analysisplot):
 			'textbox_nmol':True,
 
 			'nskip':2,
+
+			'plot_channel':0,
+			'plot_mode': 'smFRET'
 		})
+
+	def fret_defaults(self):
+		self.prefs.add_dictionary({
+			'xlabel_text':r'Initial E$_{\rm{FRET}}$',
+			'ylabel_text':r'Final E$_{\rm{FRET}}$',
+			'signal_min':-.25,
+			'signal_max':1.25,
+			'plot_mode':'smFRET'
+		})
+
+	def normalized_defaults(self):
+		self.prefs.add_dictionary({
+			'xlabel_text':r'Initial Normalized Intensity',
+			'ylabel_text':r'Final Normalized Intensity',
+			'signal_min':-.25,
+			'signal_max':1.25,
+			'plot_mode':'ND Normalized'
+		})
+	
+	def raw_defaults(self):
+		self.prefs.add_dictionary({
+			'xlabel_text':r'Initial Intensity (A.U.)',
+			'ylabel_text':r'Final Intensity (A.U.)',
+			'signal_min':-500,
+			'signal_max':10000,
+			'plot_mode':'ND Raw'
+		})
+
 
 	def plot(self,fig,ax):
 		''' Plots transition density plot in ax
@@ -74,10 +105,7 @@ class controller_data_tdp(controller_base_analysisplot):
 			[aa.remove() for aa in fig.axes[1:]]
 		ax.cla()
 		self.fix_ax(fig,ax)
-		try:
-			self.plot_mode = self.maven.gui.plot_container.plot.plot_mode
-		except:
-			self.plot_mode = 'smFRET'
+		self.plot_mode = self.prefs['plot_mode']
 
 		## This is protected and shouldn't crash
 		d1,d2,N = self.get_neighbor_data()

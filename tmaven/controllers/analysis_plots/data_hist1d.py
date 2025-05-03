@@ -88,6 +88,32 @@ class controller_data_hist1d(controller_base_analysisplot):
 			'textbox_fontsize':7.0,
 			'textbox_nmol':True,
 
+			'plot_channel':0,
+			'plot_mode': 'smFRET'
+		})
+	
+	def fret_defaults(self):
+		self.prefs.add_dictionary({
+			'xlabel_text':r'E$_{\rm{FRET}}$',
+			'signal_min':-.25,
+			'signal_max':1.25,
+			'plot_mode':'smFRET'
+		})
+
+	def normalized_defaults(self):
+		self.prefs.add_dictionary({
+			'xlabel_text':r'Normalized Intensity',
+			'signal_min':-.25,
+			'signal_max':1.25,
+			'plot_mode':'ND Normalized'
+		})
+	
+	def raw_defaults(self):
+		self.prefs.add_dictionary({
+			'xlabel_text':r'Intensity (A.U.)',
+			'signal_min':-500,
+			'signal_max':10000,
+			'plot_mode':'ND Raw'
 		})
 
 	def plot(self,fig,ax):
@@ -99,10 +125,8 @@ class controller_data_hist1d(controller_base_analysisplot):
 		## Setup
 		ax.cla()
 		self.fix_ax(fig,ax)
-		try:
-			self.plot_mode = self.maven.gui.plot_container.plot.plot_mode
-		except:
-			self.plot_mode = 'smFRET'
+
+		self.plot_mode = self.prefs['plot_mode']
 
 		if self.prefs['idealized']:
 			self.dpb = self.get_idealized_data()

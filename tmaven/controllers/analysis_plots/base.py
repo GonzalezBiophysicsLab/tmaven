@@ -9,27 +9,32 @@ class controller_base_analysisplot(object):
 		self.maven = maven
 		##These are the default preferences for all plots
 		self.prefs = prefs_object()
-		self.prefs.add_dictionary({'fig_width':2.5,
+		self.prefs.add_dictionary({
+			'fig_width':2.5,
 			'fig_height':2.5,
+
+			'font':'Arial',
+
 			'label_fontsize':10.0,
 			'ylabel_offset':-0.165,
 			'xlabel_offset':-0.25,
-			'font':'Arial',
+
 			'axes_linewidth':1.0,
 			'axes_topright':False,
+
 			'tick_fontsize':10.0,
 			'tick_length_minor':2.0,
 			'tick_length_major':4.0,
 			'tick_linewidth':1.0,
 			'tick_direction':'out',
+
 			'subplots_left':0.125,
 			'subplots_right':0.97,
 			'subplots_top':0.97,
 			'subplots_bottom':0.155,
 			'subplots_hspace':0.04,
-			'subplots_wspace':0.03,
-
-			'plot_channel':0})
+			'subplots_wspace':0.03
+		})
 
 	def plot(self,fig,ax):
 		## override this

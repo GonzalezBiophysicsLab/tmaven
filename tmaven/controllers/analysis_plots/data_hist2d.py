@@ -101,6 +101,33 @@ class controller_data_hist2d(controller_base_analysisplot):
 			'color_floor':0.05,
 			'color_nticks':5,
 			'color_dblfloor':.2,
+
+			'plot_channel':0,
+			'plot_mode': 'smFRET'
+		})
+
+	def fret_defaults(self):
+		self.prefs.add_dictionary({
+			'ylabel_text':r'E$_{\rm{FRET}}$',
+			'signal_min':-.2,
+			'signal_max':1.2,
+			'plot_mode':'smFRET'
+		})
+
+	def normalized_defaults(self):
+		self.prefs.add_dictionary({
+			'ylabel_text':r'Normalized Intensity',
+			'signal_min':-.2,
+			'signal_max':1.2,
+			'plot_mode':'ND Normalized'
+		})
+	
+	def raw_defaults(self):
+		self.prefs.add_dictionary({
+			'ylabel_text':r'Intensity (A.U.)',
+			'signal_min':-500,
+			'signal_max':10000,
+			'plot_mode':'ND Raw'
 		})
 
 
@@ -215,10 +242,7 @@ class controller_data_hist2d(controller_base_analysisplot):
 		if len(fig.axes)>1:
 			[aa.remove() for aa in fig.axes[1:]]
 		self.fix_ax(fig,ax)
-		try:
-			self.plot_mode = self.maven.gui.plot_container.plot.plot_mode
-		except:
-			self.plot_mode = 'smFRET'
+		self.plot_mode = self.prefs['plot_mode']
 
 		hist,nmol,npoints = self.get_data()
 		x,y,z = self.interpolate_histogram(hist)
