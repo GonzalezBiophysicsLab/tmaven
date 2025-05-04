@@ -43,6 +43,7 @@ def setup_gui(maven,args=[]):
 
 	# logging.getLogger("tmaven").setLevel(logging.WARNING)
 	gui = main_window(maven,app)
+	maven.gui = gui
 	# logging.getLogger("tmaven").setLevel(logging.INFO)
 	app.setWindowIcon(load_icon('logo.png'))
 

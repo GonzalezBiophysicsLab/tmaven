@@ -4,7 +4,7 @@ logger = logging.getLogger(__name__)
 
 from .base import controller_base_analysisplot
 
-class controller_fret_tdp(controller_base_analysisplot):
+class controller_data_tdp(controller_base_analysisplot):
 	def __init__(self,maven):
 		super().__init__(maven)
 		self.defaults()
@@ -23,14 +23,14 @@ class controller_fret_tdp(controller_base_analysisplot):
 			'colorbar_widthpercent':5,
 			'colorbar_padpercent':2,
 
-			'fret_min':-.25,
-			'fret_max':1.25,
-			'fret_nbins':101,
-			'fret_nticks':7,
+			'signal_min':-.25,
+			'signal_max':1.25,
+			'signal_nbins':101,
+			'signal_nticks':7,
 
 			'hist_smoothx':1.,
 			'hist_smoothy':1.,
-			'hist_interp_res':800,
+			'hist_interp_res':0,
 			'hist_rawsignal':True,
 			'hist_normalize':True,
 			'hist_log':True,
@@ -58,7 +58,38 @@ class controller_fret_tdp(controller_base_analysisplot):
 			'textbox_nmol':True,
 
 			'nskip':2,
+
+			'plot_channel':0,
+			'plot_mode': 'smFRET'
 		})
+
+	def fret_defaults(self):
+		self.prefs.add_dictionary({
+			'xlabel_text':r'Initial E$_{\rm{FRET}}$',
+			'ylabel_text':r'Final E$_{\rm{FRET}}$',
+			'signal_min':-.25,
+			'signal_max':1.25,
+			'plot_mode':'smFRET'
+		})
+
+	def normalized_defaults(self):
+		self.prefs.add_dictionary({
+			'xlabel_text':r'Initial Normalized Intensity',
+			'ylabel_text':r'Final Normalized Intensity',
+			'signal_min':-.25,
+			'signal_max':1.25,
+			'plot_mode':'ND Normalized'
+		})
+	
+	def raw_defaults(self):
+		self.prefs.add_dictionary({
+			'xlabel_text':r'Initial Intensity (A.U.)',
+			'ylabel_text':r'Final Intensity (A.U.)',
+			'signal_min':-500,
+			'signal_max':10000,
+			'plot_mode':'ND Raw'
+		})
+
 
 	def plot(self,fig,ax):
 		''' Plots transition density plot in ax
@@ -74,6 +105,7 @@ class controller_fret_tdp(controller_base_analysisplot):
 			[aa.remove() for aa in fig.axes[1:]]
 		ax.cla()
 		self.fix_ax(fig,ax)
+		self.plot_mode = self.prefs['plot_mode']
 
 		## This is protected and shouldn't crash
 		d1,d2,N = self.get_neighbor_data()
@@ -90,9 +122,12 @@ class controller_fret_tdp(controller_base_analysisplot):
 
 		if self.prefs['hist_log']:
 			from matplotlib.colors import LogNorm
-			pc = ax.imshow(z.T, cmap=cm, origin='lower',interpolation='none',extent=[x.min(),x.max(),x.min(),x.max()],norm = LogNorm(vmin=np.max((1./(1+d1.size),vmin)),vmax=vmax))
+			pc = ax.imshow(z.T, cmap=cm, origin='lower',interpolation='none',
+				  extent=[x.min(),x.max(),x.min(),x.max()],
+				  norm = LogNorm(vmin=np.max((1./(1+d1.size),vmin)),vmax=vmax))
 		else:
-			pc = ax.imshow(z.T, cmap=cm, origin='lower',interpolation='none',extent=[x.min(),x.max(),x.min(),x.max()],vmin=vmin,vmax=vmax)
+			pc = ax.imshow(z.T, cmap=cm, origin='lower',interpolation='none',
+				  extent=[x.min(),x.max(),x.min(),x.max()],vmin=vmin,vmax=vmax)
 
 		# for pcc in pc.collections:
 			# pcc.set_edgecolor("face")
@@ -153,8 +188,8 @@ class controller_fret_tdp(controller_base_analysisplot):
 		ax.yaxis.set_label_coords(self.prefs['ylabel_offset'], 0.5)
 		ax.xaxis.set_label_coords(0.5, self.prefs['xlabel_offset'])
 
-		ax.set_xticks(self.best_ticks(self.prefs['fret_min'],self.prefs['fret_max'],self.prefs['fret_nticks']))
-		ax.set_yticks(self.best_ticks(self.prefs['fret_min'],self.prefs['fret_max'],self.prefs['fret_nticks']))
+		ax.set_xticks(self.best_ticks(self.prefs['signal_min'],self.prefs['signal_max'],self.prefs['signal_nticks']))
+		ax.set_yticks(self.best_ticks(self.prefs['signal_min'],self.prefs['signal_max'],self.prefs['signal_nticks']))
 
 		bbox_props = dict(boxstyle="square", fc="w", alpha=1.0,lw=1./dpr)
 		lstr = 'n = %d'%(self.d1.size)
@@ -195,11 +230,17 @@ class controller_fret_tdp(controller_base_analysisplot):
 			if true use raw data, otherwise will use idealized
 
 		'''
-		try:
-			fpb = self.get_plot_fret()[:,:,1]
-			N = fpb.shape[0]
+		#try:
+		if 1:
+			if self.plot_mode == 'smFRET':
+				index = 1
+			else:
+				index = self.prefs['plot_channel']
+
+			dpb = self.get_plot_data()[:,:,index]
+			N = dpb.shape[0]
 			nskip = self.prefs['nskip']
-			d = np.array([[fpb[i,:-nskip],fpb[i,nskip:]] for i in range(fpb.shape[0])])
+			d = np.array([[dpb[i,:-nskip],dpb[i,nskip:]] for i in range(dpb.shape[0])])
 
 			if not self.maven.modeler.model is None:
 				v = self.get_idealized_data()
@@ -220,7 +261,8 @@ class controller_fret_tdp(controller_base_analysisplot):
 			cut = np.isfinite(d1)*np.isfinite(d2)
 
 			return d1[cut],d2[cut],N
-		except:
+		#except:
+		else:
 			return np.array(()),np.array(()),0
 
 	def gen_histogram(self,d1,d2):
@@ -229,28 +271,29 @@ class controller_fret_tdp(controller_base_analysisplot):
 		Returns
 		-------
 		x : np.ndarray
-			(fret_nbins) the x axis bin locations
+			(signal_nbins) the x axis bin locations
 		y : np.ndarray
-			(fret_nbins) the y axis bin locations
+			(signal_nbins) the y axis bin locations
 		z : np.ndarray
-			(fret_nbins,fret_nbins) the histogram
+			(signal_nbins,signal_nbins) the histogram
 
 		'''
 		from scipy.ndimage import gaussian_filter
-		from scipy.interpolate import interp2d
+		from scipy.interpolate import RectBivariateSpline
 
 		## make histogram
-		x = np.linspace(self.prefs['fret_min'],self.prefs['fret_max'],self.prefs['fret_nbins'])
+		x = np.linspace(self.prefs['signal_min'],self.prefs['signal_max'],self.prefs['signal_nbins'])
 		z,hx,hy = np.histogram2d(d1,d2,bins=[x.size,x.size],range=[[x.min(),x.max()],[x.min(),x.max()]])
 
 		## smooth histogram
 		z = gaussian_filter(z,(self.prefs['hist_smoothx'],self.prefs['hist_smoothy']))
 
 		## interpolate histogram
-		f =  interp2d(x,x,z, kind='cubic')
-		x = np.linspace(self.prefs['fret_min'],self.prefs['fret_max'],self.prefs['hist_interp_res'])
-		z = f(x,x)
-		z[z<0] = 0.
+		if self.prefs['hist_interp_res'] > 0:
+			interspline = RectBivariateSpline(x,x,z.T)
+			x = np.linspace(self.prefs['signal_min'],self.prefs['signal_max'],self.prefs['hist_interp_res'])
+			z = interspline(x,x).T
+			z[z<0] = 0.
 
 		if self.prefs['hist_normalize']:
 			z /= z.max()

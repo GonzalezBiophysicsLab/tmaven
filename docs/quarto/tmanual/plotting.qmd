@@ -3,7 +3,7 @@ title: "5. Plotting"
 ---
 
 # One-Dimensional Histograms
-The histogram feature of tMAVEN is primarily useful for visualization of data and not diagnostics. Navigate to Plots/**FRET hist 1D** to generate a one-dimensional histogram of all E$_{fret}$ emission data, the peaks represent states and should look like *K* gaussians. 
+The histogram feature of tMAVEN is primarily useful for visualization of data and not diagnostics. Navigate to Plots/**Histogram 1D** to generate a one-dimensional histogram of all E$_{fret}$ emission data, the peaks represent states and should look like *K* gaussians. 
 
 ![A typical one dimensional histogram. Note the number of traces used N in the top right. If a model has been calculated, a population-weighted set of emission distributions is plotted as the solid black with the dotted lines as the individual populations. These lines are not a Gaussian fit of the data, but come directly from the models. Theoretically, better models/processing will result in a better fit of the histogram.](images/1D\ Histofigure.png)
 

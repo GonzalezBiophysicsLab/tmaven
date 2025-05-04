@@ -3,6 +3,7 @@ from .data import controller_data
 from .prefs import prefs_object, default_prefs
 from .cull import controller_cull
 from .corrections.corrections import controller_corrections
+from .normalize import controller_normalizations
 from .selection import controller_selection
 from .scripts import controller_scripts
 from .modeler.modeler import controller_modeler

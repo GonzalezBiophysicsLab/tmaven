@@ -20,7 +20,6 @@ class plot_container(QWidget):
 	def change_mode(self,mode):			
 		self.change_plotter(mode)
 
-
 	def default_prefs(self):
 		return {}
 
@@ -50,12 +49,15 @@ class plot_container(QWidget):
 		self.plot = temp_plot
 		self.plot.plot_mode = plot_mode
 
-		if plot_mode == 'ND':
-			self.plot.nd_prefs()
-		elif plot_mode == 'Relative':
-			self.plot.relative_prefs()
+		if plot_mode == 'ND Raw':
+			self.plot.ndraw_prefs()		
+		elif plot_mode == 'Normalized':
+			self.plot.normalized_prefs()
+		elif plot_mode == 'ND Relative':
+			self.plot.ndrelative_prefs()
 		elif plot_mode == 'smFRET':
 			self.plot.smFRET_prefs()
+
 
 		self.gui.pref_edited.connect(self.plot.redrawplot)
 		# self.gui.new_selection_last.connect(self.catch_selection_change)

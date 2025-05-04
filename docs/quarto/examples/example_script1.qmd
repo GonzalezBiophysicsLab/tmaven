@@ -28,8 +28,8 @@ import matplotlib.pyplot as plt
 fig,ax =plt.subplots(2)
 
 ## Plot a 1D histogram in the first plots using the raw data instead of the Viterbi data
-maven.plots.fret_hist1d.prefs['idealized'] = False
-maven.plots.fret_hist1d.plot(fig,ax[0])
+maven.plots.data_hist1d.prefs['idealized'] = False
+maven.plots.data_hist1d.plot(fig,ax[0])
 
 ## Plot a trajectory in the second plot
 ax[1].plot(maven.data.corrected[0,:,0],'g')
