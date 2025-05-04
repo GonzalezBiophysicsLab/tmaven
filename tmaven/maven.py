@@ -65,8 +65,9 @@ class maven_class(object):
 		self.smd = self.io.blank_smd()
 		self.data = controller_data(self)
 
-		from .controllers import controller_corrections, controller_cull,  controller_modeler, controller_scripts, controller_selection
+		from .controllers import controller_corrections, controller_cull,  controller_modeler, controller_scripts, controller_selection, controller_normalizations
 		self.corrections = controller_corrections(self)
+		self.normalize = controller_normalizations(self)
 		self.cull = controller_cull(self)
 		self.modeler = controller_modeler(self)
 		self.scripts = controller_scripts(self)

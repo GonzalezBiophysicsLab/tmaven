@@ -256,3 +256,41 @@ def vb_em_hmm_parallel(x,nstates,maxiters=1000,threshold=1e-10,nrestarts=1,prior
 	# 	best = 0
 	# return results[best]
 	return vb_em_hmm(x,nstates,maxiters,threshold,priors,init_kmeans,mu_mode)
+
+def tracelevel_vbhmm_modelselection(y, keep, nstates, prior_fxn, specs, nmol, nt, pre_list, post_list, dtype):
+	
+	maxiters, converge, nrestarts, ncpu = specs
+	
+	from .fxns.hmm import viterbi
+	from .model_container import trace_model_container
+
+	idealized = np.zeros((nmol,nt)) + np.nan
+	ran = np.nonzero(keep)[0].tolist()
+
+	trace_level = {}
+
+	y_flat = np.concatenate(y)
+
+	for i in range(len(y)):
+		yi = y[i].astype('double')
+		results = []
+		for k in range(1,nstates+1):
+			priors = prior_fxn('modeler.vbhmm', k, y_flat)
+
+			results.append(vb_em_hmm_parallel(yi,k,maxiters,converge,nrestarts,priors=priors,ncpu=ncpu))
+
+		elbos = np.array([ri.likelihood[-1,0] for ri in results])
+		modelmax = np.argmax(elbos)
+		res = results[modelmax]
+		ii = ran[i]
+		pre = pre_list[ii]
+		post = post_list[ii]
+
+		vit = res.mean[viterbi(yi,res.mean,res.var,res.norm_tmatrix,res.frac).astype('int')]
+		idealized[ii,pre:post] = vit
+		trace_level_inst = trace_model_container(res, ii)
+		trace_level_inst.dtype = dtype
+		trace_level_inst.idealized = idealized[ii]
+		trace_level[str(ii)] = trace_level_inst
+
+	return trace_level, idealized, ran

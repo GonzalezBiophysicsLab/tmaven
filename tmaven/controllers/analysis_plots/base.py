@@ -9,33 +9,32 @@ class controller_base_analysisplot(object):
 		self.maven = maven
 		##These are the default preferences for all plots
 		self.prefs = prefs_object()
-		self.prefs.add_dictionary({'fig_width':2.5,
+		self.prefs.add_dictionary({
+			'fig_width':2.5,
 			'fig_height':2.5,
+
+			'font':'Arial',
+
 			'label_fontsize':10.0,
 			'ylabel_offset':-0.165,
 			'xlabel_offset':-0.25,
-			'font':'Arial',
+
 			'axes_linewidth':1.0,
 			'axes_topright':False,
+
 			'tick_fontsize':10.0,
 			'tick_length_minor':2.0,
 			'tick_length_major':4.0,
 			'tick_linewidth':1.0,
 			'tick_direction':'out',
+
 			'subplots_left':0.125,
 			'subplots_right':0.97,
 			'subplots_top':0.97,
 			'subplots_bottom':0.155,
 			'subplots_hspace':0.04,
-			'subplots_wspace':0.03,
-			'color_cmap':'jet',
-			'color_floorcolor':r'#FFFFCC',
-			'color_dblfloorcolor':'white',
-			'color_dbl':True,
-			'color_ceiling':0.8,
-			'color_floor':0.05,
-			'color_nticks':5,
-			'color_dblfloor':.2})
+			'subplots_wspace':0.03
+		})
 
 	def plot(self,fig,ax):
 		## override this
@@ -113,23 +112,28 @@ class controller_base_analysisplot(object):
 		n = np.floor(delta/s+1e-10)
 		return y0 + np.arange(n+1)*s
 
-	def get_plot_fret(self):
-		''' Get the fret data for plotting
+	def get_plot_data(self):
+		''' Get the data for plotting
 
 		Has to be in a toggled class. Removes photobleaching pre and post times
 
 		Returns
 		-------
-		fpb : np.ndarray
+		dpb : np.ndarray
 		 	fret (nmol toggled, ntime, ncolors)
 		'''
-		fpb = self.maven.calc_relative()
+
+		if self.plot_mode in ["ND Relative", "smFRET"]:
+			dpb = self.maven.calc_relative()
+		else:
+			dpb = self.maven.data.corrected
+
 		for i in range(self.maven.data.nmol): ## photobleach molecules
-			fpb[i,:self.maven.data.pre_list[i]] = np.nan
-			fpb[i,self.maven.data.post_list[i]:] = np.nan
+			dpb[i,:self.maven.data.pre_list[i]] = np.nan
+			dpb[i,self.maven.data.post_list[i]:] = np.nan
 		mask = self.maven.selection.get_toggled_mask() ## only chosen classes
-		fpb = fpb[mask]
-		return fpb
+		dpb = dpb[mask]
+		return dpb
 
 	def get_idealized_data(self):
 		''' Get toggled idealized data for plotting

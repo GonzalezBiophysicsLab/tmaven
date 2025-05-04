@@ -2,11 +2,17 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 import matplotlib.pyplot as plt
 
-from PyQt5.QtWidgets import QApplication,QSizePolicy,QVBoxLayout,QWidget,QHBoxLayout,QMainWindow,QStyleFactory
+from PyQt5.QtWidgets import QApplication,QSizePolicy,QVBoxLayout,QWidget,QHBoxLayout,QMainWindow,QStyleFactory,QMenu
 from PyQt5.QtCore import Qt,QSize
 import numpy as np
 
 from .viewer_prefs import prefs_widget,pref_model
+
+from ..controllers.analysis_plots.data_hist1d import controller_data_hist1d
+from ..controllers.analysis_plots.survival_dwell import controller_survival_dwell
+from ..controllers.analysis_plots.data_hist2d import controller_data_hist2d
+from ..controllers.analysis_plots.data_tdp import controller_data_tdp
+
 
 class popplot_container(QMainWindow):
 	'''
@@ -45,6 +51,17 @@ class popplot_container(QMainWindow):
 		self.menubar.setNativeMenuBar(False)
 		self.menubar.addAction('Refresh',self.plot)
 		self.menubar.addAction('Reset Preferences',self.reset_prefs)
+		plotmode_menu = QMenu('Change Mode', self)
+		if isinstance(maven_plot, controller_data_hist1d) or isinstance(maven_plot, controller_data_hist2d) or isinstance(maven_plot, controller_data_tdp):
+			plotmode_menu.addAction('smFRET', self.change_plot_smfret)
+			plotmode_menu.addAction('ND Normalized', self.change_plot_normalized)
+			plotmode_menu.addAction('ND Raw', self.change_plot_raw)
+		self.menubar.addMenu(plotmode_menu)
+
+		self.menubar.addAction('Toggle Log', self.toggle_log)
+		if isinstance(maven_plot, controller_data_hist1d) or isinstance(maven_plot, controller_survival_dwell):
+			self.menubar.addAction('Toggle Model', self.toggle_model)
+
 
 		qw = QWidget()
 		vbox = QVBoxLayout()
@@ -109,3 +126,25 @@ class popplot_container(QMainWindow):
 			self.prefs_widget.le_filter.setFocus()
 			return
 		super().keyPressEvent(event)
+
+	def toggle_log(self):
+		if 'hist_log' in self.maven_plot.prefs.keys():
+			self.maven_plot.prefs['hist_log'] = not self.maven_plot.prefs['hist_log']
+			self.prefs_widget.proxy_model.layoutChanged.emit()
+			
+	def toggle_model(self):
+		if 'model_on' in self.maven_plot.prefs.keys():
+			self.maven_plot.prefs['model_on'] = not self.maven_plot.prefs['model_on']
+			self.prefs_widget.proxy_model.layoutChanged.emit()
+
+	def change_plot_smfret(self):
+		self.maven_plot.fret_defaults()
+		self.prefs_widget.proxy_model.layoutChanged.emit()
+
+	def change_plot_normalized(self):
+		self.maven_plot.normalized_defaults()
+		self.prefs_widget.proxy_model.layoutChanged.emit()
+
+	def change_plot_raw(self):
+		self.maven_plot.raw_defaults()
+		self.prefs_widget.proxy_model.layoutChanged.emit()

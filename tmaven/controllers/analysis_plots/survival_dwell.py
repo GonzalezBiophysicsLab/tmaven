@@ -36,7 +36,7 @@ class controller_survival_dwell(controller_base_analysisplot):
 			'hist_type':'bar',
 			'hist_color':'tab:red',
 			'hist_edgecolor':'tab:black',
-			'hist_log_y':False,
+			'hist_log':False,
 			'hist_force_y':False,
 			'hist_ymax':5.0,
 			'hist_ymin':0.0,
@@ -136,7 +136,7 @@ class controller_survival_dwell(controller_base_analysisplot):
 			bin_height, bin_edge = ax.hist(d, bins=self.prefs['dwell_nbins'],
 				range=hist_range, #(d.min(), d.max()),
 				histtype=self.prefs['hist_type'], alpha=.8, density=True,
-				color=color, edgecolor=ecolor, log=self.prefs['hist_log_y'])[:2]
+				color=color, edgecolor=ecolor, log=self.prefs['hist_log'])[:2]
 
 			self.hist_x = bin_edge[1:] - 0.5*(bin_edge[1] - bin_edge[0])
 			self.hist_y = bin_height.astype('double')
@@ -198,9 +198,6 @@ class controller_survival_dwell(controller_base_analysisplot):
 		except:
 			pass
 
-		if self.prefs['hist_log_y']:
-			ax.set_yscale('log')
-
 		from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable
 		ax_divider = make_axes_locatable(ax)
 		rax = ax_divider.append_axes("bottom", size="%d%%"%(self.prefs['residual_heightpercent']), pad="%d%%"%(self.prefs['residual_padpercent']))
@@ -239,6 +236,10 @@ class controller_survival_dwell(controller_base_analysisplot):
 
 	def garnish(self,fig,ax,rax):
 		## Fix up the plot
+
+		if self.prefs['hist_log']:
+			ax.set_yscale('log')
+			
 		ylim_ax = ax.get_ylim()
 		ax.set_ylim(*ylim_ax) ## incase modeling gave crazy results
 
@@ -254,15 +255,18 @@ class controller_survival_dwell(controller_base_analysisplot):
 
 		if self.prefs['hist_force_y']:
 			ax.set_ylim(self.prefs['hist_ymin'], self.prefs['hist_ymax'])
-			ticks_ax = self.best_ticks(self.prefs['hist_ymin'], self.prefs['hist_ymax'], self.prefs['hist_nticks'])
+			if not self.prefs['hist_log']:
+				ticks_ax = self.best_ticks(self.prefs['hist_ymin'], self.prefs['hist_ymax'], self.prefs['hist_nticks'])
+			else:
+				ticks_ax = 10**self.best_ticks(np.log10(self.prefs['hist_ymin']), 
+								   			  np.log10(self.prefs['hist_ymax']), self.prefs['hist_nticks'])
+
 		else:
-			if not self.prefs['hist_log_y']:
+			if not self.prefs['hist_log']:
 				ticks_ax = self.best_ticks(0,ylim_ax[1], self.prefs['hist_nticks'])
 			else:
-				try:
-					ticks_ax = self.best_ticks(10**(-np.floor(np.log10(len(self.d)))),ylim_ax[1], self.prefs['hist_nticks'])
-				except:
-					ticks_ax = self.best_ticks(0,ax.get_ylim()[1], self.prefs['hist_nticks'])
+				ticks_ax = 10**self.best_ticks(np.log10(ylim_ax[0]),np.log10(ylim_ax[1]), self.prefs['hist_nticks'])
+
 		ax.set_yticks(ticks_ax)
 
 		if self.prefs['residual_force_y']:
@@ -271,6 +275,7 @@ class controller_survival_dwell(controller_base_analysisplot):
 		else:
 			ticks_rax = self.best_ticks(ylim_rax[0],ylim_rax[1], self.prefs['residual_nticks'])
 		rax.set_yticks(ticks_rax)
+
 
 		if self.prefs['dwell_force_xmax']:
 			ax.set_xlim(0,self.prefs['dwell_max'])
@@ -315,3 +320,5 @@ class controller_survival_dwell(controller_base_analysisplot):
 					family=self.prefs['font'])
 		except:
 			pass
+
+

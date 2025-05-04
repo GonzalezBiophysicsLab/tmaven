@@ -186,7 +186,7 @@ class main_window(QMainWindow):
 			self.button_lock.setIcon(load_icon('unlocked.png'))
 
 	def reset_menus(self):
-		from . import ui_io, ui_scripts, ui_cull, ui_corrections, ui_selection, ui_photobleaching, ui_trace_filter, ui_experimental
+		from . import ui_io, ui_scripts, ui_cull, ui_corrections, ui_normalize, ui_selection, ui_photobleaching, ui_trace_filter, ui_experimental
 		from .modeler import ui_modeler
 
 		logger.info('Building Menus')
@@ -204,6 +204,7 @@ class main_window(QMainWindow):
 		self.trace_filter = ui_trace_filter.container_trace_filter(self)
 		self.menu_cull = ui_cull.build_menu(self)
 		self.menu_corrections,self.menu_correction_filters = ui_corrections.build_menu(self)
+		self.menu_normalize = ui_normalize.build_menu(self)
 		self.menu_selection, self.menu_order, self.menu_classes = ui_selection.build_menu(self)
 		self.menu_photobleaching = ui_photobleaching.build_menu(self)
 		self.menu_modeler = ui_modeler.build_menu(self)
@@ -220,9 +221,15 @@ class main_window(QMainWindow):
 		self.menu_view.addAction('Reset GUI',self.session_default)
 
 		self.menu_traj = self.menu_view.addMenu('Plot Type')
-		self.menu_traj.addAction('ND',lambda : self.plot_container.change_mode('ND'))
-		self.menu_traj.addAction('Relative',lambda : self.plot_container.change_mode('Relative'))
-		self.menu_traj.addAction('smFRET',lambda : self.plot_container.change_mode('smFRET'))
+
+		self.menu_rel = self.menu_traj.addMenu('Relative')
+		self.menu_rel.addAction('Relative ND',lambda : self.plot_container.change_mode('ND Relative'))
+		self.menu_rel.addAction('smFRET',lambda : self.plot_container.change_mode('smFRET'))
+
+		self.menu_abs = self.menu_traj.addMenu('Intensities')
+		self.menu_abs.addAction('Raw ND',lambda : self.plot_container.change_mode('ND Raw'))
+		self.menu_abs.addAction('Normalized',lambda : self.plot_container.change_mode('Normalized'))
+
 		self.menu_theme = self.menu_view.addMenu('Theme')
 		self.menu_theme.addAction('Light',self.change_theme_light)
 		self.menu_theme.addAction('Dark',self.change_theme_dark)
@@ -243,16 +250,17 @@ class main_window(QMainWindow):
 		self.menu_tools.addMenu(self.menu_cull)
 		self.menu_tools.addMenu(self.menu_corrections)
 		self.menu_corrections.addMenu(self.menu_correction_filters)
+		self.menu_tools.addMenu(self.menu_normalize)
 		self.menu_tools.addMenu(self.menu_photobleaching)
 		self.menu_tools.addAction('Filter Traces',self.trace_filter.launch,shortcut='Ctrl+F')
 
 		self.popplots = {'1D':None,'2D':None,'TDP':None,'TM':None,'VB':None,'Dwell':None}
-		self.menu_plots.addAction('FRET Hist 1D',lambda : self.popplot_launch('1D'))
-		self.menu_plots.addAction('FRET Hist 2D',lambda : self.popplot_launch('2D'))
-		self.menu_plots.addAction('FRET TDP',lambda : self.popplot_launch('TDP'))
+		self.menu_plots.addAction('1D Histogram',lambda : self.popplot_launch('1D'))
+		self.menu_plots.addAction('2D Histogram',lambda : self.popplot_launch('2D'))
+		self.menu_plots.addAction('Transition Density Plot',lambda : self.popplot_launch('TDP'))
 		self.menu_plots.addAction('Transition Prob Hist',lambda : self.popplot_launch('TM'))
 		self.menu_plots.addAction('vb Model States',lambda : self.popplot_launch('VB'))
-		self.menu_plots.addAction('Dwell Times',lambda : self.popplot_launch('Dwell'))
+		self.menu_plots.addAction('Dwell Times Plot',lambda : self.popplot_launch('Dwell'))
 
 		# for menu in [self.menu_file,self.menu_tools,self.menu_other,self.menu_view,self.menu_prefs,self.menu_scripts,self.menu_plots]:
 			# menu.setStyleSheet(stylesheet.ss_qmenu)
@@ -270,11 +278,11 @@ class main_window(QMainWindow):
 		from .ui_analysisplots import popplot_container
 		if self.popplots[popplottype] is None:
 			if popplottype == '1D':
-				self.popplots[popplottype] = popplot_container(self,self.maven.plots.fret_hist1d)
+				self.popplots[popplottype] = popplot_container(self,self.maven.plots.data_hist1d)
 			elif popplottype == '2D':
-				self.popplots[popplottype] = popplot_container(self,self.maven.plots.fret_hist2d)
+				self.popplots[popplottype] = popplot_container(self,self.maven.plots.data_hist2d)
 			elif popplottype == 'TDP':
-				self.popplots[popplottype] = popplot_container(self,self.maven.plots.fret_tdp)
+				self.popplots[popplottype] = popplot_container(self,self.maven.plots.data_tdp)
 			elif popplottype == 'TM':
 				self.popplots[popplottype] = popplot_container(self,self.maven.plots.tm_hist)
 			elif popplottype == 'VB':

@@ -371,8 +371,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>fig,ax <span class="op">=</span>plt.subplots(<span class="dv">2</span>)</span>
 <span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="co">## Plot a 1D histogram in the first plots using the raw data instead of the Viterbi data</span></span>
-<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>maven.plots.fret_hist1d.prefs[<span class="st">'idealized'</span>] <span class="op">=</span> <span class="va">False</span></span>
-<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>maven.plots.fret_hist1d.plot(fig,ax[<span class="dv">0</span>])</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>maven.plots.data_hist1d.prefs[<span class="st">'idealized'</span>] <span class="op">=</span> <span class="va">False</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>maven.plots.data_hist1d.plot(fig,ax[<span class="dv">0</span>])</span>
 <span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="co">## Plot a trajectory in the second plot</span></span>
 <span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].plot(maven.data.corrected[<span class="dv">0</span>,:,<span class="dv">0</span>],<span class="st">'g'</span>)</span>
