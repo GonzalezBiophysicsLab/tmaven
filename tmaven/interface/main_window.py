@@ -222,13 +222,11 @@ class main_window(QMainWindow):
 
 		self.menu_traj = self.menu_view.addMenu('Plot Type')
 
-		self.menu_rel = self.menu_traj.addMenu('Relative')
-		self.menu_rel.addAction('Relative ND',lambda : self.plot_container.change_mode('ND Relative'))
-		self.menu_rel.addAction('smFRET',lambda : self.plot_container.change_mode('smFRET'))
-
-		self.menu_abs = self.menu_traj.addMenu('Intensities')
-		self.menu_abs.addAction('Raw ND',lambda : self.plot_container.change_mode('ND Raw'))
-		self.menu_abs.addAction('Normalized',lambda : self.plot_container.change_mode('Normalized'))
+		# self.menu_rel = self.menu_traj.addMenu('Relative')
+		self.menu_traj.addAction('Raw',lambda : self.plot_container.change_mode('ND Raw'))
+		self.menu_traj.addAction('Normalized',lambda : self.plot_container.change_mode('Normalized'))
+		self.menu_traj.addAction('Relative',lambda : self.plot_container.change_mode('ND Relative'))
+		self.menu_traj.addAction('smFRET',lambda : self.plot_container.change_mode('smFRET'))
 
 		self.menu_theme = self.menu_view.addMenu('Theme')
 		self.menu_theme.addAction('Light',self.change_theme_light)
