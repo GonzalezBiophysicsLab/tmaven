@@ -11,6 +11,13 @@ def launch_threshold(gui):
 	dialogs.dialog_threshold(gui, lambda: general_fxn(gui,method_name,fxn))
 	gui.model_dialog.start()
 
+def launch_threshold_jump(gui):
+	method_name = 'Jump Threshold'
+	fxn = gui.maven.modeler.run_threshold_jump
+	logger.info(f'Launching {method_name} dialog')
+	dialogs.dialog_threshold_jump(gui, lambda: general_fxn(gui,method_name,fxn))
+	gui.model_dialog.start()
+
 def launch_kmeans(gui):
 	method_name = 'K-means'
 	fxn = gui.maven.modeler.run_kmeans

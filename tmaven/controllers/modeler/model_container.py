@@ -54,7 +54,7 @@ class model_container(object):
 		if not tmatrix is None:
 			self.rate_type = "Transition Matrix"
 			self.norm_tmatrix = normalize_tmatrix(tmatrix)
-			self.rates = convert_tmatrix(self.norm_tmatrix)
+			self.rates, self.rates_stddev = convert_tmatrix(tmatrix)
 		else:
 			self.rate_type = "N/A"
 

@@ -43,7 +43,7 @@ class controller_io(object):
 
 	def __init__(self,maven):
 		self.maven = maven
-		self.maven.prefs.add_dictionary(default_prefs)
+		self.maven.prefs.add(default_prefs)
 		self.find_smds_in_hdf5 = find_smds_in_hdf5
 
 	def add_data(self,new_smd,new_tmaven=None):

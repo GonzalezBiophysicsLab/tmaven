@@ -37,7 +37,7 @@ class controller_corrections(object):
 	def __init__(self,maven):
 		super().__init__()
 		self.maven = maven
-		self.maven.prefs.add_dictionary(default_prefs)
+		self.maven.prefs.add(default_prefs)
 
 	def reset(self):
 		''' Reset data.corrected to data.raw

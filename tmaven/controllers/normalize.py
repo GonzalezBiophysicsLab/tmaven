@@ -36,7 +36,7 @@ class controller_normalizations(controller_corrections):
 	'''
 	def __init__(self,maven):
 		super().__init__(maven)
-		self.maven.prefs.add_dictionary(default_prefs)
+		self.maven.prefs.add(default_prefs)
 	
 	def normalize_minmax_ind(self):
 		#self.reset()

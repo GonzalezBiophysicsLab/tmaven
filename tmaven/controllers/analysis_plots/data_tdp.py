@@ -237,30 +237,30 @@ class controller_data_tdp(controller_base_analysisplot):
 			else:
 				index = self.prefs['plot_channel']
 
-			dpb = self.get_plot_data()[:,:,index]
+			dpb = self.get_plot_data()[:,:,index][np.nonzero(self.maven.data.flag_ons)[0]]
 			N = dpb.shape[0]
 			nskip = self.prefs['nskip']
-			d = np.array([[dpb[i,:-nskip],dpb[i,nskip:]] for i in range(dpb.shape[0])])
+			# d = np.array([[dpb[i,:-nskip],dpb[i,nskip:]] for i in range(dpb.shape[0])])
+			d1 = dpb[:,:-nskip].copy()
+			d2 = dpb[:,nskip:].copy()
 
 			if not self.maven.modeler.model is None:
-				v = self.get_idealized_data()
-				# vv = np.array([[v[i,:-nskip],v[i,nskip:]] for i in range(v.shape[0])])
-				vv = np.array([[v[i,:-1],v[i,1:]] for i in range(v.shape[0])])[:,:,:-nskip]
+				v = self.get_idealized_data()[np.nonzero(self.maven.data.flag_ons)[0]]
+				if not self.prefs['hist_rawsignal']:
+					d1 = v[:,:-nskip].copy()
+					d2 = v[:,nskip:].copy()
+				jump = np.array([np.abs(v[i,1:]-v[i,:-1])>0 for i in range(v.shape[0])])
+				if nskip > 1:
+					jump = jump[:,:-(nskip-1)]
+				## this mehod below will double/triple/quadruple/... count. don't use it.
+				# jump = np.array([np.abs(v[i,nskip:]-v[i,:-nskip]) > 0 for i in range(v.shape[0])])
+				d1 = d1[jump]
+				d2 = d2[jump]
+			d1 = d1.flatten()
+			d2 = d2.flatten()
+			keep = np.isfinite(d1)*np.isfinite(d2)
 
-				for i in range(d.shape[0]):
-					# d[i,:,vv[i,0]==vv[i,1]] = np.array((np.nan,np.nan))
-					d[i,:,:-1][:,vv[i,0]==vv[i,1]] = np.nan
-					d[i,:,-nskip:] = np.nan
-					if not self.prefs['hist_rawsignal']:
-						xx = np.nonzero(vv[i,0]!=vv[i,1])[0]
-						d[i,0,xx] = v[i,xx]
-						d[i,1,xx] = v[i,xx+1]
-
-			d1 = d[:,0].flatten()
-			d2 = d[:,1].flatten()
-			cut = np.isfinite(d1)*np.isfinite(d2)
-
-			return d1[cut],d2[cut],N
+			return d1[keep],d2[keep],N
 		#except:
 		else:
 			return np.array(()),np.array(()),0

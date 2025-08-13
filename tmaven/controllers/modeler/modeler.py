@@ -5,92 +5,119 @@ import h5py as h
 from .model_container import model_container
 from .modeler_io import export_dict_to_group, load_group_to_dict
 
-default_prefs = {
-	'modeler.nrestarts':5,
-	'modeler.converge':1e-8,
-	'modeler.maxiters':100,
+default_prefs = """
+[modeler]
+converge = 1e-8
+maxiters = 100
+threshold = 0.5
+threshold_jump_delta = 0.1
+threshold_jump_n = 1
+threshold_jump_sigma = 3
+dtype = "FRET"
+clip = True
+clip_min = -1.
+clip_max = 2.0
 
-	'modeler.mlgmm.nstates':2,
-	'modeler.mlhmm.nstates':2,
+[modeler.nrestarts]
+default = 5
+min = 1
 
-	'modeler.vbgmm.prior.beta':0.25,
-	'modeler.vbgmm.prior.a':0.1,
-	'modeler.vbgmm.prior.b':0.01,
-	'modeler.vbgmm.prior.pi':1,
-	'modeler.vbgmm.nstates':2,
-	'modeler.vbgmm.nstates_min':1,
-	'modeler.vbgmm.nstates_max':6,
+[modeler.dwells]
+include_first = True
+include_last = False
+fix_norm = False
 
-	'modeler.vbhmm.prior.beta':0.25,
-	'modeler.vbhmm.prior.a':2.5,
-	'modeler.vbhmm.prior.b':0.01,
-	'modeler.vbhmm.prior.alpha':1.,
-	'modeler.vbhmm.prior.pi':1,
-	'modeler.vbhmm.nstates':2,
-	'modeler.vbhmm.nstates_min':1,
-	'modeler.vbhmm.nstates_max':6,
+[modeler.kmeans.nstates]
+default = 2
+min = 1
+max = 1000
 
-	'modeler.vbconhmm.prior.beta':0.25,
-	'modeler.vbconhmm.prior.a':2.5,
-	'modeler.vbconhmm.prior.b':0.01,
-	'modeler.vbconhmm.prior.alpha':1.,
-	'modeler.vbconhmm.prior.pi':1.,
-	'modeler.vbconhmm.nstates':2,
-	'modeler.vbconhmm.nstates_min':1,
-	'modeler.vbconhmm.nstates_max':6,
+[modeler.mlgmm]
+nstates = 2
 
-	'modeler.ebhmm.prior.beta':0.25,
-	'modeler.ebhmm.prior.a':2.5,
-	'modeler.ebhmm.prior.b':0.01,
-	'modeler.ebhmm.prior.alpha':1.,
-	'modeler.ebhmm.prior.pi':1.,
-	'modeler.ebhmm.nstates':2,
-	'modeler.ebhmm.nstates_min':1,
-	'modeler.ebhmm.nstates_max':6,
+[modeler.mlhmm]
+nstates = 2
 
-	'modeler.hhmm.tolerance': 1e-4,
-    'modeler.hhmm.maxiters':100,
-    'modeler.hhmm.restarts':2,
+[modeler.vbgmm]
+nstates = 2
+nstates_min = 1
+nstates_max = 6
+[modeler.vbgmm.prior]
+beta = 0.25
+a = 0.1
+b = 0.01
+pi = 1
 
-	'modeler.biasd.tau':1.0,
-	'modeler.biasd.likelihood':'Python',
-	'modeler.biasd.nwalkers':96,
-	'modeler.biasd.thin':1000,
-	'modeler.biasd.steps':200,
-	'modeler.biasd.filename':'./biasd.hdf5',
-	'modeler.biasd.prior.e1.type':'Normal',
-	'modeler.biasd.prior.e1.p1':0.0,
-	'modeler.biasd.prior.e1.p2':0.1,
-	'modeler.biasd.prior.e2.type':'Normal',
-	'modeler.biasd.prior.e2.p1':1.0,
-	'modeler.biasd.prior.e2.p2':0.1,
-	'modeler.biasd.prior.sigma1.type':'Log-uniform',
-	'modeler.biasd.prior.sigma1.p1':0.01,
-	'modeler.biasd.prior.sigma1.p2':1.0,
-	'modeler.biasd.prior.sigma2.type':'Log-uniform',
-	'modeler.biasd.prior.sigma2.p1':0.01,
-	'modeler.biasd.prior.sigma2.p2':1.0,
-	'modeler.biasd.prior.k1.type':'Log-uniform',
-	'modeler.biasd.prior.k1.p1':0.001,
-	'modeler.biasd.prior.k1.p2':1000.0,
-	'modeler.biasd.prior.k2.type':'Log-uniform',
-	'modeler.biasd.prior.k2.p1':0.001,
-	'modeler.biasd.prior.k2.p2':1000.0,
+[modeler.vbhmm]
+nstates = 2
+nstates_min = 1
+nstates_max = 6
+[modeler.vbhmm.prior]
+beta = 0.25
+a = 2.5
+b = 0.01
+alpha = 1.
+pi = 1
 
-    'modeler.dwells.include_first':True,
-    'modeler.dwells.include_last':False,
-    'modeler.dwells.fix_norm':False,
+[modeler.vbconhmm]
+nstates = 2
+nstates_min = 1
+nstates_max = 6
+[modeler.vbconhmm.prior]
+beta = 0.25
+a = 2.5
+b = 0.01
+alpha = 1.
+pi = 1.
 
-	'modeler.clip':True,
-	'modeler.clip_min':-1.,
-	'modeler.clip_max':2.0,
+[modeler.ebhmm]
+nstates = 2
+nstates_min = 1
+nstates_max = 6
+[modeler.ebhmm.prior]
+beta = 0.25
+a = 2.5
+b = 0.01
+alpha = 1.
+pi = 1.
 
-	'modeler.threshold':0.5,
+[modeler.hhmm]
+tolerance =  1e-4
+maxiters = 100
+restarts = 2
 
-	'modeler.dtype':'FRET',
-
-	'modeler.kmeans.nstates':2,
-}
+[modeler.biasd]
+tau = 1.0
+likelihood = 'Python'
+nwalkers = 96
+thin = 1000
+steps = 200
+filename = './biasd.hdf5'
+[modeler.biasd.prior.e1]
+type = 'Normal'
+p1 = 0.0
+p2 = 0.1
+[modeler.biasd.prior.e2]
+type = 'Normal'
+p1 = 1.0
+p2 = 0.1
+[modeler.biasd.prior.sigma1]
+type = 'Log-uniform'
+p1 = 0.01
+p2 = 1.0
+[modeler.biasd.prior.sigma2]
+type = 'Log-uniform'
+p1 = 0.01
+p2 = 1.0
+[modeler.biasd.prior.k1]
+type = 'Log-uniform'
+p1 = 0.001
+p2 = 1000.0
+[modeler.biasd.prior.k2]
+type = 'Log-uniform'
+p1 = 0.001
+p2 = 1000.0
+"""
 
 class controller_modeler(object):
 	''' Handles modeling data
@@ -105,7 +132,7 @@ class controller_modeler(object):
 	def __init__(self,maven):
 		super().__init__()
 		self.maven = maven
-		self.maven.prefs.add_dictionary(default_prefs)
+		self.maven.prefs.add(default_prefs)
 		# self.cached_functions = {}
 		self.model_container = model_container ## for easy access to blank containers elsewhere
 
@@ -402,12 +429,16 @@ class controller_modeler(object):
 			s += 'tmatrix normalized = \n{}\n'.format(norm_tmatrix)
 
 		if not model.rates is None:
-			rate_type = model.rate_type
-			rates = model.rates
-			s += 'Rate type = {}\n'.format(rate_type)
-			s += 'Rates = \n{}\n'.format(rates)
+			s += 'Rate type = {}\n'.format(model.rate_type)
+			s += 'Rates (frame^-1) = \n{}\n'.format(model.rates)
+			try:
+				s += 'Rates uncertainty (1 sigma; frame^-1) = \n{}\n'.format(model.rates_stddev)
+			except:
+				pass
 
 		logger.info(s)
+		return s
+		
 
 	def clip_traces(self,y,low=-1,high=2):
 		np.random.seed(666)
@@ -448,6 +479,25 @@ class controller_modeler(object):
 		result.dtype = dtype
 		result.ran = np.nonzero(keep)[0].tolist()
 		result.idealize = lambda : self.idealize_threshold(result)
+		result.idealize()
+		self.model = result
+		self.make_report(result)
+		self.maven.emit_data_update()
+	
+	def run_threshold_jump(self):
+		dtype = self.maven.prefs['modeler.dtype']
+		threshold_jump_delta = self.maven.prefs['modeler.threshold_jump_delta']
+		threshold_jump_n = self.maven.prefs['modeler.threshold_jump_n']
+		threshold_jump_sigma = self.maven.prefs['modeler.threshold_jump_sigma']
+		success,keep,y = self.get_traces(dtype)
+		if not success:
+			return
+		
+		from .threshold import calc_threshold_jump
+		result = calc_threshold_jump(np.concatenate(y),threshold_jump_delta,threshold_jump_n,threshold_jump_sigma)
+		result.dtype = dtype
+		result.ran = np.nonzero(keep)[0].tolist()
+		result.idealize = lambda : self.idealize_threshold_jump(result)
 		result.idealize()
 		self.model = result
 		self.make_report(result)
@@ -589,7 +639,7 @@ class controller_modeler(object):
 		tmatrix = compose_tmatrix(y,result)
 		result.tmatrix = tmatrix
 		result.norm_tmatrix = normalize_tmatrix(tmatrix)
-		result.rates = convert_tmatrix(tmatrix)
+		result.rates, self.rates_stddev = convert_tmatrix(tmatrix)
 
 		result.idealize = lambda : self.idealize_kmeans_viterbi(result,idealized)
 		result.idealize()
@@ -626,7 +676,7 @@ class controller_modeler(object):
 		tmatrix = compose_tmatrix(y,result)
 		result.tmatrix = tmatrix
 		result.norm_tmatrix = normalize_tmatrix(tmatrix)
-		result.rates = convert_tmatrix(tmatrix)
+		result.rates, self.rates_stddev = convert_tmatrix(tmatrix)
 		
 		result.idealize = lambda : self.idealize_kmeans_viterbi(result,idealized)
 		result.idealize()
@@ -671,7 +721,7 @@ class controller_modeler(object):
 		tmatrix = compose_tmatrix(y,result)
 		result.tmatrix = tmatrix
 		result.norm_tmatrix = normalize_tmatrix(tmatrix)
-		result.rates = convert_tmatrix(tmatrix)
+		result.rates, self.rates_stddev = convert_tmatrix(tmatrix)
 
 		result.idealize = lambda : self.idealize_gmm_viterbi(result,idealized)
 		result.idealize()
@@ -733,7 +783,7 @@ class controller_modeler(object):
 			tmatrix = compose_tmatrix(y,result)
 			result.tmatrix = tmatrix
 			result.norm_tmatrix = normalize_tmatrix(tmatrix)
-			result.rates = convert_tmatrix(tmatrix)
+			result.rates, self.rates_stddev = convert_tmatrix(tmatrix)
 
 			result.idealize = lambda : self.idealize_gmm_viterbi(result,idealized)
 			result.idealize()
@@ -1021,7 +1071,7 @@ class controller_modeler(object):
 
 		if not model.tmatrix is None:
 			from .fxns.hmm import convert_tmatrix
-			model.rates = convert_tmatrix(model.tmatrix)
+			model.rates, model.rates_stddev = convert_tmatrix(model.tmatrix)
 			model.rate_type = "Transition Matrix"
 		else:
 			return
@@ -1452,6 +1502,20 @@ class controller_modeler(object):
 			idealpath = (data[ii,pre:post] > threshold).astype('int')
 			result.chain[ii,pre:post] = idealpath.copy()
 			result.idealized[ii,pre:post] = result.mean[idealpath]
+
+	def idealize_threshold_jump(self,result):
+		from .threshold import ideal_threshold_jump
+		success,data = self.get_data(result.dtype)
+		if not success:
+			return
+		result.idealized = np.zeros_like(data) + np.nan
+		result.chain = np.zeros_like(result.idealized).astype('int')
+		for ii in result.ran:
+			pre = self.maven.data.pre_list[ii]
+			post = self.maven.data.post_list[ii]
+			chain,ideal = ideal_threshold_jump(data[ii],pre,post,result.threshold_jump_delta,result.threshold_jump_n,result.threshold_jump_sigma)
+			result.chain[ii] = chain.copy()
+			result.idealized[ii] = ideal.copy()
 
 	def idealize_kmeans(self,result):
 		success,data = self.get_data(result.dtype)

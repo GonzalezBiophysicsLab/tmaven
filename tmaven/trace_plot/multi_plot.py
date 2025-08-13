@@ -52,7 +52,7 @@ class multi_canvas(FigureCanvas):
 			defpref['plot.bg_color'] = 'white'
 		elif self.gui.lightdark_mode == 'dark':
 			defpref['plot.bg_color'] = '#353535'
-		self.gui.maven.prefs.add_dictionary(defpref)
+		self.gui.maven.prefs.add(defpref)
 		self.gui.preferences_viewer.prefs_model.layoutChanged.emit()
 
 		plt.close(self.figure)

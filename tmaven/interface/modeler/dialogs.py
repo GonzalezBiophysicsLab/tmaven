@@ -158,6 +158,27 @@ def dialog_threshold(gui,fxn):
 	gui.model_dialog = model_dialog
 	gui.model_dialog.run.clicked.connect(fxn)
 
+def dialog_threshold_jump(gui,fxn):
+	model_dialog = model_dialog_base(gui)
+
+	groupbox2 = QGroupBox("Threshold Jump model parameters")
+	grid2 = QGridLayout()
+	model_dialog.add_line_edit("Jump Threshold:", grid2, [0,0],validate = 'double', pref='modeler.threshold_jump_delta')
+	model_dialog.add_line_edit("Jump Skip N:", grid2, [1,0],validate = 'int', pref='modeler.threshold_jump_n')
+	model_dialog.add_line_edit("Jump Skip Sigma:", grid2, [2,0],validate = 'int', pref='modeler.threshold_jump_sigma')
+	groupbox_data = QGroupBox("Data parameters")
+	grid_data = QGridLayout()
+	model_dialog.add_combo_box("Data Source:", grid_data, [0,0], ['FRET','Sum','0','1','2','3','Rel 0','Rel 1','Rel 2','Rel 3'],pref='modeler.dtype')
+	model_dialog.add_combo_box("Clip Data?", grid_data, [1,0],['True','False'], pref='modeler.clip')
+
+	groupbox2.setLayout(grid2)
+	groupbox_data.setLayout(grid_data)
+	model_dialog.grid.addWidget(groupbox2, 0, 0)
+	model_dialog.grid.addWidget(groupbox_data, 1, 0)
+
+	gui.model_dialog = model_dialog
+	gui.model_dialog.run.clicked.connect(fxn)
+
 def dialog_kmeans(gui,fxn):
 	model_dialog = model_dialog_base(gui)
 

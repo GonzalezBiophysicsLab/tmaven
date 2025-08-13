@@ -47,6 +47,7 @@ def build_menu(gui):
 	ens = menu_modeler.addMenu("Models")
 	
 	ens.addAction('Threshold',lambda : launchers.launch_threshold(gui))
+	ens.addAction('Jump Threshold',lambda : launchers.launch_threshold_jump(gui))
 	mixture = ens.addMenu('Mixtures')
 	composites = ens.addMenu('Composite HMMs')
 	globalhmm = ens.addMenu('Global HMMs')

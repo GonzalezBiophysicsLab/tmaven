@@ -56,7 +56,7 @@ class maven_class(object):
 
 		from .controllers import prefs_object, default_prefs
 		self.prefs = prefs_object()
-		self.prefs.add_dictionary(default_prefs)
+		self.prefs.add(default_prefs)
 		# self.prefs.emit_changed = lambda : print('>>>prefs.emit_changed')
 		# self.prefs.emit_failed = lambda : print('>>>prefs.emit_failed')
 

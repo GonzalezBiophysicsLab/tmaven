@@ -35,7 +35,7 @@ class controller_data(object):
 
 	def __init__(self,maven):
 		self.maven = maven
-		self.maven.prefs.add_dictionary(default_prefs)
+		self.maven.prefs.add(default_prefs)
 		self.initialize_tmaven_params()
 
 	def initialize_tmaven_params(self):

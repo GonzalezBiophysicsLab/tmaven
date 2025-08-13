@@ -1,6 +1,7 @@
 import numpy as np
 import numba as nb
 from .statistics import p_normal
+from .numba_math import psi
 
 @nb.jit(nb.types.Tuple((nb.double[:,:],nb.double[:,:,:],nb.double))(nb.double[:,:],nb.double[:,:],nb.double[:]),nopython=True,cache=True)
 def forward_backward(p_x_z,A,pi):
@@ -98,6 +99,22 @@ def normalize_tmatrix(tm):
 
 	return norm_tm
 
+# @nb.jit(nb.float64[:,:](nb.float64[:,:]),nopython=True,cache=True)
+def tmatrix_stats(tm):
+	## each row is a Dirichlet....
+	## check out: https://en.wikipedia.org/wiki/Dirichlet_distribution
+	E_x = np.zeros_like(tm)
+	E_lnx = np.zeros_like(tm)
+	variance = np.zeros_like(tm)
+	for i in range(tm.shape[0]):
+		alphai = tm[i]
+		alpha0 = np.sum(alphai)
+
+		E_x[i] = alphai/alpha0
+		E_lnx[i] = psi(alphai) - psi(alpha0)
+		variance[i] = alphai*(alpha0-alphai)/(alpha0*alpha0*(alpha0+1.))
+
+	return E_x, E_lnx, variance
 
 @nb.jit(nb.int64[:](nb.float64[:],nb.float64[:],nb.float64[:],nb.float64[:,:],nb.float64[:]),nopython=True,cache=True)
 def viterbi(x,mu,var,norm_tmatrix,ppi):
@@ -113,19 +130,36 @@ def viterbi(x,mu,var,norm_tmatrix,ppi):
 
 	return zhat
 
-
-
 def convert_tmatrix(tmatrix):
 
-	norm_tm = normalize_tmatrix(tmatrix)
+	E_x, E_lnx, variance = tmatrix_stats(tmatrix)
+	norm_tm = E_x
+
 	if norm_tm.shape[0] > 1:
 		rates = -np.log(1.- norm_tm)/1.
 		for i in range(rates.shape[0]):
 			rates[i,i] = 0.
+
+		## calculate the jacobian |dk/dp| = 1/((1-p)tau)
+		## give dk as 1/((1-p)tau) dp, where dp is sqrt(var of dirichlet)
+		## note: tau is 1 here (ie, in units of per frames)
+		rates_stddev = 1./(1.-E_x) * np.sqrt(variance)
+		for i in range(rates.shape[0]):
+			rates_stddev[i,i] = 0.
+
+		## If you didn't believe that this is correct, then you could....
+		# rng = np.random.default_rng(seed=666)
+		# for i in range(rates.shape[0]):
+		# 	alphai = tmatrix[i]
+		# 	pis = rng.dirichlet(alphai,size=10000)
+		# 	rates_stddev[i] = np.std(-np.log(1.-pis),axis=0)
+		# 	rates_stddev[i,i] = 0.
+
 	else:
 		rates = np.zeros_like(norm_tm)
+		rates_stddev = np.zeros_like(norm_tm)
 		
-	return rates
+	return rates, rates_stddev
 
 def compose_tmatrix(y,result):
 	nstates = result.nstates

@@ -25,7 +25,7 @@ class controller_photobleaching(object):
 	'''
 	def __init__(self,maven):
 		self.maven = maven
-		self.maven.prefs.add_dictionary(default_prefs)
+		self.maven.prefs.add(default_prefs)
 
 	def calc_single_photobleach(self,index):
 		''' Photobleach calculation for one trace
