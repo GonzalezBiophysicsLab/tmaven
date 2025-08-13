@@ -74,7 +74,7 @@ class controller_selection(object):
 			cc = np.fft.ifft((a*b),axis=1)
 			cc = cc[:,0].real
 		else:
-			if d.shape[0] == 0:
+			if d.shape[0] < 2:
 				return 0.
 			x = d[:,0]
 			y = d[:,1]
