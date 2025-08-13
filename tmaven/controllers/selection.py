@@ -47,7 +47,6 @@ class controller_selection(object):
 	def set_class_from_selection(self,selection,i):
 		self.maven.data.classes[self.selected] = i
 
-
 	def calc_fret_cross_corr(self,d=None): ## of gradient
 		''' Calculate cross correlation of gradient of 1D series
 
@@ -75,6 +74,8 @@ class controller_selection(object):
 			cc = np.fft.ifft((a*b),axis=1)
 			cc = cc[:,0].real
 		else:
+			if d.shape[0] == 0:
+				return 0.
 			x = d[:,0]
 			y = d[:,1]
 			x = np.gradient(x) # over time
