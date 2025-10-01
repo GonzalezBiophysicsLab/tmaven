@@ -3,6 +3,9 @@ import sys
 import logging
 logger = logging.getLogger('tmaven')
 
+import warnings
+warnings.filterwarnings("ignore",message="FNV hashing is not implemented in Numba",category=UserWarning,module="numba.cpython.hashing")
+
 def setup_maven(args=[]):
 	from .maven import maven_class
 	maven = maven_class(log_stdout='--log_stdout' in args)
