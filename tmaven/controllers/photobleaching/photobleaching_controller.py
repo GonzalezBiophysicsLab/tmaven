@@ -1,16 +1,19 @@
 import logging
 logger = logging.getLogger(__name__)
 
-default_prefs = {
-	'photobleach.sum':True,
-	'photobleach.entire':True,
-	'photobleach.movepre':False,
-	'photobleach.maxent':True,
-	'photobleach.prior.a':1.,
-	'photobleach.prior.b':1.,
-	'photobleach.prior.beta':1.,
-	'photobleach.prior.mu':1000.,
-}
+default_prefs = """
+[photobleach]
+sum = True
+entire = True
+movepre = False
+maxent = True
+
+[photobleach.prior]
+a = 1.0
+b = 1.0
+beta = 1.0
+mu = 1000.
+"""
 
 class controller_photobleaching(object):
 	''' Handles automatic photobleaching calculations
@@ -76,6 +79,13 @@ class controller_photobleaching(object):
 		logger.info('Photobleach Trajectory %d: old method, t_bleach = %d'%(index,self.maven.data.post_list[index]))
 		# self.maven.modeler.clear_hmm()
 		# self.maven.data_update.emit()
+
+	def remove_photobleaching(self):
+		logger.info('Removed photobleaching pre/post times')
+		self.maven.data.pre_list *= 0
+		self.maven.data.post_list *= 0
+		self.maven.data.post_list += self.maven.data.nt
+		self.maven.emit_data_update()
 
 	def photobleach_sum(self):
 		''' Photobleach calculation all of the data
