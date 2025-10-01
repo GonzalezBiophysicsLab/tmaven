@@ -19,7 +19,7 @@ def calc_threshold(y,threshold):
 def calc_threshold_jump(y,threshold_jump_delta,threshold_jump_n,threshold_jump_sigma):
 	''' Idealize an np.ndarray with a threshold into classes 0 (<) and 1 (>)'''
 
-	nstates = 1000
+	nstates = 1
 	result = model_container(
 		type='threshold',
 		nstates=nstates,
@@ -99,6 +99,8 @@ def ideal_threshold_jump(y,pre,post,delta,nn,sigma):
 				keep = chain == chain1
 				ideal[keep] = mean(y[keep]) ## this will make "assert np.abs(ideal[i+1]-ideal[i]) > delta" fail b/c it reassess only one side... but better RMSD
 				# ideal[keep] = ideal1 ## this will NOT fail.... but worse RMSD reconstruction. Don't use this except for debugging...
+				assert chain[i] == chain[i+1]
+				assert ideal[i] == ideal[i+1]
 
 	# # check
 	# for i in range(pre,post-1):

@@ -237,7 +237,7 @@ class controller_data_tdp(controller_base_analysisplot):
 			else:
 				index = self.prefs['plot_channel']
 
-			dpb = self.get_plot_data()[:,:,index][np.nonzero(self.maven.data.flag_ons)[0]]
+			dpb = self.get_plot_data()[:,:,index]
 			N = dpb.shape[0]
 			nskip = self.prefs['nskip']
 			# d = np.array([[dpb[i,:-nskip],dpb[i,nskip:]] for i in range(dpb.shape[0])])
@@ -249,18 +249,19 @@ class controller_data_tdp(controller_base_analysisplot):
 				if not self.prefs['hist_rawsignal']:
 					d1 = v[:,:-nskip].copy()
 					d2 = v[:,nskip:].copy()
-				jump = np.array([np.abs(v[i,1:]-v[i,:-1])>0 for i in range(v.shape[0])])
+				jump = np.array([np.abs(v[i,1:]-v[i,:-1])>0 for i in range(v.shape[0])]) ## find *exact* location of each jump
 				if nskip > 1:
 					jump = jump[:,:-(nskip-1)]
 				## this mehod below will double/triple/quadruple/... count. don't use it.
 				# jump = np.array([np.abs(v[i,nskip:]-v[i,:-nskip]) > 0 for i in range(v.shape[0])])
 				d1 = d1[jump]
 				d2 = d2[jump]
+
 			d1 = d1.flatten()
 			d2 = d2.flatten()
 			keep = np.isfinite(d1)*np.isfinite(d2)
-
 			return d1[keep],d2[keep],N
+			
 		#except:
 		else:
 			return np.array(()),np.array(()),0
