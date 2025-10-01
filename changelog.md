@@ -1,5 +1,12 @@
 # Change Log
 
+## 0.3.0
+### Added
+* Adds change point analysis
+  
+### Changed
+* Preferences format is very different
+
 ## 0.2.4
 ### Added
 * Adds support for plotting models on both axis
