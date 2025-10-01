@@ -22,14 +22,14 @@ There are two ways to install tMAVEN. If you aren't going to call tMAVEN functio
 ::: {.callout-note collapse=true}
 **Mac security issue.**
 
-If you try to install on a Mac, you may encounter a security issue that won't allow you to launch tMAVEN because the OS cannot verify that it isn't malware. You need to do the following:
+If you try to install on a Mac, you may encounter a security issue that won't allow you to launch tMAVEN because the OS cannot verify that it isn't malware. MacOS Sequoia and beyond do not allow you to verify this manually. You need to do the following:
 
-1. Go to the `Apple` menu item
-2. Open `System Settings`
-3. Go to the `Privacy & Security` tab on the side.
-4. Scroll down past the `Privacy` section, and into the `Security` section
-5. Find the section that says `tMAVEN was blocked from use becasue it is not from an identified developer.`
-6. Click `Open Anyway`
+1. Open a terminal.
+2. Run the following two commands (n.b., you will need to type your password after running the second command):
+  ```sh
+  xattr -cr /Applications/tMAVEN.app
+  sudo spctl --add --label "tMAVEN" /Applications/tMAVEN.app
+  ```
 :::
 
 # Install the Python Package
