@@ -1,6 +1,7 @@
 import os
 import sys
 import logging
+import appdirs
 logger = logging.getLogger('tmaven')
 
 import warnings
@@ -13,6 +14,10 @@ def setup_maven(args=[]):
 
 def setup_gui(maven,args=[]):
 	logger.info("Launching GUI")
+
+	## prevent repeated font-caching 
+	os.environ["MPLCONFIGDIR"] = appdirs.user_config_dir(appname="tmaven", appauthor="python")
+
 	from PyQt5.QtCore import Qt
 	from PyQt5.QtWidgets import QApplication
 
