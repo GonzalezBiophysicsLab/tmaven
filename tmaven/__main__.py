@@ -10,6 +10,7 @@ def file_path(string):
 		raise Exception(err)
 
 def main():
+	
 	parser = argparse.ArgumentParser(description="(t)ime-series (M)odeling, (A)nalysis, and (V)isualization (EN)vironment")
 	
 	parser.add_argument('--safe',action='store_true',default=False,help='Open in safe-mode')
