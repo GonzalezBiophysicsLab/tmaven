@@ -79,7 +79,7 @@ class popplot_container(QMainWindow):
 
 		## Set the looks
 		self.setCentralWidget(qwtot)
-		self.setStyle(QStyleFactory.create('Fusion'))
+		#self.setStyle(QStyleFactory.create('Fusion'))
 		from .stylesheet import ui_stylesheet
 		self.setStyleSheet(ui_stylesheet)
 
@@ -140,11 +140,14 @@ class popplot_container(QMainWindow):
 	def change_plot_smfret(self):
 		self.maven_plot.fret_defaults()
 		self.prefs_widget.proxy_model.layoutChanged.emit()
+		self.plot()
 
 	def change_plot_normalized(self):
 		self.maven_plot.normalized_defaults()
 		self.prefs_widget.proxy_model.layoutChanged.emit()
+		self.plot()
 
 	def change_plot_raw(self):
 		self.maven_plot.raw_defaults()
 		self.prefs_widget.proxy_model.layoutChanged.emit()
+		self.plot()

@@ -39,7 +39,7 @@ class main_window(QMainWindow):
 		self.setWindowTitle('tMAVEN (%s)'%(str(__version__)))
 		from .stylesheet import ui_stylesheet
 		self.setStyleSheet(ui_stylesheet)
-		self.setStyle(QStyleFactory.create('Fusion')) ## WOW THIS THROWS RANDOM SEGFAULTS WHEN QUITTING?
+		#self.setStyle(QStyleFactory.create('Fusion')) ## WOW THIS THROWS RANDOM SEGFAULTS WHEN QUITTING?
 		self.setWindowIcon(load_icon('logo.png'))
 		self.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding)
 		self.closeEvent = self.quit
@@ -407,7 +407,7 @@ class main_window(QMainWindow):
 
 	def _newtimer(self):
 		from PyQt5.QtCore import QTimer
-		self.timer = QTimer(singleShot=True)
+		self.timer = QTimer(parent=self,singleShot=True)
 		self.timer.setInterval(40) ## 25 FPS = 40 msec
 		self.timer.timeout.connect(self._timesup)
 		self.timer.start()

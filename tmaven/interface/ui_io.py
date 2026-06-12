@@ -151,7 +151,7 @@ def get_items_dialog(gui,items,title,subtitle,flag_select_multiple):
 			# self.lw.selectAll()
 
 			#### set style
-			self.setStyle(QStyleFactory.create('Fusion'))
+			#self.setStyle(QStyleFactory.create('Fusion'))
 			from .stylesheet import ui_stylesheet
 			self.setStyleSheet(ui_stylesheet)
 

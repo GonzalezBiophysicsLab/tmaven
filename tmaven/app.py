@@ -2,6 +2,7 @@ import os
 import sys
 import logging
 import appdirs
+from PyQt5.QtWidgets import QStyleFactory
 logger = logging.getLogger('tmaven')
 
 import warnings
@@ -82,5 +83,5 @@ def run_app(args=[]):
 		else: ### This is where other command line options are added
 			pass
 
-
+	app.setStyle(QStyleFactory.create('Fusion'))
 	sys.exit(app.exec_())

@@ -139,7 +139,7 @@ def select_model_popup(gui,title='',flag_select_multiple=False):
 			button_okay.setDefault(True)
 
 			#### set style
-			self.setStyle(QStyleFactory.create('Fusion'))
+			#self.setStyle(QStyleFactory.create('Fusion'))
 			from ..stylesheet import ui_stylesheet
 			self.setStyleSheet(ui_stylesheet)
 
