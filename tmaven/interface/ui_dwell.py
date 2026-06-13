@@ -12,22 +12,112 @@ class _dwell_dialog(QDialog):
 	Defines and sets the layout for the base dialog box that can be called
 	for specific modelling methods.
 	'''
-	def __init__(self,gui):
-		super(QDialog, self).__init__()
+	def __init__(self,gui,model):
+		super(QDialog, self).__init__(parent=gui)
 		self.gui = gui
 
 		self.setWindowTitle("Run Dwell Analysis")
 		self.setWindowModality(Qt.NonModal)
 
 		self.grid = QGridLayout()
-		#self.run = QPushButton("Run", self)
-		#self.grid.addWidget(self.run, 5, 0)
 		self.setLayout(self.grid)
 		self.grid.setSizeConstraint(QLayout.SetFixedSize)
 
 		#self.setStyle(QStyleFactory.create('Fusion'))
 		from .stylesheet import ui_stylesheet
 		self.setStyleSheet(ui_stylesheet)
+
+		# Pre-calc model groupbox
+		groupbox1 = QGroupBox("State model")
+		grid1 = QGridLayout()
+
+		grid1.addWidget(QLabel('Model Type = '), 0,0)
+		self.model_label = QLabel(model.type)
+		grid1.addWidget(self.model_label, 0,1)
+
+		grid1.addWidget(QLabel('Transition Matrix = '), 1,0)
+		self.model_tm = QLabel(str(model.tmatrix))
+		grid1.addWidget(self.model_tm, 1,1)
+
+		self.add_push_button('Change Active', grid1, [2,1], fxn = lambda : self.model_change())
+		groupbox1.setLayout(grid1)
+		self.grid.addWidget(groupbox1, 0, 0)
+
+		# Dwell times groupbox
+		groupbox2 = QGroupBox("Dwell times")
+		grid2 = QGridLayout()
+		if model.dwells is None:
+			self.dwell_label = QLabel('Dwells not calculated')
+		else:
+			self.dwell_label = QLabel('Dwells calculated')
+		grid2.addWidget(self.dwell_label, 0,0)
+
+		self.add_push_button('Calculate', grid2, [1,0], fxn = lambda : self.add_dwells())
+		self.add_push_button('Plot', grid2, [1,1], fxn = lambda : self.plot_dwells())
+		self.first_check = self.add_check_box("Include first", grid2, [2,0])
+		groupbox2.setLayout(grid2)
+		self.grid.addWidget(groupbox2, 1, 0)
+
+		# Rate analysis groupbox
+		groupbox3 = QGroupBox("Rate Analysis")
+		grid3 = QGridLayout()
+
+		state_items = [str(i) for i in range(model.nstates)]
+		self.state_combo = self.add_combo_box('Active State =', grid3, [0,0], state_items)
+		self.active_state = int(self.state_combo.currentText())
+
+		func_items = ['Single Exponential','Double Exponential','Triple Exponential','Stretched Exponential']
+		self.func_combo = self.add_combo_box('Rate function =', grid3, [1,0], func_items)
+		self.active_func = self.func_combo.currentText()
+		self.func_combo.activated.connect(lambda: self.func_change())
+		self.add_push_button("T-matrix", grid3, [3,0], fxn = lambda : self.run_tmatrix())
+		self.add_push_button("Run", grid3, [3,1], fxn = lambda : self.run_dwell_analysis())
+		self.fixA_check = self.add_check_box("Enforce Normalisation", grid3, [4,1])
+
+		groupbox3.setLayout(grid3)
+		self.grid.addWidget(groupbox3, 2, 0)
+
+		# Result groupbox
+		groupbox4 = QGroupBox("Results")
+		grid4 = QGridLayout()
+
+		state_str = "State = {}\n".format(self.active_state)
+		rate_type_str = "Rate_type = {}\n".format(model.rate_type)
+
+		if model.rate_type == "Transition Matrix":
+			rate = model.rates[self.active_state]
+			rate_str = "Rates = \n {} \n".format(str(rate))
+
+		elif model.rate_type == "Dwell Analysis":
+			if self.active_state in model.rates:
+				rate = model.rates[self.active_state]
+				rate_str = "Rates = \n {} \n".format(str(rate['ks']))
+				rate_str += "Error = \n {} \n".format(str(rate['error'][0]))
+				rate_str += "Coefficients = \n {} \n".format(str(rate['As']))
+				rate_str += "Error = \n {} \n".format(str(rate['error'][-1]))
+				if 'betas' in rate:
+					rate_str += "Betas = \n {} \n".format(str(rate['betas']))
+					rate_str += "Error = \n {} \n".format(str(rate['error'][1]))
+				rate_str += "R2 of fit = \n {} \n".format(str(rate['R2']))
+			else:
+				rate_str = "Rates = N/A"
+		else:
+			rate_str = ""
+
+
+		disp_str =  state_str + rate_type_str + rate_str
+		self.te = QPlainTextEdit(parent=self)
+		self.te.setPlainText(disp_str)
+		#te.verticalScrollBar().setValue(te.verticalScrollBar().maximum())
+		self.te.setReadOnly(True)
+		grid4.addWidget(self.te, 0,0)
+
+
+		groupbox4.setLayout(grid4)
+		self.grid.addWidget(groupbox4, 0, 1, 3, 1)
+
+		self.state_combo.activated.connect(lambda: self.state_change())
+
 
 	def add_combo_box(self, label, grid, position, items):
 
@@ -49,7 +139,9 @@ class _dwell_dialog(QDialog):
 		return button
 
 	def add_check_box(self, label, grid, position, default=False):
-		check = flag_check(label,default)
+		#check = flag_check(label,default)
+		check = QCheckBox(label, self)
+		check.setChecked(default)
 		grid.addWidget(check, position[0], position[1])
 
 		return check
@@ -110,7 +202,7 @@ class _dwell_dialog(QDialog):
 		self.te.setReadOnly(True)
 
 	def model_change(self):
-		from .modeler.ui_modeler import change_model
+		#from .modeler.ui_modeler import change_model
 
 		self.gui.change_model()
 		self.update_model()
@@ -153,100 +245,7 @@ class _dwell_dialog(QDialog):
 		self.update_result()
 
 def dialog_dwell_analysis(gui,model):
-	dwell_dialog = _dwell_dialog(gui)
-
-	# Pre-calc model groupbox
-	groupbox1 = QGroupBox("State model")
-	grid1 = QGridLayout()
-
-	grid1.addWidget(QLabel('Model Type = '), 0,0)
-	dwell_dialog.model_label = QLabel(model.type)
-	grid1.addWidget(dwell_dialog.model_label, 0,1)
-
-	grid1.addWidget(QLabel('Transition Matrix = '), 1,0)
-	dwell_dialog.model_tm = QLabel(str(model.tmatrix))
-	grid1.addWidget(dwell_dialog.model_tm, 1,1)
-
-	dwell_dialog.add_push_button('Change Active', grid1, [2,1], fxn = lambda : dwell_dialog.model_change())
-	groupbox1.setLayout(grid1)
-	dwell_dialog.grid.addWidget(groupbox1, 0, 0)
-
-	# Dwell times groupbox
-	groupbox2 = QGroupBox("Dwell times")
-	grid2 = QGridLayout()
-	if model.dwells is None:
-		dwell_dialog.dwell_label = QLabel('Dwells not calculated')
-	else:
-		dwell_dialog.dwell_label = QLabel('Dwells calculated')
-	grid2.addWidget(dwell_dialog.dwell_label, 0,0)
-
-	dwell_dialog.add_push_button('Calculate', grid2, [1,0], fxn = lambda : dwell_dialog.add_dwells())
-	dwell_dialog.add_push_button('Plot', grid2, [1,1], fxn = lambda : dwell_dialog.plot_dwells())
-	dwell_dialog.first_check = dwell_dialog.add_check_box("Include first", grid2, [2,0])
-	groupbox2.setLayout(grid2)
-	dwell_dialog.grid.addWidget(groupbox2, 1, 0)
-
-	# Rate analysis groupbox
-	groupbox3 = QGroupBox("Rate Analysis")
-	grid3 = QGridLayout()
-
-	state_items = [str(i) for i in range(model.nstates)]
-	dwell_dialog.state_combo = dwell_dialog.add_combo_box('Active State =', grid3, [0,0], state_items)
-	dwell_dialog.active_state = int(dwell_dialog.state_combo.currentText())
-
-	func_items = ['Single Exponential','Double Exponential','Triple Exponential','Stretched Exponential']
-	dwell_dialog.func_combo = dwell_dialog.add_combo_box('Rate function =', grid3, [1,0], func_items)
-	dwell_dialog.active_func = dwell_dialog.func_combo.currentText()
-	dwell_dialog.func_combo.activated.connect(lambda: dwell_dialog.func_change())
-	dwell_dialog.add_push_button("T-matrix", grid3, [3,0], fxn = lambda : dwell_dialog.run_tmatrix())
-	dwell_dialog.add_push_button("Run", grid3, [3,1], fxn = lambda : dwell_dialog.run_dwell_analysis())
-	dwell_dialog.fixA_check = dwell_dialog.add_check_box("Enforce Normalisation", grid3, [4,1])
-
-	groupbox3.setLayout(grid3)
-	dwell_dialog.grid.addWidget(groupbox3, 2, 0)
-
-	# Result groupb
-
-	groupbox4 = QGroupBox("Results")
-	grid4 = QGridLayout()
-
-	state_str = "State = {}\n".format(dwell_dialog.active_state)
-	rate_type_str = "Rate_type = {}\n".format(model.rate_type)
-
-	if model.rate_type == "Transition Matrix":
-		rate = model.rates[dwell_dialog.active_state]
-		rate_str = "Rates = \n {} \n".format(str(rate))
-
-	elif model.rate_type == "Dwell Analysis":
-		if dwell_dialog.active_state in model.rates:
-			rate = model.rates[dwell_dialog.active_state]
-			rate_str = "Rates = \n {} \n".format(str(rate['ks']))
-			rate_str += "Error = \n {} \n".format(str(rate['error'][0]))
-			rate_str += "Coefficients = \n {} \n".format(str(rate['As']))
-			rate_str += "Error = \n {} \n".format(str(rate['error'][-1]))
-			if 'betas' in rate:
-				rate_str += "Betas = \n {} \n".format(str(rate['betas']))
-				rate_str += "Error = \n {} \n".format(str(rate['error'][1]))
-			rate_str += "R2 of fit = \n {} \n".format(str(rate['R2']))
-		else:
-			rate_str = "Rates = N/A"
-	else:
-		rate_str = ""
-
-
-	disp_str =  state_str + rate_type_str + rate_str
-	dwell_dialog.te = QPlainTextEdit(parent=dwell_dialog)
-	dwell_dialog.te.setPlainText(disp_str)
-	#te.verticalScrollBar().setValue(te.verticalScrollBar().maximum())
-	dwell_dialog.te.setReadOnly(True)
-	grid4.addWidget(dwell_dialog.te, 0,0)
-
-
-	groupbox4.setLayout(grid4)
-	dwell_dialog.grid.addWidget(groupbox4, 0, 1, 3, 1)
-
-	dwell_dialog.state_combo.activated.connect(lambda: dwell_dialog.state_change())
-
+	dwell_dialog = _dwell_dialog(gui, model)
 	gui.dwell_dialog = dwell_dialog
 
 def launch_dwell_analysis(gui):
@@ -258,8 +257,8 @@ def launch_dwell_analysis(gui):
 		dialog_dwell_analysis(gui,model)
 		gui.dwell_dialog.start()
 
-class flag_check(QCheckBox):
-	def __init__(self, label, default=False):
-		super(QCheckBox, self).__init__(label)
-		self.setChecked(default)
+#class flag_check(QCheckBox):
+#	def __init__(self, label, default=False):
+#		super(QCheckBox, self).__init__(label)
+#		self.setChecked(default)
 
