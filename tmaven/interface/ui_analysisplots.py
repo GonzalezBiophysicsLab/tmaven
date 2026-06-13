@@ -20,7 +20,7 @@ class popplot_container(QMainWindow):
 	maven_plot = the controller in maven that will be doing the plotting
 	'''
 	def __init__(self,gui,maven_plot):
-		super(QMainWindow,self).__init__()
+		super(QMainWindow,self).__init__(parent=gui)
 		self.gui = gui
 		self.maven_plot = maven_plot
 
