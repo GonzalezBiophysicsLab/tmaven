@@ -102,7 +102,7 @@ class controller_data_hist2d(controller_base_analysisplot):
 			'color_nticks':5,
 			'color_dblfloor':.2,
 
-			'plot_channel':0,
+			'plot_channel': 0,
 			'plot_mode': 'smFRET'
 		})
 
@@ -198,7 +198,10 @@ class controller_data_hist2d(controller_base_analysisplot):
 			else:
 				index = self.prefs['plot_channel']
 				
-			dpb = self.get_plot_data()[:,:,index].copy()
+			try:
+				self.dpb = self.get_plot_data()[:,:,index].copy()
+			except:
+				self.dpb = np.zeros_like(self.get_plot_data()[:,:,0])
 
 			if (not self.maven.modeler.model is None) and self.prefs['sync_postsync']: ## postsync time
 				viterbis = self.get_idealized_data()
@@ -215,16 +218,16 @@ class controller_data_hist2d(controller_base_analysisplot):
 
 				nmol = np.unique(synclist[:,0]).size
 				npoints = synclist.shape[0]
-				out = histogram_sync_list(synclist, dpb, self.prefs['time_nbins'],
+				out = histogram_sync_list(synclist, self.dpb, self.prefs['time_nbins'],
 					self.prefs['sync_preframe'], self.prefs['signal_min'],
 					self.prefs['signal_max'], self.prefs['signal_nbins'])
 
 			else: ## not post-sync
 				if self.prefs['sync_start']:
-					dpb = sync_start(dpb,self.maven.data.pre_list, self.maven.data.post_list)
-				nmol = dpb.shape[0] - np.all(np.isnan(dpb),axis=1).sum()
+					self.dpb = sync_start(self.dpb,self.maven.data.pre_list, self.maven.data.post_list)
+				nmol = self.dpb.shape[0] - np.all(np.isnan(self.dpb),axis=1).sum()
 				npoints = nmol
-				out = histogram_raw(dpb, self.prefs['time_nbins'], 0,
+				out = histogram_raw(self.dpb, self.prefs['time_nbins'], 0,
 					self.prefs['signal_min'], self.prefs['signal_max'],
 					self.prefs['signal_nbins'])
 			return out,nmol,npoints
