@@ -52,8 +52,8 @@ class multi_canvas(FigureCanvas):
 			defpref['plot.bg_color'] = 'white'
 		elif self.gui.lightdark_mode == 'dark':
 			defpref['plot.bg_color'] = '#353535'
-		self.gui.maven.prefs.add(defpref)
-		self.gui.preferences_viewer.prefs_model.layoutChanged.emit()
+		self.gui.preferences_viewer.prefs_model.update_preferences(
+			lambda: self.gui.maven.prefs.add(defpref))
 
 		plt.close(self.figure)
 		self.setSizePolicy(QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed))
@@ -143,34 +143,38 @@ class multi_canvas(FigureCanvas):
 		}
 		return default_prefs
 	
-	def smFRET_prefs(self):
+	def smFRET_prefs(self, redraw=True):
 		self.gui.maven.prefs['plot.channel_colors'] = [colors.fret_green,colors.fret_red,"cyan","purple"]
 		self.gui.maven.prefs['plot.relative_colors'] = ["none",colors.fret_blue,"none","none"]
 		self.gui.maven.prefs['plot.ylabel_text1'] = r'Intensity (A.U.)'
 		self.gui.maven.prefs['plot.ylabel_text2'] = r'E$_{\rm{FRET}}$'
-		self.update_plots(self.gui.index)
+		if redraw:
+			self.update_plots(self.gui.index)
 
-	def ndrelative_prefs(self):
+	def ndrelative_prefs(self, redraw=True):
 		self.gui.maven.prefs['plot.channel_colors'] = [colors.fret_green,colors.fret_red,"cyan","purple"]
 		self.gui.maven.prefs['plot.relative_colors'] = [colors.fret_green,colors.fret_red,"cyan","purple"]
 		self.gui.maven.prefs['plot.ylabel_text1'] = r'Intensity (A.U.)'
 		self.gui.maven.prefs['plot.ylabel_text2'] = r'Relative'
-		self.update_plots(self.gui.index)
+		if redraw:
+			self.update_plots(self.gui.index)
 	
-	def ndraw_prefs(self):
+	def ndraw_prefs(self, redraw=True):
 		self.gui.maven.prefs['plot.channel_colors'] = [colors.fret_green,colors.fret_red,"cyan","purple"]
 		self.gui.maven.prefs['plot.relative_colors'] = ["none","none","none","none"]
 		self.gui.maven.prefs['plot.ylabel_text1'] = r'Intensity (A.U.)'
 		self.gui.maven.prefs['plot.ylabel_text2'] = r''
 		self.gui.maven.prefs['plot.fig_height'] /= 2.
-		self.update_plots(self.gui.index)
+		if redraw:
+			self.update_plots(self.gui.index)
 
-	def normalized_prefs(self):
+	def normalized_prefs(self, redraw=True):
 		self.gui.maven.prefs['plot.channel_colors'] = [colors.fret_green,colors.fret_red,"cyan","purple"]
 		self.gui.maven.prefs['plot.relative_colors'] = [colors.fret_green,colors.fret_red,"cyan","purple"]
 		self.gui.maven.prefs['plot.ylabel_text1'] = r'Intensity (A.U.)'
 		self.gui.maven.prefs['plot.ylabel_text2'] = r'Normalised Intensity'
-		self.update_plots(self.gui.index)
+		if redraw:
+			self.update_plots(self.gui.index)
 	
 	def sizeHint(self):
 		qs = QSize(int(self.gui.maven.prefs['plot.fig_width']*self.dpi), int(self.gui.maven.prefs['plot.fig_height']*self.dpi))
@@ -205,6 +209,7 @@ class multi_canvas(FigureCanvas):
 
 		## clear everything
 		[[aaa.cla() for aaa in aa] for aa in self.ax]
+		[[aaa.set_visible(True) for aaa in aa] for aa in self.ax]
 
 		## resize
 		self.figure.patch.set_facecolor("%s"%(self.gui.maven.prefs['plot.bg_color']))
@@ -280,7 +285,6 @@ class multi_canvas(FigureCanvas):
 
 		self.draw()
 		self.update_blits()
-		QApplication.instance().processEvents()
 		logger.info('resized plot - {}  {}'.format(self.figure.get_size_inches(),self.figure.get_dpi()))
 		if self.figure.get_dpi() != self.dpi*self.dpr:
 			self.resize_figure()
@@ -345,7 +349,13 @@ class multi_canvas(FigureCanvas):
 		## Set the ticks/labels so that they look nice
 		for aa in self.ax:
 			for aaa in aa:
+				foreground = '#eeeeee' if self.gui.lightdark_mode == 'dark' else '#202020'
+				aaa.tick_params(colors=foreground)
+				aaa.xaxis.label.set_color(foreground)
+				aaa.yaxis.label.set_color(foreground)
+				aaa.title.set_color(foreground)
 				for asp in ['top','bottom','left','right']:
+					aaa.spines[asp].set_color(foreground)
 					aaa.spines[asp].set_linewidth(p['plot.axes_linewidth'])
 					if asp in ['top','right']:
 						aaa.spines[asp].set_visible(p['plot.axes_topright'])
@@ -419,11 +429,9 @@ class multi_canvas(FigureCanvas):
 		'''
 		[[[l.set_visible(False) for l in aaa.lines] for aaa in aa] for aa in self.ax]
 		self.figure.canvas.draw()
-		self.figure.canvas.flush_events()
 		self.blit_bgs = [[self.figure.canvas.copy_from_bbox(aaa.bbox) for aaa in aa] for aa in self.ax]
 		[[[l.set_visible(True) for l in aaa.lines] for aaa in aa] for aa in self.ax]
 		self.figure.canvas.draw()
-		self.figure.canvas.flush_events()
 
 	def restore_blits(self):
 		''' Restore blitted regions of the plot
@@ -439,7 +447,6 @@ class multi_canvas(FigureCanvas):
 		[[self.figure.canvas.restore_region(bbb) for bbb in bb] for bb in self.blit_bgs]
 		[[[aaa.draw_artist(l) for l in aaa.lines] for aaa in aa] for aa in self.ax]
 		[[self.figure.canvas.blit(aaa.bbox) for aaa in aa] for aa in self.ax]
-		self.figure.canvas.flush_events()
 		self.figure.canvas.update()
 
 	def get_axis_inds(self):

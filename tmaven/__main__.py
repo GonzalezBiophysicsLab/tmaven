@@ -29,7 +29,7 @@ def main():
 		input_args.append('--startup=%s'%(args.script))
 
 	from .app import run_app
-	run_app(sys.argv)
+	run_app(input_args)
 
 if __name__ == '__main__':
 	main()

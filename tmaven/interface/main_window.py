@@ -3,7 +3,7 @@ import logging
 logging.getLogger("matplotlib").setLevel(logging.WARNING)
 logger = logging.getLogger("tmaven")
 
-from PyQt5.QtWidgets import QApplication,QMainWindow,QDesktopWidget,QLabel,QMessageBox,QShortcut,QPushButton,QMenu,QAction,QStyleFactory,QSlider, QSizePolicy, QTreeWidget, QTreeWidgetItem, QDockWidget, QLabel, QHBoxLayout, QPlainTextEdit
+from PyQt5.QtWidgets import QApplication,QMainWindow,QDesktopWidget,QLabel,QMessageBox,QShortcut,QPushButton,QMenu,QAction,QSlider, QSizePolicy, QTreeWidget, QTreeWidgetItem, QDockWidget, QLabel, QHBoxLayout, QPlainTextEdit
 from PyQt5.QtGui import QIcon, QKeySequence, QPalette, QColor
 from PyQt5.QtCore import Qt, pyqtSignal, QTimer, QSize
 import matplotlib
@@ -17,7 +17,9 @@ import os
 
 class_keys = {Qt.Key_1:1,Qt.Key_2:2,Qt.Key_3:3,Qt.Key_4:4,Qt.Key_5:5,Qt.Key_6:6,Qt.Key_7:7,Qt.Key_8:8,Qt.Key_9:9,Qt.Key_0:0}
 
-class main_window(QMainWindow):
+from .session import DesktopSession
+
+class main_window(DesktopSession, QMainWindow):
 	data_update = pyqtSignal()
 	pref_edited = pyqtSignal()
 
@@ -29,9 +31,17 @@ class main_window(QMainWindow):
 		self.desired_index = 0
 		self.timer = None
 		self.lightdark_mode = 'light'
+		self.theme_mode = 'system'
+		self._system_palette = app.palette()
+		self._applying_theme = False
 		self.initialize_widgets()
 		self.lwd_load()
-		self.show()
+		self._active_dock = "molecules"
+		for name, dock in (("molecules", self.molecules_viewer.dock), ("preferences", self.preferences_viewer.dock)):
+			dock.visibilityChanged.connect(lambda visible, n=name: setattr(self, "_active_dock", n) if visible else None)
+		self._default_layout = self.saveState()
+		self._default_headers = [v.horizontalHeader().saveState() for v in
+			(self.molecules_viewer.viewer, self.preferences_viewer.viewer.proxy_view)]
 
 	def initialize_widgets(self):
 		## window style
@@ -39,7 +49,6 @@ class main_window(QMainWindow):
 		self.setWindowTitle('tMAVEN (%s)'%(str(__version__)))
 		from .stylesheet import ui_stylesheet
 		self.setStyleSheet(ui_stylesheet)
-		self.setStyle(QStyleFactory.create('Fusion')) ## WOW THIS THROWS RANDOM SEGFAULTS WHEN QUITTING?
 		self.setWindowIcon(load_icon('logo.png'))
 		self.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding)
 		self.closeEvent = self.quit
@@ -132,48 +141,9 @@ class main_window(QMainWindow):
 		## connections
 		self.maven.emit_data_update = lambda : self.data_update.emit()
 		self.maven.prefs.emit_changed = lambda : self.pref_edited.emit()
+		self.pref_edited.connect(self.preferences_viewer.prefs_model.refresh)
 		self.data_update.connect(self.proc_data_update)
 		self.maven.emit_data_update()
-
-	def _config_file_getname(self,fname):
-		config_dir = appdirs.user_config_dir(appname="tmaven", appauthor="python")
-		if not os.path.exists(config_dir):
-			os.makedirs(config_dir)
-		config_file = os.path.join(config_dir, fname)
-		return config_file
-	
-	def config_file_read(self,fname):
-		config_file = self._config_file_getname(fname)
-		if not os.path.isfile(config_file):
-			return {}
-		try:
-			with open(config_file,'r') as f:
-				info = json.load(f)
-			return info ## dictionary
-		except:
-			return {}
-	
-	def config_file_update(self,fname,key,value):
-		info = self.config_file_read(fname)
-		info[key] = value
-		self.config_file_overwrite(fname,info)
-		
-	def config_file_overwrite(self,fname,dictionary):
-		config_file = self._config_file_getname(fname)
-		with open(config_file,'w') as f:
-			json.dump(dictionary, f)
-		
-	def lwd_load(self):
-		info = self.config_file_read('recent_files.json')
-		if 'lwd' in info:
-			self.lwd = info['lwd']
-		else:
-			self.lwd = os.getcwd()
-	
-	def lwd_update(self,lwd):
-		if os.path.exists(lwd):
-			self.lwd = lwd
-			self.config_file_update('recent_files.json','lwd',self.lwd)
 
 	def toggle_lock(self):
 		self.flag_locked = not self.flag_locked
@@ -212,13 +182,12 @@ class main_window(QMainWindow):
 
 		self.menu_file.addMenu(self.menu_load)
 		self.menu_file.addMenu(self.menu_save)
-		self.menu_file.addAction('Clear Data',self.clear_data)
+		self.action_clear_data = self.menu_file.addAction('Clear Data',self.clear_data)
 		# self.menu_file.addMenu(self.menu_prefs)
 		# self.menu_prefs.addAction('Load Preferences',self.preferences_viewer.load)
 		# self.menu_prefs.addAction('Save Preferences',self.preferences_viewer.save)
-		self.menu_file.addAction('Exit',self.quit,'Ctrl+Q')
+		self.menu_file.addAction('Exit',self.close,'Ctrl+Q')
 
-		self.menu_view.addAction('Reset GUI',self.session_default)
 
 		self.menu_traj = self.menu_view.addMenu('Plot Type')
 
@@ -229,8 +198,7 @@ class main_window(QMainWindow):
 		self.menu_traj.addAction('smFRET',lambda : self.plot_container.change_mode('smFRET'))
 
 		self.menu_theme = self.menu_view.addMenu('Theme')
-		self.menu_theme.addAction('Light',self.change_theme_light)
-		self.menu_theme.addAction('Dark',self.change_theme_dark)
+		self.build_desktop_menus()
 		# self.menu_view.addAction('SMD Info',self.smd_info_viewer.toggle)
 		self.menu_view.addAction('Show Log',self.show_log)
 		self.menu_view.addAction(self.hdf5_viewer.action)
@@ -407,12 +375,14 @@ class main_window(QMainWindow):
 
 	def _newtimer(self):
 		from PyQt5.QtCore import QTimer
-		self.timer = QTimer(singleShot=True)
+		self.timer = QTimer(self, singleShot=True)
 		self.timer.setInterval(40) ## 25 FPS = 40 msec
 		self.timer.timeout.connect(self._timesup)
 		self.timer.start()
 
 	def _timesup(self):
+		if self.timer is not None:
+			self.timer.deleteLater()
 		self.timer = None
 		if self.plot_container.plot.flag_drawing:
 			self._newtimer()
@@ -427,24 +397,13 @@ class main_window(QMainWindow):
 		screen = QDesktopWidget().screenGeometry()
 		return screen.width(), screen.height()
 
-	def session_default(self):
-		self.plot_container.change_mode('smFRET')
-		self.size_window()
-		self.scripts_toolbar.clear_actions(update=False)
-		self.show()
-		# self.plot_container.plot.redrawplot() ## it is necessary to draw/resize after showing the interface, otherwise the DPI is messed up
-		self.change_theme_light() ## redrawplot called in this fxn too
-		self.config_file_overwrite('tmaven_config.json',{})
-		self.config_file_overwrite('recent_files.json',{})
-		self.lwd = os.getcwd()
-
 	def dark_theme(self):
 		dark_palette = QPalette()
 		dark_palette.setColor(QPalette.Window, QColor(53, 53, 53))
 		dark_palette.setColor(QPalette.WindowText, Qt.white)
 		dark_palette.setColor(QPalette.Base, QColor(25, 25, 25))
 		dark_palette.setColor(QPalette.AlternateBase, QColor(53, 53, 53))
-		dark_palette.setColor(QPalette.ToolTipBase, Qt.white)
+		dark_palette.setColor(QPalette.ToolTipBase, QColor(53, 53, 53))
 		dark_palette.setColor(QPalette.ToolTipText, Qt.white)
 		dark_palette.setColor(QPalette.Text, Qt.white)
 		dark_palette.setColor(QPalette.Button, QColor(53, 53, 53))
@@ -464,7 +423,7 @@ class main_window(QMainWindow):
 		light_palette.setColor(QPalette.Base, QColor(230, 230, 230))
 		####
 		light_palette.setColor(QPalette.AlternateBase, QColor(202,202,202))
-		light_palette.setColor(QPalette.ToolTipBase, Qt.black)
+		light_palette.setColor(QPalette.ToolTipBase, Qt.white)
 		light_palette.setColor(QPalette.ToolTipText, Qt.black)
 		light_palette.setColor(QPalette.Text, Qt.black)
 		light_palette.setColor(QPalette.Button, QColor(202,202,202))
@@ -481,83 +440,17 @@ class main_window(QMainWindow):
 		self.menubar.setPalette(palette)
 		self.preferences_viewer.update_theme(palette)
 		self.molecules_viewer.update_theme(palette)
-		self.plot_container.update_toolbar_theme()
+		self.plot_container.update_toolbar_theme(palette)
+		from .toolbar_theme import apply_toolbar_theme
+		apply_toolbar_theme(self.scripts_toolbar, palette)
 		self.label_molnum.setPalette(palette)
 		self.button_lock.setPalette(palette)
 
 	def change_theme_dark(self):
-		palette = self.dark_theme()
-		self.lightdark_mode = 'dark'
-		self.maven.prefs['plot.bg_color'] = '#353535'
-		self._change_theme(palette)
+		self.apply_theme('dark')
 
 	def change_theme_light(self):
-		palette = self.light_theme()
-		self.lightdark_mode = 'light'
-		self.maven.prefs['plot.bg_color'] = '#FFFFFF'
-		self._change_theme(palette)
-
-	def size_window(self, x=None, y=None, w=None, h=None):
-		"""
-		Makes the editor 80% of the width*height of the screen and centres it
-		when none of x, y, w and h is passed in; otherwise uses the passed in
-		values to position and size the editor window.
-		"""
-		screen_width, screen_height = self.screen_size()
-		w = int(screen_width * 0.8) if w is None else w
-		h = int(screen_height * 0.8) if h is None else h
-		self.resize(w,h)
-		x = (screen_width - w) // 2 if x is None else x
-		y = (screen_height - h) // 2 if y is None else y
-		logger.info('trying to resize x{} y{} w{} h{}'.format(x,y,w,h))
-		self.move(x,y)
-
-	def session_save(self):
-		session = {
-			"window": {
-				"x": self.x(),
-				"y": self.y(),
-				"w": self.width(),
-				"h": self.height(),
-			},
-			"plot_mode": self.plot_container.plot.plot_mode,
-			"lightdark_mode" : self.lightdark_mode,
-		}
-		self.config_file_overwrite('tmaven_config.json',session)
-		session_str =  ",".join(f"{key}:{value}" for key, value in session.items())
-		logger.info('Saved session {}'.format(session_str))
-
-	def session_restore(self):
-		session = self.config_file_read('tmaven_config.json')
-		if len(session.keys()) == 0:
-			self.session_default()
-			return
-		
-		x = session['window']['x'] if 'x' in session['window'] else None
-		y = session['window']['y'] if 'y' in session['window'] else None
-		w = session['window']['w'] if 'w' in session['window'] else None
-		h = session['window']['h'] if 'h' in session['window'] else None
-
-		lightdark_mode = session['lightdark_mode'] if 'lightdark_mode' in session else 'light'
-		if lightdark_mode == 'light':
-			palette = self.light_theme()
-			self.maven.prefs['plot.bg_color'] = '#FFFFFF'
-			self.lightdark_mode = 'light'
-		elif lightdark_mode == 'dark':
-			palette = self.dark_theme()
-			self.maven.prefs['plot.bg_color'] = '#353535'
-			self.lightdark_mode = 'dark'
-
-		plot_mode = session['plot_mode'] if 'plot_mode' in session else 'smFRET'
-		self.plot_container.change_mode(plot_mode)
-		self.size_window(x,y,w,h)
-		app = QApplication.instance()
-		app.setPalette(palette)
-		# app.setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }")
-		app.processEvents()
-		self.show()
-		self.plot_container.plot.redrawplot() ## it is necessary to draw/resize after showing the interface, otherwise the DPI is messed up
-
+		self.apply_theme('light')
 
 	def show_log(self,event=None):
 		w = QMainWindow(parent=self)
@@ -607,6 +500,10 @@ class main_window(QMainWindow):
 			return
 
 		self.session_save()
+		if self.timer is not None:
+			self.timer.stop()
+			self.timer.deleteLater()
+			self.timer = None
 
 		logger.info("Quitting...")
-		return super(type(self),self).closeEvent(event)
+		return super().closeEvent(event)

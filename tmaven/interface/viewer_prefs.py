@@ -9,10 +9,11 @@ class preferences_viewer(QObject):
 		super().__init__(parent=gui)
 		self.gui = gui
 		self.viewer = prefs_widget(parent=self.gui)
-		self.prefs_model = pref_model(self.gui.maven)
+		self.prefs_model = pref_model(self.gui.maven, parent=self.gui)
 		self.viewer.set_model(self.prefs_model)
 
 		self.dock = QDockWidget("Preferences",self.gui)
+		self.dock.setObjectName("preferences")
 		# from .stylesheet import ss_qdockwidget,ss_qtableview
 		# self.dock.setStyleSheet(ss_qdockwidget)
 		# self.viewer.setStyleSheet(ss_qtableview)
@@ -36,35 +37,53 @@ class preferences_viewer(QObject):
 	def toggle(self):
 		if self.dock.isHidden():
 			self.dock.show()
-			if not self.gui.molecules_viewer.dock.isHidden():
-				self.gui.tabifyDockWidget(self.gui.molecules_viewer.dock,self.dock)
 		self.dock.raise_()
 
 	def save(self,event=None):
-		fname,_ = QFileDialog.getSaveFileName(None,'Save preferences text file','./prefs.txt','.txt')
-		self.gui.maven.prefs.save(fname=fname)
+		fname = self.gui.choose_file('Save preferences text file', category='preferences', save=True, multiple=False, name='prefs.txt', filter='Text files (*.txt)')
+		if fname:
+			with open(fname, 'w') as stream:
+				stream.write(self.gui.maven.prefs.format(style='thin'))
 
 	def load(self,event=None):
-		fname,_ = QFileDialog.getOpenFileName(None,'Choose preferences file to load','./prefs.txt')
-		self.gui.maven.prefs.emit_changed = lambda : None
-		self.gui.maven.prefs.load(fname=fname,quiet=True)
-		self.gui.maven.prefs.emit_changed = lambda : self.gui.pref_edited.emit()
-		self.gui.preferences_viewer.prefs_model.layoutChanged.emit()
+		fname = self.gui.choose_file('Choose preferences file to load', category='preferences', save=False, multiple=False, name='', filter='')
+		if not fname:
+			return
+		with open(fname) as stream:
+			text = stream.read()
+		self.prefs_model.update_preferences(lambda: self.gui.maven.prefs.add_toml(text, quiet=True))
+		self.gui.maven.prefs.emit_changed()
 
 
 class pref_model(QAbstractTableModel):
 	'''
 	_window should be an object that has .prefs immediately available
 	'''
-	def __init__(self,_window,*args):
-		super().__init__()
+	def __init__(self,_window,*args,**kwargs):
+		super().__init__(*args,**kwargs)
 		self._window = _window
+		self._keys = list(_window.prefs.keys())
 
-	def columnCount(self, index):
-		return 2
+	def columnCount(self, index=QModelIndex()):
+		return 0 if index.isValid() else 2
 
-	def rowCount(self,index):
-		return len(self._window.prefs.keys())
+	def rowCount(self,index=QModelIndex()):
+		return 0 if index.isValid() else len(self._keys)
+
+	def update_preferences(self, update):
+		# Reset both source and proxy indexes before changing the row structure.
+		self.beginResetModel()
+		try:
+			update()
+		finally:
+			self._keys = list(self._window.prefs.keys())
+			self.endResetModel()
+
+	def refresh(self):
+		if self._keys != list(self._window.prefs.keys()):
+			self.update_preferences(lambda: None)
+		elif self._keys:
+			self.dataChanged.emit(self.index(0, 1), self.index(len(self._keys)-1, 1))
 
 	def headerData(self,section,orientation,role):
 		if role == Qt.DisplayRole:
@@ -79,7 +98,7 @@ class pref_model(QAbstractTableModel):
 		return QVariant()
 
 	def data(self,index,role):
-		if not index.isValid():
+		if not index.isValid() or not 0 <= index.row() < len(self._keys) or not 0 <= index.column() < 2:
 			return QVariant()
 
 		if role == Qt.TextAlignmentRole:
@@ -87,7 +106,7 @@ class pref_model(QAbstractTableModel):
 
 		column = index.column()
 		row = index.row()
-		key = list(self._window.prefs.keys())[row]
+		key = self._keys[row]
 
 		if column == 0:
 			if role == Qt.DisplayRole:
@@ -115,12 +134,12 @@ class pref_model(QAbstractTableModel):
 		return QVariant()
 
 	def setData(self,index,value,role):
-		if not index.isValid():
+		if not index.isValid() or not 0 <= index.row() < len(self._keys) or not 0 <= index.column() < 2:
 			return False
 
 		column = index.column()
 		row = index.row()
-		key = list(self._window.prefs.keys())[row]
+		key = self._keys[row]
 
 		if column == 1:
 			dtype = dict.__getitem__(self._window.prefs,key).dtype
@@ -143,7 +162,7 @@ class pref_model(QAbstractTableModel):
 
 	def flags(self,index):
 		####Qt.ItemIsSelectable | Qt.ItemIsEditable | Qt.ItemIsEnabled | Qt.ItemIsUserCheckable
-		if not index.isValid():
+		if not index.isValid() or not 0 <= index.row() < len(self._keys) or not 0 <= index.column() < 2:
 			return Qt.NoItemFlags
 
 		if index.column() == 0:
@@ -191,10 +210,10 @@ class prefs_widget(QWidget):
 
 
 	def setup_widgets(self):
-		self.proxy_model = QSortFilterProxyModel(parent=self.parent())
+		self.proxy_model = QSortFilterProxyModel(parent=self)
 		self.proxy_model.setDynamicSortFilter(True)
 
-		self.proxy_view = QTableView(parent=self.parent())
+		self.proxy_view = QTableView(parent=self)
 		# self.delegate = precision_delegate()
 		# self.delegate.refocus = self.refocus_le
 		# self.proxy_view.setItemDelegate(self.delegate)
@@ -208,7 +227,7 @@ class prefs_widget(QWidget):
 		# self.proxy_view.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 		# self.proxy_view.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
-		self.le_filter = QLineEdit(parent=self.parent())
+		self.le_filter = QLineEdit(parent=self)
 		self.le_filter.textChanged.connect(self.filter_regex_changed)
 		self.le_filter.setPlaceholderText("Filter")
 

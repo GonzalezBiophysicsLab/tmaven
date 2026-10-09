@@ -19,7 +19,6 @@ class model_dialog_base(QDialog):
 		self.setLayout(self.grid)
 		self.grid.setSizeConstraint(QLayout.SetFixedSize)
 
-		self.setStyle(QStyleFactory.create('Fusion'))
 		from ..stylesheet import ui_stylesheet
 		self.setStyleSheet(ui_stylesheet)
 
@@ -68,7 +67,7 @@ class model_dialog_base(QDialog):
 		
 		qfname.setText(str(self.gui.maven.prefs[pref]))
 		def open_file_dialog():
-			filename, _ = QFileDialog.getSaveFileName(self.gui, "Select HDF5 File", "", "HDF5 Files (.hdf5,.h5)")
+			filename = self.gui.choose_file("Select HDF5 File", category='exports', save=True, multiple=False, name='', filter="HDF5 Files (.hdf5,.h5)")
 			if filename: 
 				if not filename.endswith((".hdf5",".h5")):
 					filename += ".hdf5"

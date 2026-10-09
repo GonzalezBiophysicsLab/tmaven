@@ -92,7 +92,7 @@ def build_menu(gui):
 
 def get_filenames(gui):
 	from PyQt5.QtWidgets import QFileDialog
-	fnames = QFileDialog.getOpenFileNames(gui,'Choose one or more files to load data',gui.lwd)[0]
+	fnames = gui.choose_file('Choose one or more files to load data', category='data', save=False, multiple=True, name='', filter='')
 	if len(fnames) > 0:
 		lwd = os.path.dirname(fnames[-1])
 		gui.lwd_update(lwd)
@@ -151,7 +151,6 @@ def get_items_dialog(gui,items,title,subtitle,flag_select_multiple):
 			# self.lw.selectAll()
 
 			#### set style
-			self.setStyle(QStyleFactory.create('Fusion'))
 			from .stylesheet import ui_stylesheet
 			self.setStyleSheet(ui_stylesheet)
 
@@ -195,12 +194,18 @@ def load_interactive(gui):
 			if h5py.is_hdf5(fnames[i]):
 				if len(gui.maven.io.find_smds_in_hdf5(fnames[i])) == 0:
 					success, dataset_name = get_datasetname_hdf5(gui,fnames[i], "Raw traces")
-					gui.maven.io.load_raw_hdf5(fnames[i],dataset_name)
+					if success:
+						before = gui.maven.data.nmol
+						gui.maven.io.load_raw_hdf5(fnames[i],dataset_name)
+						if gui.maven.data.nmol > before:
+							gui.remember_file(fnames[i], 'hdf5', dataset=dataset_name)
 			continue
 		elif len(smd_group_keys) == 1:
 			to_load = smd_group_keys
 		else:
 			success,indexes = get_items_dialog(gui,smd_group_keys,"Select SMD Group(s)",fnames[i],True)
+			if not success:
+				continue
 			to_load = [smd_group_keys[ii] for ii in indexes]
 
 		for group in to_load:
@@ -218,17 +223,18 @@ def load_interactive(gui):
 			except Exception as e:
 				logger.error('Failed to load tMAVEN %s/%s\n%s'%(fnames[i],group,str(e)))
 				tmaven = None
-			holding_pen.append([smd,tmaven])
+			holding_pen.append([smd,tmaven,fnames[i],group])
 
 	for hpi in holding_pen:
-		gui.maven.io.add_data(*hpi)
+		gui.maven.io.add_data(*hpi[:2])
+		gui.remember_file(hpi[2], 'smd', group=hpi[3])
 	del holding_pen
 	gui.maven.emit_data_update()
 
 
 def load_raw_hdf5dataset(gui):
 	from PyQt5.QtWidgets import QFileDialog
-	fname = QFileDialog.getOpenFileName(gui,'Choose one HDF5 file to load dataset from',gui.lwd)[0]
+	fname = gui.choose_file('Choose one HDF5 file to load dataset from', category='data', save=False, multiple=False, name='', filter='')
 	if fname == "":
 		logger.info('No file to load')
 		return
@@ -239,7 +245,12 @@ def load_raw_hdf5dataset(gui):
 		logger.info('Trying to load %s'%(fname))
 		success,dataset_name = get_datasetname_hdf5(gui,fname, "Raw traces")
 
+		if not success:
+			return
+		before = gui.maven.data.nmol
 		gui.maven.io.load_raw_hdf5(fname,dataset_name)
+		if gui.maven.data.nmol > before:
+			gui.remember_file(fname, 'hdf5', dataset=dataset_name)
 
 	except Exception as e:
 		logging.error('failed to load %s\n%s'%(fname,str(e)))
@@ -247,7 +258,7 @@ def load_raw_hdf5dataset(gui):
 
 def load_raw_text(gui):
 	from PyQt5.QtWidgets import QFileDialog
-	fname = QFileDialog.getOpenFileName(gui,'Choose .dat ASCII file to load dataset from',gui.lwd)[0]
+	fname = gui.choose_file('Choose .dat ASCII file to load dataset from', category='data', save=False, multiple=False, name='', filter='')
 	if fname == "":
 		logger.info('No file to load')
 		return
@@ -259,6 +270,9 @@ def load_raw_text(gui):
 	delimiter = str(gui.maven.prefs['io.delimiter'])
 	success = gui.maven.io.load_raw_txt(fname,skiprows,delimiter)
 	
+	if success:
+		gui.remember_file(fname, 'text', skiprows=skiprows, delimiter=delimiter,
+			prefs={k: gui.maven.prefs[k] for k in gui.maven.prefs if k.startswith('io.')})
 	if not success:
 		from PyQt5.QtWidgets import QMessageBox
 		message_box = QMessageBox(parent=gui)
@@ -291,7 +305,7 @@ def raw_presets(gui,ordering,ncolors,collated_axis):
 
 def load_raw_numpy(gui):
 	from PyQt5.QtWidgets import QFileDialog
-	fname = QFileDialog.getOpenFileName(gui,'Choose .npy binary file to load dataset from',gui.lwd)[0]
+	fname = gui.choose_file('Choose .npy binary file to load dataset from', category='data', save=False, multiple=False, name='', filter='')
 	if fname == "":
 		logger.info('No file to load')
 		return
@@ -300,14 +314,17 @@ def load_raw_numpy(gui):
 
 	try:
 		logger.info('Trying to load %s'%(fname))
+		before = gui.maven.data.nmol
 		gui.maven.io.load_raw_numpy(fname)
+		if gui.maven.data.nmol > before:
+			gui.remember_file(fname, 'numpy')
 	except Exception as e:
 		logging.error('failed to load %s\n%s'%(fname,str(e)))
 		return
 
 def load_raw_spartan(gui):
 	from PyQt5.QtWidgets import QFileDialog
-	fname = QFileDialog.getOpenFileName(gui,'Choose .traces spartan file to load dataset from',gui.lwd)[0]
+	fname = gui.choose_file('Choose .traces spartan file to load dataset from', category='data', save=False, multiple=False, name='', filter='')
 	if fname == "":
 		logger.info('No file to load')
 		return
@@ -316,14 +333,17 @@ def load_raw_spartan(gui):
 
 	try:
 		logger.info('Trying to load %s'%(fname))
+		before = gui.maven.data.nmol
 		gui.maven.io.load_spartan(fname)
+		if gui.maven.data.nmol > before:
+			gui.remember_file(fname, 'spartan')
 	except Exception as e:
 		logging.error('failed to load %s\n%s'%(fname,str(e)))
 		return
 
 def load_tmaven_dataset_hdf5(gui,d_name):
 	from PyQt5.QtWidgets import QFileDialog
-	fname = QFileDialog.getOpenFileName(gui,'Choose one HDF5 file to load dataset from',gui.lwd)[0]
+	fname = gui.choose_file('Choose one HDF5 file to load dataset from', category='data', save=False, multiple=False, name='', filter='')
 	if fname == "":
 		logger.info('No file to load')
 		return
@@ -357,7 +377,7 @@ def load_tmaven_dataset_hdf5(gui,d_name):
 
 def load_tmaven_dataset_txt(gui,d_name):
 	from PyQt5.QtWidgets import QFileDialog
-	fname = QFileDialog.getOpenFileName(gui,'Choose .dat ASCII file to load from',gui.lwd)[0]
+	fname = gui.choose_file('Choose .dat ASCII file to load from', category='data', save=False, multiple=False, name='', filter='')
 	if fname == "":
 		logger.info('No file to load')
 		return
@@ -376,10 +396,8 @@ def load_tmaven_dataset_txt(gui,d_name):
 
 def export_smd(gui):
 	from PyQt5.QtWidgets import QFileDialog,QInputDialog
-	oname = QFileDialog.getSaveFileName(gui, 'Export Data', os.path.join(gui.lwd,'traces.hdf5'), '*.hdf5')[0]
+	oname = gui.choose_file('Export Data', category='exports', save=True, multiple=False, name='traces.hdf5', filter='*.hdf5')
 	if not oname == "":
-		lwd = os.path.dirname(oname)
-		gui.lwd_update(lwd)
 		try:
 			with h5py.File(oname,'r') as f:
 				keys = list(f.keys())
@@ -392,20 +410,16 @@ def export_smd(gui):
 
 def export_numpy(gui):
 	from PyQt5.QtWidgets import QFileDialog
-	oname = QFileDialog.getSaveFileName(gui, 'Export data (numpy)', os.path.join(gui.lwd,'traces.npy'), '*.npy')[0]
+	oname = gui.choose_file('Export data (numpy)', category='exports', save=True, multiple=False, name='traces.npy', filter='*.npy')
 	if oname != "":
-		lwd = os.path.dirname(oname)
-		gui.lwd_update(lwd)
 		gui.maven.io.export_raw_numpy(oname)
 		cname = '{}_classes{}'.format(*os.path.splitext(oname))
 		gui.maven.io.export_class_numpy(cname)
 
 def export_text(gui):
 	from PyQt5.QtWidgets import QFileDialog
-	oname = QFileDialog.getSaveFileName(gui, 'Export classes (txt)', os.path.join(gui.lwd,'traces.txt'), '*.txt')[0]
+	oname = gui.choose_file('Export classes (txt)', category='exports', save=True, multiple=False, name='traces.txt', filter='*.txt')
 	if oname != "":
-		lwd = os.path.dirname(oname)
-		gui.lwd_update(lwd)
 		# gui.maven.io.export_raw_txt(oname)
 		# cname = '{}_classes{}'.format(*os.path.splitext(oname))
 		gui.maven.io.export_class_txt(oname)

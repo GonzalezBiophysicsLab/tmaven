@@ -14,6 +14,7 @@ class molecules_viewer(QObject):
 		self.viewer = molecules_widget(self.gui)
 		self.gui.data_update.connect(self.viewer.model.layoutChanged.emit)
 		self.dock = QDockWidget("Molecule Table",self.gui)
+		self.dock.setObjectName("molecules")
 
 		# from .stylesheet import ss_qdockwidget
 		# self.dock.setStyleSheet(ss_qdockwidget)
@@ -38,8 +39,6 @@ class molecules_viewer(QObject):
 	def toggle(self):
 		if self.dock.isHidden():
 			self.dock.show()
-			if not self.gui.preferences_viewer.dock.isHidden():
-				self.gui.tabifyDockWidget(self.gui.preferences_viewer.dock,self.dock)
 		self.dock.raise_()
 
 	def update(self):

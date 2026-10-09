@@ -79,7 +79,6 @@ class popplot_container(QMainWindow):
 
 		## Set the looks
 		self.setCentralWidget(qwtot)
-		self.setStyle(QStyleFactory.create('Fusion'))
 		from .stylesheet import ui_stylesheet
 		self.setStyleSheet(ui_stylesheet)
 
@@ -110,7 +109,24 @@ class popplot_container(QMainWindow):
 		self.resize_figure()
 		self.ax.cla()
 		self.maven_plot.plot(self.fig,self.ax)
-		self.canvas.draw()
+		self.apply_plot_theme(QApplication.instance().palette())
+
+	def apply_plot_theme(self, palette):
+		from .toolbar_theme import apply_toolbar_theme
+		apply_toolbar_theme(self.toolbar, palette)
+		from PyQt5.QtGui import QPalette
+		background = palette.color(QPalette.Window).name()
+		foreground = palette.color(QPalette.WindowText).name()
+		self.fig.set_facecolor(background)
+		for axes in self.fig.axes:
+			axes.set_facecolor(background)
+			axes.tick_params(colors=foreground)
+			axes.xaxis.label.set_color(foreground)
+			axes.yaxis.label.set_color(foreground)
+			axes.title.set_color(foreground)
+			for spine in axes.spines.values():
+				spine.set_color(foreground)
+		self.canvas.draw_idle()
 
 	def reset_prefs(self,event=None):
 		self.maven_plot.defaults()

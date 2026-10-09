@@ -8,7 +8,7 @@ import os
 
 def run(gui):
 	from PyQt5.QtWidgets import QFileDialog
-	fname = QFileDialog.getOpenFileName(gui,'Choose script (.py) to run ','./')[0]
+	fname = gui.choose_file('Choose script (.py) to run ', category='scripts', save=False, multiple=False, name='', filter='')
 	if fname == "":
 		return
 	run_file(gui,fname)
@@ -38,15 +38,8 @@ class scripts_toolbar(QToolBar):
 	def __init__(self, gui,):
 		super().__init__("Scripts Toolbar", parent=gui)
 		self.gui = gui
+		self.setObjectName("scripts")
 
-		tooltip_stylesheet = """
-		QToolTip {
-			background-color: none;
-			color: none;
-			border: 1px solid none;
-		}
-		"""
-		self.setStyleSheet(tooltip_stylesheet)
 
 		self.toggle_toolbar_action = QAction(QIcon(),"Hide", self)
 		self.toggle_toolbar_action.triggered.connect(self._toggle)
@@ -90,12 +83,10 @@ class scripts_toolbar(QToolBar):
 
 	def add_file_action(self):
 		options = QFileDialog.Options()
-		filenames, _ = QFileDialog.getOpenFileNames(self, "Select Files", self.gui.lwd, "Python (*.py)", options=options)
+		filenames = self.gui.choose_file("Select Files", category='scripts', save=False, multiple=True, name='', filter="Python (*.py)")
 		if len(filenames) > 0:
 			for filename in filenames:
 				self._add_file_action(filename)
-			lwd = os.path.dirname(filenames[-1])
-			self.gui.lwd_update(lwd)
 
 	def _add_file_action(self,filename,update=True):
 		file_action = QAction(filename.split('/')[-1], self)
@@ -113,10 +104,11 @@ class scripts_toolbar(QToolBar):
 
 	def load_last(self):
 		files = self.gui.config_file_read('recent_files.json')
-		if 'scripts' in files:
+		if isinstance(files.get('scripts'), list):
 			self.clear_actions(update=False)
 			for script in files['scripts']:
-				self._add_file_action(script,update=False)
+				if isinstance(script, str) and os.path.isfile(script):
+					self._add_file_action(script,update=False)
 
 	def run_script(self, fname):
 		run_file(self.gui,fname)

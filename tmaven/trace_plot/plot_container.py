@@ -25,54 +25,56 @@ class plot_container(QWidget):
 
 	def change_plotter(self,plot_mode):
 		from .multi_plot import multi_canvas as canvas
-		logger.info('New plot container')
+		if plot_mode not in ('ND Raw', 'Normalized', 'ND Relative', 'smFRET'):
+			raise ValueError('Unknown plot mode: {}'.format(plot_mode))
+		if self.plot.plot_mode == plot_mode:
+			return
+		logger.info('Changing plot mode to %s', plot_mode)
+		if self.gui.timer is not None:
+			self.gui.timer.stop()
+			self.gui.timer.deleteLater()
+			self.gui.timer = None
 
-		#### Unhook plotter
-		try: self.gui.pref_edited.disconnect(self.plot.redrawplot)
-		except: pass
-		try: self.gui.data_update.disconnect(self.plot.initialize_plots)
-		except: pass
-		self.gui.timer = None
+		initialized = isinstance(self.plot, canvas)
+		if initialized:
+			self.gui.pref_edited.disconnect(self.plot.redrawplot)
+			self.gui.data_update.disconnect(self.plot.initialize_plots)
+		else:
+			# Create the Qt canvas/toolbar once. Mode changes reuse their ownership,
+			# event handlers and navigation actions rather than deleting live widgets.
+			old_plot, old_toolbar = self.plot, self.toolbar
+			self.plot = canvas(self.gui)
+			self.toolbar = self.plot.toolbar
+			for old, new in ((old_plot, self.plot), (old_toolbar, self.toolbar)):
+				self.vbox.removeWidget(old)
+				old.hide()
+				old.deleteLater()
+				self.vbox.addWidget(new)
+			self.toolbar.setObjectName('plot_toolbar')
 
-		from ..interface.stylesheet import ui_stylesheet
-		temp_plot = canvas(self.gui)
-		# temp_plot.setStyleSheet(ui_stylesheet)
-
-		self.vbox.replaceWidget(self.toolbar,temp_plot.toolbar)
-		self.vbox.replaceWidget(self.plot,temp_plot)
-		self.toolbar.deleteLater()
-		self.plot.deleteLater()
-		del self.plot
-		del self.toolbar
-		self.toolbar = temp_plot.toolbar
+		try:
+			if initialized:
+				defaults = self.plot.default_prefs()
+				defaults['plot.bg_color'] = self.gui.maven.prefs['plot.bg_color']
+				self.gui.preferences_viewer.prefs_model.update_preferences(
+					lambda: self.gui.maven.prefs.add(defaults))
+			self.plot.plot_mode = plot_mode
+			configure = {'ND Raw': self.plot.ndraw_prefs,
+				'Normalized': self.plot.normalized_prefs,
+				'ND Relative': self.plot.ndrelative_prefs,
+				'smFRET': self.plot.smFRET_prefs}[plot_mode]
+			configure(redraw=False)
+			self.plot.initialize_plots()
+			self.toolbar.update()
+		finally:
+			self.gui.pref_edited.connect(self.plot.redrawplot)
+			self.gui.data_update.connect(self.plot.initialize_plots)
 		self.update_toolbar_theme()
-		self.plot = temp_plot
-		self.plot.plot_mode = plot_mode
-
-		if plot_mode == 'ND Raw':
-			self.plot.ndraw_prefs()		
-		elif plot_mode == 'Normalized':
-			self.plot.normalized_prefs()
-		elif plot_mode == 'ND Relative':
-			self.plot.ndrelative_prefs()
-		elif plot_mode == 'smFRET':
-			self.plot.smFRET_prefs()
-
-
-		self.gui.pref_edited.connect(self.plot.redrawplot)
-		# self.gui.new_selection_last.connect(self.catch_selection_change)
-		self.gui.data_update.connect(self.plot.initialize_plots)
-
 		self.plot.redrawplot()
 
-
-
-	def update_toolbar_theme(self):
-		if self.gui.lightdark_mode == 'light':
-			ldc = 'white'
-		elif self.gui.lightdark_mode == 'dark':
-			ldc = '#353535'
-		self.toolbar.setStyleSheet('''QToolBar{border:none; background-color:%s; spacing:0px;}
-			QToolBar::separator{background: %s}
-			QToolButton::hover{background-color:lightgray;}'''%(ldc,ldc))
-		self.toolbar.repaint()
+	def update_toolbar_theme(self, palette=None):
+		from PyQt5.QtWidgets import QApplication
+		from ..interface.toolbar_theme import apply_toolbar_theme
+		if palette is None:
+			palette = QApplication.instance().palette()
+		apply_toolbar_theme(self.toolbar, palette)

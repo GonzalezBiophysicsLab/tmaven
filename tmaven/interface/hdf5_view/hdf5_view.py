@@ -82,14 +82,14 @@ class hdf5_view(hdf5_view_primative):
 
 		if success:
 			if snpy:
-				fname = QFileDialog.getSaveFileName(self,'Export data (.npy)','.npy','*.npy')[0]
+				fname = self.gui.choose_file('Export data (.npy)', category='exports', save=True, name='data.npy', filter='*.npy', parent=self)
 				if fname != "":
 					try:
 						np.save(fname,self.treeview.current_info)
 					except:
 						print('failed saving %s'%(fname))
 			elif stxt:
-				fname = QFileDialog.getSaveFileName(self,'Export data (.txt)','.txt','*.txt')[0]
+				fname = self.gui.choose_file('Export data (.txt)', category='exports', save=True, name='data.txt', filter='*.txt', parent=self)
 				if fname != "":
 					try:
 						with open(fname,'w') as f:
@@ -100,7 +100,7 @@ class hdf5_view(hdf5_view_primative):
 	def select_file(self):
 		''' Select HDF5 file to open '''
 		success = False
-		fname = QFileDialog.getOpenFileName(self,'Choose HDF5 file to load','./')[0]
+		fname = self.gui.choose_file('Choose HDF5 file to load', parent=self)
 		if not fname == "":
 			success = True
 		if success:
@@ -125,6 +125,7 @@ class hdf5_view_container(QObject):
 			pass
 
 		self.hdf5_view = hdf5_view()
+		self.hdf5_view.gui = self.gui
 		from ..stylesheet import ui_stylesheet
 		self.hdf5_view.setStyleSheet(ui_stylesheet)
 		self.hdf5_view.show()

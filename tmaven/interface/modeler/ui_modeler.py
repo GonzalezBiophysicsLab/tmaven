@@ -139,7 +139,6 @@ def select_model_popup(gui,title='',flag_select_multiple=False):
 			button_okay.setDefault(True)
 
 			#### set style
-			self.setStyle(QStyleFactory.create('Fusion'))
 			from ..stylesheet import ui_stylesheet
 			self.setStyleSheet(ui_stylesheet)
 
@@ -194,19 +193,18 @@ def export(gui):
 	if len(gui.maven.modeler.models) == 0:
 		return
 	from PyQt5.QtWidgets import QFileDialog
-	oname = QFileDialog.getSaveFileName(gui, 'Export Data', os.path.join(gui.lwd,'result.hdf5'),'*.hdf5')[0]
+	oname = gui.choose_file('Export Data', category='exports', save=True, multiple=False, name='result.hdf5', filter='*.hdf5')
 	if oname == "":
 		return
 	success = gui.maven.modeler.export_result_to_hdf5(oname)
 	if success:
 		lwd = os.path.dirname(oname)
-		gui.lwd_update(lwd)
 	else:
 		logger.error("Failed to export model to {}".format(oname))
 
 def load(gui):
 	from PyQt5.QtWidgets import QFileDialog
-	oname = QFileDialog.getOpenFileName(gui, 'Load Data', gui.lwd, '*.hdf5')[0]
+	oname = gui.choose_file('Load Data', category='data', save=False, multiple=False, name='', filter='*.hdf5')
 	if oname == "":
 		return
 	success = gui.maven.modeler.load_result_from_hdf5(oname)

@@ -25,7 +25,6 @@ class _dwell_dialog(QDialog):
 		self.setLayout(self.grid)
 		self.grid.setSizeConstraint(QLayout.SetFixedSize)
 
-		self.setStyle(QStyleFactory.create('Fusion'))
 		from .stylesheet import ui_stylesheet
 		self.setStyleSheet(ui_stylesheet)
 
