@@ -70,12 +70,9 @@ def set_class_from_selection(gui):
 	nt,success = QInputDialog.getInt(gui,"Set class","Set selected molecules into which class", value=0,min=0)
 	if success:
 		sel = gui.molecules_viewer.viewer.get_selection()
-		print(sel)
 		if sel is None:
 			return
-		keep = np.isin(np.arange(gui.maven.data.classes.size),sel)
-		gui.maven.data.classes[keep] = nt
-		gui.maven.emit_data_update()
+		gui.maven.selection.set_class_from_selection(sel, nt)
 
 
 def _class_onoff(gui,s,b):
@@ -85,8 +82,7 @@ def _class_onoff(gui,s,b):
 	nt,success = QInputDialog.getInt(gui,"Turn {} class".format(s),"Turn {} all molecules in what class".format(s), value=0,min=0)
 	if success:
 		keep = gui.maven.selection.select_class(nt)
-		gui.maven.data.flag_ons[keep] = b
-		gui.maven.emit_data_update()
+		gui.maven.selection.set_enabled(keep, b)
 		logger.info('Turned {} class {}'.format(s,nt))
 	else:
 		logger.error('Failed turning {} classes {}'.format(s,nt))
@@ -97,8 +93,7 @@ def _all_onoff(gui,s,b):
 	from PyQt5.QtWidgets import QMessageBox
 	reply = QMessageBox.question(gui,"Turn {}?".format(s),"Are you sure you want to turn {} all molcules?".format(s),QMessageBox.Yes | QMessageBox.No)
 	if reply == QMessageBox.Yes:
-		gui.maven.data.flag_ons = np.ones(gui.maven.data.nmol,dtype='bool')*b
-		gui.maven.emit_data_update()
+		gui.maven.selection.set_enabled(gui.maven.selection.select_all(), b)
 		logger.info('Turned {} all molecules'.format(s))
 
 def _selection_onoff(gui,s,b):
@@ -109,8 +104,7 @@ def _selection_onoff(gui,s,b):
 	from PyQt5.QtWidgets import QMessageBox
 	reply = QMessageBox.question(gui,"Turn {}?".format(s),"Are you sure you want to turn {} {} molcules?".format(s,sel.size),QMessageBox.Yes | QMessageBox.No)
 	if reply == QMessageBox.Yes:
-		gui.maven.data.flag_ons[sel] = np.ones(sel.size,dtype='bool')*b
-		gui.maven.emit_data_update()
+		gui.maven.selection.set_enabled(sel, b)
 		logger.info('Turned {} {} molecules'.format(s,sel.size))
 
 def class_on(gui):

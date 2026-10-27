@@ -705,26 +705,14 @@ class multi_canvas(FigureCanvas):
 		if (event.inaxes == self.ax[0,0]) or (event.inaxes == self.ax[1,0]):
 			try:
 				if event.button == 3 and self.toolbar.mode == "": ## Right click - set photobleaching point
-					self.gui.maven.data.post_list[self.gui.index] = int(np.round(event.xdata/self.gui.maven.prefs['plot.time_dt']))
+					self.gui.maven.data.set_trace_boundaries(self.gui.index, stop=int(np.round(event.xdata/self.gui.maven.prefs['plot.time_dt'])))
 
 				if event.button == 1 and self.toolbar.mode == "": ## Left click - set pre-truncation point
-					self.gui.maven.data.pre_list[self.gui.index] = int(np.round(event.xdata/self.gui.maven.prefs['plot.time_dt']))
+					self.gui.maven.data.set_trace_boundaries(self.gui.index, start=int(np.round(event.xdata/self.gui.maven.prefs['plot.time_dt'])))
 
 				## Middle click - reset pre and post points to calculated values
 				if event.button == 2 and self.toolbar.mode == "":
-					if self.gui.maven.data.ncolors == 2:
-						from ...photobleaching.photobleaching import get_point_pbtime
-						self.gui.maven.data.pre_list[self.gui.index] = 0
-						if self.gui.maven.prefs['photobleaching_flag'] is True:
-							qq = self.gui.maven.data.corrected[self.gui.index].sum(-1)
-						else:
-							qq = self.gui.maven.data.corrected[self.gui.index,:,-1]
-						self.gui.maven.data.post_list[self.gui.index] = get_point_pbtime(qq,1.,1.,1.,1000.) + 1
-				self.update_plots(self.gui.index)
-				try:
-					self.gui.molecules_viewer.viewer.model.layoutChanged.emit()
-				except:
-					pass
+					self.gui.maven.photobleaching.calc_single_photobleach(self.gui.index)
 			except:
 				pass
 		else:

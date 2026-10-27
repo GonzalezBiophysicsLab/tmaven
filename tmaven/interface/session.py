@@ -236,7 +236,7 @@ class DesktopSession:
 
     def dock_sizes(self):
         sizes = {}
-        for viewer in (self.molecules_viewer, self.preferences_viewer):
+        for viewer in (self.molecules_viewer, self.preferences_viewer, self.log_viewer):
             dock = viewer.dock
             if dock.isFloating() or dock.isHidden():
                 continue
@@ -251,7 +251,7 @@ class DesktopSession:
     def restore_dock_sizes(self, sizes):
         if not isinstance(sizes, dict):
             return
-        for viewer in (self.molecules_viewer, self.preferences_viewer):
+        for viewer in (self.molecules_viewer, self.preferences_viewer, self.log_viewer):
             dock = viewer.dock
             value = sizes.get(dock.objectName())
             if dock.isFloating() or dock.isHidden() or not isinstance(value, dict):
@@ -295,7 +295,7 @@ class DesktopSession:
         if isinstance(headers, list):
             for viewer, value in zip((self.molecules_viewer.viewer, self.preferences_viewer.viewer.proxy_view), headers):
                 restore(value, viewer.horizontalHeader().restoreState)
-        for dock in (self.molecules_viewer.dock, self.preferences_viewer.dock):
+        for dock in (self.molecules_viewer.dock, self.preferences_viewer.dock, self.log_viewer.dock):
             if dock.isFloating() and not any(screen.availableGeometry().contains(dock.frameGeometry()) for screen in self.app.screens()):
                 bounds = self.app.primaryScreen().availableGeometry()
                 dock.resize(min(dock.width(), bounds.width()), min(dock.height(), bounds.height()))
@@ -305,7 +305,9 @@ class DesktopSession:
             self.showMaximized()
         else:
             self.show()
-        dock = self.preferences_viewer.dock if session.get('active_dock') == 'preferences' else self.molecules_viewer.dock
+        docks = {viewer.dock.objectName(): viewer.dock for viewer in
+                 (self.molecules_viewer, self.preferences_viewer, self.log_viewer)}
+        dock = docks.get(session.get('active_dock'), self.molecules_viewer.dock)
         if not dock.isHidden():
             dock.raise_()
         self.plot_container.plot.redrawplot()

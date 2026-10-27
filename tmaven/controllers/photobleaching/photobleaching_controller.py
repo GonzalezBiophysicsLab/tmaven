@@ -1,3 +1,4 @@
+import numpy as np
 import logging
 logger = logging.getLogger(__name__)
 
@@ -56,8 +57,12 @@ class controller_photobleaching(object):
 		prefs['photobleach.prior.beta'] = precision of normal over signal location
 
 		'''
-		if self.maven.data.nmol == 0 or index >= self.maven.data.nmol:
-			return
+		indices = self.maven.selection.validate_selection(index)
+		if indices.size != 1 or np.asarray(index).ndim != 0:
+			raise ValueError('Provide one trace index')
+		index = int(indices[0])
+		start = int(self.maven.data.pre_list[index])
+		stop = int(self.maven.data.post_list[index])
 		if self.maven.prefs['photobleach.sum'] is True:
 			qq = self.maven.data.corrected[index].sum(-1)
 		else:
@@ -65,27 +70,27 @@ class controller_photobleaching(object):
 
 		if self.maven.prefs['photobleach.entire']:
 			if self.maven.prefs['photobleach.movepre']:
-				self.maven.data.pre_list[index] = 0
-			self.maven.data.post_list[index] = self.maven.data.ntime
+				start = 0
+			stop = self.maven.data.ntime
 
-		qq = qq[self.maven.data.pre_list[index]:self.maven.data.post_list[index]].astype('double')
+		if not 0 <= start <= stop <= self.maven.data.ntime:
+			raise ValueError('Invalid trace boundaries')
+		qq = qq[start:stop].astype('double')
 
 		from .photobleaching import get_point_pbtime
 		a = self.maven.prefs['photobleach.prior.a']
 		b = self.maven.prefs['photobleach.prior.b']
 		beta = self.maven.prefs['photobleach.prior.beta']
 		mu = self.maven.prefs['photobleach.prior.mu']
-		self.maven.data.post_list[index] = get_point_pbtime(qq,a,b,beta,mu) + self.maven.data.pre_list[index]
+		point = get_point_pbtime(qq,a,b,beta,mu) if qq.size else 0
+		self.maven.data.set_trace_boundaries(index, start, point + start)
 		logger.info('Photobleach Trajectory %d: old method, t_bleach = %d'%(index,self.maven.data.post_list[index]))
 		# self.maven.modeler.clear_hmm()
 		# self.maven.data_update.emit()
 
 	def remove_photobleaching(self):
 		logger.info('Removed photobleaching pre/post times')
-		self.maven.data.pre_list *= 0
-		self.maven.data.post_list *= 0
-		self.maven.data.post_list += self.maven.data.nt
-		self.maven.emit_data_update()
+		self.maven.data.reset_trace_boundaries()
 
 	def photobleach_sum(self):
 		''' Photobleach calculation all of the data

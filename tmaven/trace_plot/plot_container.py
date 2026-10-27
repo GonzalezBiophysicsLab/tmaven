@@ -39,6 +39,7 @@ class plot_container(QWidget):
 		if initialized:
 			self.gui.pref_edited.disconnect(self.plot.redrawplot)
 			self.gui.data_update.disconnect(self.plot.initialize_plots)
+			self.gui.data_update.disconnect(self.plot.softredraw)
 		else:
 			# Create the Qt canvas/toolbar once. Mode changes reuse their ownership,
 			# event handlers and navigation actions rather than deleting live widgets.
@@ -69,6 +70,8 @@ class plot_container(QWidget):
 		finally:
 			self.gui.pref_edited.connect(self.plot.redrawplot)
 			self.gui.data_update.connect(self.plot.initialize_plots)
+			# Repaint the current trace after the preceding slot resets its lines.
+			self.gui.data_update.connect(self.plot.softredraw)
 		self.update_toolbar_theme()
 		self.plot.redrawplot()
 

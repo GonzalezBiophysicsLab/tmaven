@@ -3,7 +3,7 @@ import logging
 logging.getLogger("matplotlib").setLevel(logging.WARNING)
 logger = logging.getLogger("tmaven")
 
-from PyQt5.QtWidgets import QApplication,QMainWindow,QDesktopWidget,QLabel,QMessageBox,QShortcut,QPushButton,QMenu,QAction,QSlider, QSizePolicy, QTreeWidget, QTreeWidgetItem, QDockWidget, QLabel, QHBoxLayout, QPlainTextEdit
+from PyQt5.QtWidgets import QApplication,QMainWindow,QDesktopWidget,QLabel,QMessageBox,QShortcut,QPushButton,QMenu,QAction,QSlider, QSizePolicy, QTreeWidget, QTreeWidgetItem, QDockWidget, QLabel, QHBoxLayout
 from PyQt5.QtGui import QIcon, QKeySequence, QPalette, QColor
 from PyQt5.QtCore import Qt, pyqtSignal, QTimer, QSize
 import matplotlib
@@ -37,7 +37,7 @@ class main_window(DesktopSession, QMainWindow):
 		self.initialize_widgets()
 		self.lwd_load()
 		self._active_dock = "molecules"
-		for name, dock in (("molecules", self.molecules_viewer.dock), ("preferences", self.preferences_viewer.dock)):
+		for name, dock in (("molecules", self.molecules_viewer.dock), ("preferences", self.preferences_viewer.dock), ("log", self.log_viewer.dock)):
 			dock.visibilityChanged.connect(lambda visible, n=name: setattr(self, "_active_dock", n) if visible else None)
 		self._default_layout = self.saveState()
 		self._default_headers = [v.horizontalHeader().saveState() for v in
@@ -94,6 +94,8 @@ class main_window(DesktopSession, QMainWindow):
 		#### preferences
 		from .viewer_prefs import preferences_viewer
 		self.preferences_viewer = preferences_viewer(self)
+		from .viewer_log import log_viewer
+		self.log_viewer = log_viewer(self)
 		
 		from .ui_scripts import scripts_toolbar
 		self.scripts_toolbar = scripts_toolbar(self)
@@ -137,10 +139,13 @@ class main_window(DesktopSession, QMainWindow):
 		# self.preferences_viewer.toggle()
 		# self.molecules_viewer.toggle()
 		self.tabifyDockWidget(self.preferences_viewer.dock,self.molecules_viewer.dock)
+		self.splitDockWidget(self.preferences_viewer.dock, self.log_viewer.dock, Qt.Vertical)
 
 		## connections
-		self.maven.emit_data_update = lambda : self.data_update.emit()
-		self.maven.prefs.emit_changed = lambda : self.pref_edited.emit()
+		self._maven_unsubscribe = [
+			self.maven.subscribe('data_changed', self.data_update.emit),
+			self.maven.subscribe('preferences_changed', self.pref_edited.emit),
+		]
 		self.pref_edited.connect(self.preferences_viewer.prefs_model.refresh)
 		self.data_update.connect(self.proc_data_update)
 		self.maven.emit_data_update()
@@ -287,27 +292,13 @@ class main_window(DesktopSession, QMainWindow):
 					new_index = 0
 				self.change_index(new_index)
 			elif kk in [Qt.Key_Minus,Qt.Key_Equal] and not self.flag_locked:
-				if kk == Qt.Key_Minus:
-					if self.maven.data.pre_list[self.index] > 0:
-						self.maven.data.pre_list[self.index] -= 1
-				else:
-					if self.maven.data.pre_list[self.index] < self.maven.data.ntime:
-						self.maven.data.pre_list[self.index] += 1
-				self.plot_container.plot.softredraw()
+				start = self.maven.data.pre_list[self.index] + (-1 if kk == Qt.Key_Minus else 1)
+				self.maven.data.set_trace_boundaries(self.index, start=start)
 			elif kk in [Qt.Key_BracketLeft,Qt.Key_BracketRight] and not self.flag_locked:
-				if kk == Qt.Key_BracketLeft:
-					if self.maven.data.post_list[self.index] > 0:
-						self.maven.data.post_list[self.index] -= 1
-				else:
-					if self.maven.data.post_list[self.index] < self.maven.data.ntime:
-						self.maven.data.post_list[self.index] += 1
-				self.plot_container.plot.softredraw()
-			# elif kk == Qt.Key_Space:
-			# 	self.maven.data.flag_ons[self.index] = not self.maven.data.flag_ons[self.index]
+				stop = self.maven.data.post_list[self.index] + (-1 if kk == Qt.Key_BracketLeft else 1)
+				self.maven.data.set_trace_boundaries(self.index, stop=stop)
 			elif kk == Qt.Key_R and not self.flag_locked:
-				self.maven.data.pre_list[self.index] = 0
-				self.maven.data.post_list[self.index] = self.maven.data.ntime
-				self.plot_container.plot.softredraw()
+				self.maven.data.reset_trace_boundaries(self.index)
 			elif kk == Qt.Key_C and not self.flag_locked:
 				self.maven.data.split_trace(self.index,self.maven.data.post_list[self.index])
 			elif kk == Qt.Key_V and not self.flag_locked:
@@ -315,13 +306,11 @@ class main_window(DesktopSession, QMainWindow):
 			elif kk == Qt.Key_P and not self.flag_locked:
 				try:
 					self.maven.photobleaching.calc_single_photobleach(self.index)
-					self.plot_container.plot.softredraw()
 				except:
 					pass
 			elif event.key() in class_keys and not self.flag_locked:
 				new_class_ind = class_keys[kk]
-				self.maven.data.classes[self.index] = new_class_ind
-				self.update_mol_label()
+				self.maven.selection.set_class_from_selection(self.index, new_class_ind)
 			else:
 				super().keyPressEvent(event)
 				return
@@ -439,6 +428,7 @@ class main_window(DesktopSession, QMainWindow):
 		app.setPalette(palette)
 		self.menubar.setPalette(palette)
 		self.preferences_viewer.update_theme(palette)
+		self.log_viewer.update_theme(palette)
 		self.molecules_viewer.update_theme(palette)
 		self.plot_container.update_toolbar_theme(palette)
 		from .toolbar_theme import apply_toolbar_theme
@@ -453,31 +443,7 @@ class main_window(DesktopSession, QMainWindow):
 		self.apply_theme('light')
 
 	def show_log(self,event=None):
-		w = QMainWindow(parent=self)
-		w.setWindowTitle('Log')
-		w.resize(1000,400)
-		w.closeEvent = lambda e: w.deleteLater()
-
-		te = QPlainTextEdit(parent=w)
-		te.setPlainText(self.maven.get_log())
-		te.verticalScrollBar().setValue(te.verticalScrollBar().maximum())
-		te.setReadOnly(True)
-		from PyQt5.Qt import QFont,QFontDatabase
-		monospace = QFont(QFontDatabase.systemFont(QFontDatabase.FixedFont))
-		te.setFont(monospace)
-
-		def _updatelog():
-			lt = self.maven.get_log()
-			if te.toPlainText() != lt:
-				te.setPlainText(lt)
-				te.verticalScrollBar().setValue(te.verticalScrollBar().maximum())
-		timer = QTimer(parent=w)
-		timer.setInterval(1000) ## 25 FPS = 40 msec/
-		timer.timeout.connect(_updatelog)
-		timer.start()
-		w.setCentralWidget(te)
-		te.show()
-		w.show()
+		self.log_viewer.toggle()
 
 
 	def quit(self, event=None):
@@ -505,5 +471,8 @@ class main_window(DesktopSession, QMainWindow):
 			self.timer.deleteLater()
 			self.timer = None
 
+		for unsubscribe in self._maven_unsubscribe:
+			unsubscribe()
+		self._maven_unsubscribe = []
 		logger.info("Quitting...")
 		return super().closeEvent(event)

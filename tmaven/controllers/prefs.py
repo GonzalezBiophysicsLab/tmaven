@@ -94,7 +94,8 @@ class prefs_object(dict):
 	Numpy aware dictionary sub-class that remembers the initial datatype of a format and enforces the initial type.
 	Override .emit_changed and .emit_failed to do something upon changing/failing to change values
 	'''
-	def __init__(self,*args,**kwargs):
+	def __init__(self,*args,on_changed=None,**kwargs):
+		self._on_changed = on_changed
 		self.update(*args,**kwargs)
 
 	def create_item(self,key,default,min=None,max=None):
@@ -225,7 +226,8 @@ class prefs_object(dict):
 		return [dict.__getitem__(self,key).min, dict.__getitem__(self,key).max]
 
 	def emit_changed(self):
-		pass
+		if self._on_changed is not None:
+			self._on_changed()
 	def emit_failed(self):
 		pass
 

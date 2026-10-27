@@ -34,18 +34,50 @@ class controller_selection(object):
 	def select_class(self,i):
 		return np.unique(np.flatnonzero(self.maven.data.classes == i))
 
-	def on_selection(self,selection):
-		self.maven.data.flag_ons[selection] = True
-	def off_selection(self,selection):
-		self.maven.data.flag_ons[selection] = False
+	def validate_selection(self, selection):
+		"""Return integer trace indices, rejecting invalid requests before mutation."""
+		indices = np.asarray(selection)
+		if indices.ndim > 1:
+			raise ValueError('Trace indices must be scalar or one-dimensional')
+		if indices.size == 0:
+			return np.array([], dtype=int)
+		if indices.dtype.kind not in 'iu':
+			raise ValueError('Trace indices must be integers')
+		indices = np.atleast_1d(indices)
+		if np.any(indices < 0) or np.any(indices >= self.maven.data.nmol):
+			raise ValueError('Trace index out of range')
+		return indices
+
+	def set_enabled(self, selection, enabled):
+		indices = self.validate_selection(selection)
+		if not isinstance(enabled, (bool, np.bool_)):
+			raise ValueError('Enabled must be a boolean')
+		self.maven.data.flag_ons[indices] = enabled
+		self.maven.emit_data_update()
+
+	def on_selection(self, selection):
+		self.set_enabled(selection, True)
+
+	def off_selection(self, selection):
+		self.set_enabled(selection, False)
 
 	def on_all(self):
-		self.maven.data.flag_ons[:] = True
-	def off_all(self):
-		self.maven.data.flag_ons[:] = False
+		self.on_selection(self.select_all())
 
-	def set_class_from_selection(self,selection,i):
-		self.maven.data.classes[self.selected] = i
+	def off_all(self):
+		self.off_selection(self.select_all())
+
+	def set_class_from_selection(self, selection, i):
+		indices = self.validate_selection(selection)
+		values = np.asarray(i)
+		if values.dtype.kind not in 'iu' or values.ndim > 1:
+			raise ValueError('Classes must be nonnegative integers')
+		if values.ndim == 1 and values.shape != indices.shape:
+			raise ValueError('Provide one class per trace')
+		if np.any(values < 0) or np.any(values > np.iinfo(self.maven.data.classes.dtype).max):
+			raise ValueError('Class out of range')
+		self.maven.data.classes[indices] = values
+		self.maven.emit_data_update()
 
 	def calc_fret_cross_corr(self,d=None): ## of gradient
 		''' Calculate cross correlation of gradient of 1D series

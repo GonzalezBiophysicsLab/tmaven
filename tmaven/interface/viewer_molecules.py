@@ -140,13 +140,17 @@ class molecules_model(QAbstractTableModel):
 			if _is_int(value):
 				v = int(value)
 				if v >= 0:
-					self.gui.maven.data.classes[row] = v
-					self.dataChanged.emit(index,index)
+					try:
+						self.gui.maven.selection.set_class_from_selection(row, v)
+					except ValueError:
+						return False
 					return True
 		if column == 1:
 			if role == Qt.CheckStateRole:
-				self.gui.maven.data.flag_ons[index.row()] = bool(value)
-				self.dataChanged.emit(index,index)
+				try:
+					self.gui.maven.selection.set_enabled(row, bool(value))
+				except ValueError:
+					return False
 				return True
 		return False
 
@@ -219,8 +223,8 @@ class molecules_widget(QTableView):
 	def __init__(self,gui):
 		super().__init__()
 		self.gui = gui
-		self.undo = []
-		self.redo = []
+		self._undo = []
+		self._redo = []
 		# self.wheelEvent = super().wheelEvent
 
 		# from .stylesheet import ss_qtableview
@@ -252,20 +256,19 @@ class molecules_widget(QTableView):
 			new_class_ind = class_keys[event.key()]
 			sel = self.get_selection()
 			if not sel is None:
-				self.undo.append(self.gui.maven.data.classes.copy())
-				for i in sel:
-					self.gui.maven.data.classes[i] = new_class_ind
-			self.model.dataChanged.emit(QModelIndex(),QModelIndex())
+				self._undo.append(self.gui.maven.data.classes.copy())
+				self._redo.clear()
+				self.gui.maven.selection.set_class_from_selection(sel, new_class_ind)
 		# elif event.key() == Qt.Key_Tab:
 		# 	sel = self.get_selection()
 		# 	if not sel is None:
 		# 		for i in sel:
 		# 			self.gui.maven.data.flag_ons[i] = not self.gui.maven.data.flag_ons[i]
 		# 	self.model.dataChanged.emit(QModelIndex(),QModelIndex())
-		elif event == QKeySequence.Undo:
+		elif event.matches(QKeySequence.Undo):
 			self.undo()
 			self.defocus()
-		elif event == QKeySequence.Redo:
+		elif event.matches(QKeySequence.Redo):
 			self.redo()
 			self.defocus()
 		elif event.key() == Qt.Key_Escape:
@@ -280,19 +283,17 @@ class molecules_widget(QTableView):
 			pass
 
 	def undo(self):
-		if len(self.undo) > 0:
-			old = self.undo.pop()
-			self.redo.append(self.gui.maven.data.classes.copy())
-			self.gui.maven.data.classes = old
-			self.model.dataChanged.emit(QModelIndex(),QModelIndex())
+		if len(self._undo) > 0:
+			old = self._undo.pop()
+			self._redo.append(self.gui.maven.data.classes.copy())
+			self.gui.maven.selection.set_class_from_selection(np.arange(self.gui.maven.data.nmol), old)
 			logger.info('undo classes change')
 
 	def redo(self):
-		if len(self.redo) > 0:
-			old = self.redo.pop()
-			self.undo.append(self.gui.maven.data.classes.copy())
-			self.gui.maven.data.classes = old
-			self.model.dataChanged.emit(QModelIndex(),QModelIndex())
+		if len(self._redo) > 0:
+			old = self._redo.pop()
+			self._undo.append(self.gui.maven.data.classes.copy())
+			self.gui.maven.selection.set_class_from_selection(np.arange(self.gui.maven.data.nmol), old)
 			logger.info('redo classes change')
 
 	def _toggle_viewer(self):

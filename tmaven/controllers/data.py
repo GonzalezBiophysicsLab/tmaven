@@ -77,6 +77,27 @@ class controller_data(object):
 		else: ## something went really wrong...
 			self.initialize_tmaven_params()
 
+	def set_trace_boundaries(self, selection, start=None, stop=None):
+		"""Set boundaries atomically; omitted endpoints retain their current values."""
+		indices = self.maven.selection.validate_selection(selection)
+		starts = self.pre_list[indices] if start is None else np.asarray(start)
+		stops = self.post_list[indices] if stop is None else np.asarray(stop)
+		for values in (starts, stops):
+			if values.dtype.kind not in 'iu' or values.ndim > 1:
+				raise ValueError('Boundaries must be integers')
+			if values.ndim == 1 and values.shape != indices.shape:
+				raise ValueError('Provide one boundary per trace')
+		if np.any(starts < 0) or np.any(stops > self.ntime) or np.any(starts > stops):
+			raise ValueError('Require 0 <= start <= stop <= ntime')
+		self.pre_list[indices] = starts
+		self.post_list[indices] = stops
+		self.maven.emit_data_update()
+
+	def reset_trace_boundaries(self, selection=None):
+		if selection is None:
+			selection = np.arange(self.nmol)
+		self.set_trace_boundaries(selection, 0, self.ntime)
+
 	def order(self,neworder):
 		''' Reorder traces
 		Parameters
