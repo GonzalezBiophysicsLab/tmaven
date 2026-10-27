@@ -126,7 +126,7 @@ class controller_base_analysisplot(object):
 		if self.plot_mode in ["ND Relative", "smFRET"]:
 			dpb = self.maven.calc_relative()
 		else:
-			dpb = self.maven.data.corrected
+			dpb = self.maven.data.corrected.copy()
 
 		for i in range(self.maven.data.nmol): ## photobleach molecules
 			dpb[i,:self.maven.data.pre_list[i]] = np.nan

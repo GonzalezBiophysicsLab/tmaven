@@ -560,7 +560,7 @@ def eb_em_hmm(x,nstates,maxiters=1000,nrestarts=1,threshold=1e-10,priors=None,nc
 		a_prior = np.ones(nstates) *2.5
 		b_prior = np.ones(nstates)*0.01
 		pi_prior = np.ones(nstates)
-		tm_prior = np.ones(nstates,nstates)
+		tm_prior = np.ones((nstates,nstates))
 		mu_prior = np.percentile(xdata,np.linspace(0.,100.,nstates+2))[1:-1]
 	else:
 		mu_prior,beta_prior, a_prior, b_prior, pi_prior, tm_prior = priors

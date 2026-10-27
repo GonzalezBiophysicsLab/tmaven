@@ -263,9 +263,7 @@ def consensus_vb_em_hmm(x,nstates,maxiters=1000,threshold=1e-10,nrestarts=1,prio
 		a_prior = np.ones(nstates) *2.5
 		b_prior = np.ones(nstates)*0.01
 		pi_prior = np.ones(nstates)
-		tm_prior = np.ones(nstates,nstates)
-		mu_prior = np.percentile(xdata,np.linspace(0,100,nstates+2))[1:-1]
-	else:
+		tm_prior = np.ones((nstates,nstates))
 		mu_prior = np.percentile(xdata,np.linspace(0,100,nstates+2))[1:-1]
 		beta_prior = priors[1]
 		a_prior = priors[2]
